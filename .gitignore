@@ -1,9 +1,2 @@
-.DS_Store
-CoralLabeler/venv/
-__pycache__
-.vscode
-*.pyproject.user
-test_images/
-CoralLabeler/images/mask.png
-*.pth
-*venv
+*.swp
+image_tools/test_images/
