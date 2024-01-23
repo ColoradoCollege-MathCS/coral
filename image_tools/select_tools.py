@@ -8,7 +8,6 @@ def image_dims(image):
     return cv2.imread(image).shape[:2]
 
 #Parameters:
-#image - path to the image file
 #labels - numpy array with an int for each pixel. 0=no label, other ints have meaning
 #labelNum - What label ID to set select values to.
 #point1 - Point in image where selection was started from
@@ -24,6 +23,7 @@ def rectangle_select(labels, labelNum, point1, point2):
 #Standard form of an ellipse
 #(x-h)^2/a^2 + (y-k)^2/b^2 = 1. width = 2a, h = 2b
 #<=1 defines all the space inside ellipse
+#Same parameters as rectangle_select
 def ellipse_select(labels, labelNum, point1, point2):
     min_x = max(min(point1[0],point2[0]),0)#if selection goes off the screen, truncate at 0
     max_x = max(point1[0],point2[0])
@@ -41,7 +41,8 @@ def ellipse_select(labels, labelNum, point1, point2):
                 labels[y,x] = labelNum
 
 
-#When a user selects a point, this tool automatically fills the label to similar 
+#When a user selects a point, this tool automatically changes the label of surrounding pixels with a hue that vaires by less than threshold 
+#Only uses hue data, so can't dirrefentiate between pure black and white.
 #colors in the surrounding area, like the Fuzzy Select tool in GIMP
 #Params
 #image - img filename. Needed to examine color similarities
