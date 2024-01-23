@@ -40,6 +40,20 @@ def ellipse_select(labels, labelNum, point1, point2):
             if ( (x-h)**2/a**2 + (y-k)**2/b**2)<=1:
                 labels[y,x] = labelNum
 
+#Circle formula: (x-h)^2 + (y-k)^2 = r^2
+#Selects a circle around clicked point, to be used repeatedly to achieve paintbrush tool
+#Params
+#labels - numpy array with int of each pixel, representing what coral species is there
+#labelNum - what number to change the selected pixels to
+#pointClicked - pixel coordinates on the image where the user clicked
+#radius - radius (px) of circle to draw around the point
+def circle_select(labels, labelNum, pointClicked, radius):
+    for y in range(labels.shape[0]):
+        for x in range(labels.shape[1]):
+            if ( (x-pointClicked[0])**2 + (y-pointClicked[1])**2  ) <= radius**2:
+                labels[y,x] = labelNum
+    
+
 
 #When a user selects a point, this tool automatically changes the label of surrounding pixels with a hue that vaires by less than threshold 
 #Only uses hue data, so can't dirrefentiate between pure black and white.
@@ -96,6 +110,19 @@ newLabelNum=5
 print("beofre")
 print(labels)
 magic_wand_select(image,labels,newLabelNum,point,0)
+print("after")
+print(labels)
+"""
+#test circle select
+"""
+image="test_images/example_image.jpg"
+pointClicked= (1,1)
+labels=np.zeros(image_dims(image))
+newLabelNum=5
+radius=5
+print("beofre")
+print(labels)
+circle_select(labels,newLabelNum,pointClicked,radius)
 print("after")
 print(labels)
 """
