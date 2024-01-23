@@ -1,4 +1,6 @@
-import cv2
+from skimage import io, color
+from skimage.segmentation import flood
+import cv2 #just for image sizes used by test code. remove later.
 import numpy as np
 
 #Returns (width, height) of the passed image
@@ -39,9 +41,28 @@ def ellipse_select(labels, labelNum, point1, point2):
                 labels[y,x] = labelNum
 
 
+#When a user selects a point, this tool automatically fills the label to similar 
+#colors in the surrounding area, like the Fuzzy Select tool in GIMP
+#Params
+#image - img filename. Needed to examine color similarities
+#labels - numpy array with int for each pixel in image, representing what coral species is there
+#labelNum - what number to change the selected pixels to
+#pointClicked - pixel coordinates in the image where the user clicked
+#threshold - how tolerant the fill is to differences in color
+def magic_wand_select(image, labels, labelNum, pointClicked, threshold):
+    #Load image
+    image_arr = io.imread(image)
+    if image_arr.shape[2]==4:
+        image_arr = color.rgba2rgb(image_arr) #strip alpha chan with alpha blending if necc.
+    #convert to Hue Saturation Value space
+    image_arr = color.rgb2hsv(image_arr)
+    #flood according to hue, returning boolean mask of pixels that should be selected
+    mask = flood(image_arr[...,0], pointClicked, tolerance=threshold)
+    #Use np.place or np.copyto to replace    
+    np.place(labels, mask, labelNum) #Where mask is true, set pixel in labels to labelNum
 #test rectangle select
 """
-image = "16x16.png" 
+image = "test_images/16x16.png" 
 point1 = (2,4)
 point2 = (10, 14)
 labels = np.zeros(image_dims(image))
@@ -52,9 +73,9 @@ rectangle_select(labels,newLabelNum,point1,point2)
 print("after:")
 print(labels)
 """
-"""
 #test ellipse select
-image = "16x16.png"
+"""
+image = "test_images/16x16.png"
 point1 = (2,4)
 point2 = (10,14)
 labels = np.zeros(image_dims(image))
@@ -63,5 +84,17 @@ print("labels before")
 print(labels)
 ellipse_select(labels,newLabelNum,point1,point2)
 print("labels after: ")
+print(labels)
+"""
+#test magic select
+"""
+image = "test_images/checkerboard-larger-red-green-16x16.png"
+point = (2,4)
+labels = np.zeros(image_dims(image),dtype=np.int64)
+newLabelNum=5
+print("beofre")
+print(labels)
+magic_wand_select(image,labels,newLabelNum,point,0)
+print("after")
 print(labels)
 """
