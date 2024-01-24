@@ -75,3 +75,6 @@ CMakeLists.txt.user*
 *.exe
 
 CoralLabeler/venv/
+CoralLabeler/test_images/
+.vscode
+*.pyproject.user
