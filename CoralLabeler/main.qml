@@ -18,22 +18,17 @@ Window {
         width: 500
         height: 500
         smooth: true
-        visible: false
-    }
-
-    Image {
-        id: overlay
-        source: "test_images/rosvol2-overlay.png"
-        width: 500
-        height: 500
-        smooth: true
-        visible: false
-    }
-
-    Blend {
-        anchors.fill: cover
-        source: cover
-        foregroundSource: overlay
-        mode: "average"
+        visible: true
+        Image {
+            id: overlay
+            source: "test_images/rosvol2-overlay.png"
+            width: 500
+            height: 500 
+            x: 0
+            y: 0
+            smooth: true
+            visible: true
+            opacity: .25
+        }
     }
 }
