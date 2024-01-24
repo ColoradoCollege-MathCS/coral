@@ -4,29 +4,36 @@ import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import Qt5Compat.GraphicalEffects
 
 Window {
     width: 640
     height: 480
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("Two Overlaid Images")
 
-    ToolBar {
-        Button {
-            text: qsTr("Choose Image...")
-            onClicked: fileDialog.open()
-        }
+    Image {
+        id: cover
+        source: "test_images/rosvol2-cover.jpg"
+        width: 500
+        height: 500
+        smooth: true
+        visible: false
     }
 
     Image {
-        id: image
-        anchors.fill: parent
-        fillMode: Image.PreserveAspectFit
+        id: overlay
+        source: "test_images/rosvol2-overlay.png"
+        width: 500
+        height: 500
+        smooth: true
+        visible: false
     }
 
-    FileDialog {
-        id: fileDialog
-        currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        onAccepted: image.source = selectedFile
+    Blend {
+        anchors.fill: cover
+        source: cover
+        foregroundSource: overlay
+        mode: "average"
     }
 }
