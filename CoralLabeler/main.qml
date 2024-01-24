@@ -33,7 +33,7 @@ Window {
             visible: true
             Image {
                 id: overlay
-                source: "test_images/rosvol2-overlay.png"
+                source: "test_images/mask.png"
                 width: 500
                 height: 500 
                 x: 0

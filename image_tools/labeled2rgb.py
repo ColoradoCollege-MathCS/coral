@@ -26,11 +26,11 @@ color_map = {
     3: (0, 255, 0), #green
     4: (255, 128, 0) #orange
 }
-labels = np.zeros((32,32))
-rectangle_select(labels,1,(0,0),(3,3))
-circle_select(labels,2,(8,8),4)
-circle_select(labels,3,(15,15),10)
-rectangle_select(labels,4,(0,10),(5,15))
+labels = np.zeros((500,500))
+rectangle_select(labels,1,(0,0),(100,100))
+circle_select(labels,2,(250,250),178)
+circle_select(labels,3,(400,300),100)
+rectangle_select(labels,4,(0,400),(257,499))
 img = labeled2rgb(labels, color_map)
 plt.imshow(img)
 plt.show()
