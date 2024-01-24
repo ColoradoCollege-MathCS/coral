@@ -1,4 +1,5 @@
 import numpy as np
+from skimage.io import imsave
 
 #
 #Params:
@@ -31,6 +32,6 @@ circle_select(labels,2,(8,8),4)
 circle_select(labels,3,(15,15),10)
 rectangle_select(labels,4,(0,10),(5,15))
 img = labeled2rgb(labels, color_map)
-print(img)
 plt.imshow(img)
 plt.show()
+imsave("../CoralLabeler/test_images/mask.png",img)
