@@ -17,10 +17,10 @@ Window {
         id: menuBar
         Menu {
                 id: fazbear
-                title: qsTr("Fredy Five Bears")
+                title: qsTr("Tools")
                 MenuItem {
                     text: qsTr("random rectangle")
-                    onTriggered: tbox.randomRectangle()
+                    onTriggered: tbox.randomRectangle(),overlay.source="test_images/mask2.png",overlay.source="test_images/mask.png"
                 }
             }
         }
