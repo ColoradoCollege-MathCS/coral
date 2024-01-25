@@ -10,7 +10,19 @@ Window {
     height: 480
     visible: true
     title: qsTr("Two Overlaid Images")
+
+
     ColumnLayout {
+    MenuBar {
+        id: menuBar
+        Menu {
+                id: fazbear
+                title: qsTr("Fredy Five Bears")
+                MenuItem {
+                    text: qsTr("random rectangle")
+                }
+            }
+        }
 
         Slider {
             id: opacity_slider
@@ -31,6 +43,7 @@ Window {
             height: 500
             smooth: true
             visible: true
+            cache: false
             Image {
                 id: overlay
                 source: "test_images/mask.png"
