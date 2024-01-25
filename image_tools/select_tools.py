@@ -75,6 +75,20 @@ def magic_wand_select(image, labels, labelNum, pointClicked, threshold):
     mask = flood(image_arr[...,0], pointClicked, tolerance=threshold)
     #Use np.place or np.copyto to replace    
     np.place(labels, mask, labelNum) #Where mask is true, set pixel in labels to labelNum
+
+#
+#Params:
+#labels - Numpy array with labeled pixels
+#color_map - dictionary mapping label numbers to colors (rgb tuples)
+#Returns:
+#RGB data as a w x h x 3 numpy array
+def labeled2rgb(labels, color_map):
+    out = np.zeros(labels.shape+(3,), dtype=np.uint8)
+    for y in range(labels.shape[0]):
+        for x in range(labels.shape[1]):
+            out[y,x]=color_map[labels[y,x]]
+    return out
+
 #test rectangle select
 """
 image = "test_images/16x16.png" 
