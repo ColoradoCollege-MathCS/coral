@@ -4,13 +4,13 @@ import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+//import Qt.labs.platform
 
 Window {
     width: 640
     height: 480
     visible: true
     title: qsTr("Two Overlaid Images")
-
 
     ColumnLayout {
     MenuBar {
@@ -20,6 +20,7 @@ Window {
                 title: qsTr("Fredy Five Bears")
                 MenuItem {
                     text: qsTr("random rectangle")
+                    onTriggered: tbox.randomRectangle()
                 }
             }
         }
@@ -43,7 +44,6 @@ Window {
             height: 500
             smooth: true
             visible: true
-            cache: false
             Image {
                 id: overlay
                 source: "test_images/mask.png"
@@ -54,6 +54,7 @@ Window {
                 smooth: true
                 visible: true
                 opacity: opacity_slider.value
+                cache: false
             }
         }
     }
