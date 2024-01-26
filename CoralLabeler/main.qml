@@ -12,15 +12,33 @@ Window {
     visible: true
     title: qsTr("Two Overlaid Images")
 
+    function refreshMask() {
+        overlay.source= "test_images/mask2.png"
+        overlay.source= "test_images/mask.png"
+    }
+
     ColumnLayout {
-    MenuBar {
-        id: menuBar
-        Menu {
-                id: fazbear
+        MenuBar {
+            id: menuBar
+            Menu {
+                id: fileMenu
+                title: qsTr("File")
+                MenuItem {
+                    text: qsTr("Open Image")
+                    onTriggered: singleFileDialog.open()
+                }
+            }
+
+            Menu {
+                id: toolsMenu
                 title: qsTr("Tools")
                 MenuItem {
-                    text: qsTr("random rectangle")
-                    onTriggered: tbox.randomRectangle(),overlay.source="test_images/mask2.png",overlay.source="test_images/mask.png"
+                    text: qsTr("Random Rectangle")
+                    onTriggered: tbox.randomRectangle(), refreshMask()
+                }
+                MenuItem {
+                    text: qsTr("Get AI Predictions")
+                    onTriggered: tbox.getPrediction(), refreshMask()
                 }
             }
         }
@@ -36,25 +54,39 @@ Window {
             height: 10
             width: 100
         }
-
-        Image {
-            id: cover
-            source: "test_images/rosvol2-cover.jpg"
-            width: 500
+        Rectangle {
             height: 500
-            smooth: true
-            visible: true
+            width: 500
             Image {
-                id: overlay
-                source: "test_images/mask.png"
+                id: base
+                source: "test_images/rosvol2-cover.jpg"
+                sourceSize.width: 500
+                sourceSize.height: 500
+                height: 500
                 width: 500
-                height: 500 
-                x: 0
-                y: 0
                 smooth: true
                 visible: true
-                opacity: opacity_slider.value
-                cache: false
+                fillMode: Image.PreserveAspectFit
+                Image {
+                    id: overlay
+                    source: "test_images/mask.png"
+                    x: 0
+                    y: 0
+                    sourceSize.width: 500
+                    sourceSize.height: 500
+                    height: 500
+                    width: 500
+                    smooth: true
+                    visible: true
+                    opacity: opacity_slider.value
+                    cache: false
+                    fillMode: Image.PreserveAspectFit
+                }
+
+                FileDialog {
+                    id: singleFileDialog
+                    onAccepted: base.source = selectedFile, tbox.initLabels(selectedFile), refreshMask()
+                }
             }
         }
     }

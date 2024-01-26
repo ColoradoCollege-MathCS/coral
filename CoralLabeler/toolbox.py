@@ -21,6 +21,7 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(str)
     def initLabels(self, filename):
         self.labels = np.zeros((image_dims(filename)[:2]))
+        self.filename = filename
         self.updateMask()
 
     def updateMask(self):
@@ -37,6 +38,9 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
+    @QtCore.Slot()
+    def getPrediction(self):
+        print("Here is where I would get my model predictions, and save them in labels")
 
     @QtCore.Slot(str)
     def printString(self, s):
