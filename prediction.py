@@ -44,7 +44,7 @@ def load_mrcnn_model(model_path, num_classes=9):
     return model
 
 
-# filter overlapping predictions
+# filter overlapping predictions, lower threshold => more strict, less overlapping
 def nms(masks, scores, threshold=0.1):
     masks = torch.as_tensor(masks, dtype=torch.uint8)
     bboxes = torchvision.ops.masks_to_boxes(masks)
@@ -55,6 +55,7 @@ def nms(masks, scores, threshold=0.1):
     return keep
 
 
+# get image masks, boxesm and instances predictions
 def get_prediction(model, image_path, threshold=0.5):
 
     image = Image.open(image_path) 
@@ -89,7 +90,9 @@ def get_prediction(model, image_path, threshold=0.5):
      
     return np.array(ppred_masks), np.array(ppred_boxes), np.array(ppred_class)
 
-
+# combines masks multiple instances predctions into one numpy array of pixels
+# if prediction of one instance overlaps another
+# instance with higher confidences core takes the pixel
 def merge_masks(masks):
     
     merged = masks[0]
@@ -106,6 +109,8 @@ def merge_masks(masks):
     return merged
 
 
+# MACHINE MAGIC, 
+# return labels of the insances, a numpy array of pixels
 def machine_magic(model_path, image_path, threshold=0.2):
     
     model = load_mrcnn_model(model_path)
@@ -130,18 +135,19 @@ def machine_magic(model_path, image_path, threshold=0.2):
     return label_keys, mrg_mask
 
 
-
+# TEST
+'''
 def display_array(array):
     unique_values = np.unique(array)
     num_colors = len(unique_values)
-    cmap = plt.cm.get_cmap('tab10', num_colors)  # You can choose any colormap you prefer
+    cmap = plt.cm.get_cmap('tab10', num_colors)
     
     color_map = {}
     for i, value in enumerate(unique_values):
         if value == 0:
-            color_map[value] = (1, 1, 1, 0)  # White color for 0, fully transparent
+            color_map[value] = (1, 1, 1, 0) 
         else:
-            color_map[value] = cmap(i)[:3] + (0.5,)  # Get RGB values from colormap, with alpha=0.5
+            color_map[value] = cmap(i)[:3] + (0.5,)
     
     colored_image = np.zeros((array.shape[0], array.shape[1], 4), dtype=np.float32)
     
@@ -152,5 +158,5 @@ def display_array(array):
     plt.imshow(colored_image)
     plt.axis('off')  # Hide axis
     plt.show()
-    
+'''
    
