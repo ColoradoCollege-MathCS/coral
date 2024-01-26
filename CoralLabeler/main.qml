@@ -50,8 +50,6 @@ ApplicationWindow {
         
         RowLayout {
             anchors.fill: parent
-
-
             
             ToolButton {
                 text: qsTr("Choose Image")
@@ -71,6 +69,7 @@ ApplicationWindow {
                 
                     MouseArea {
                         anchors.fill: parent
+                        
                         onClicked: {
                         console.info("image clicked!")
                     }
