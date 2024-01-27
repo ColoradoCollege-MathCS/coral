@@ -1,2 +1,6 @@
 .DS_Store
 CoralLabeler/venv/
+__pycache__
+.vscode
+*.pyproject.user
+test_images/
