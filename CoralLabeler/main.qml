@@ -16,7 +16,10 @@ ApplicationWindow {
     height: 600
     visible: true
 
-
+function refreshMask() {
+    overlay.source = "images/mask2.png"
+    overlay.source = "images/mask.png"
+}
 
 ///
  menuBar: MenuBar {
@@ -38,6 +41,17 @@ ApplicationWindow {
         Menu {
             title: qsTr("&Help")
             Action { text: qsTr("&About") }
+        }
+        Menu {
+            title: qsTr("&Tools")
+            Action {
+                text: qsTr("Random Rectangle")
+                onTriggered: tbox.randomRectangle(), refreshMask()
+            }
+            Action {
+                text: qsTr("Get AI Predictions")
+                onTriggered: tbox.getPrediction(), refreshMask()
+            }
         }
     }
 
@@ -73,8 +87,19 @@ ApplicationWindow {
                         onClicked: {
                         console.info("image clicked!")
                     }
-
+                    
                 }
+            }
+            Slider {
+                id: opacitySlider
+                from: 0.0
+                to: 1.0
+                stepSize: .01
+                value: .75
+                onMoved: overlay.opacity = value
+                visible: true
+                height: 10
+                width: 100
             }
     
          
@@ -83,7 +108,7 @@ ApplicationWindow {
     FileDialog {
         id: fileDialog
         currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-        onAccepted: image.source = selectedFile
+        onAccepted: image.source = selectedFile, tbox.initLabels(selectedFile), refreshMask()
     }
 
 
@@ -102,12 +127,26 @@ ApplicationWindow {
     //file image
     Image {
         id: image
-            anchors.fill: parent
+        anchors.fill: parent
 
+        Layout.preferredWidth: 100
+        Layout.preferredHeight: 100
+    
+        fillMode: Image.PreserveAspectFit
+
+        Image {
+            id: overlay
+            anchors.fill: parent
+            x: 0
+            y: 0
             Layout.preferredWidth: 100
             Layout.preferredHeight: 100
-    
             fillMode: Image.PreserveAspectFit
+            smooth: true
+            visible: true
+            opacity: opacitySlider.value
+            cache: false
+        }
     }
 
 //////////
