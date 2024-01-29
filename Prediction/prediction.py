@@ -3,7 +3,6 @@ import torch
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-import matplotlib.pyplot as plt
 from torchvision import transforms as T
 
 from PIL import Image
@@ -59,8 +58,10 @@ def nms(masks, scores, threshold=0.1):
 def get_prediction(model, image_path, threshold=0.5):
 
     image = Image.open(image_path) 
+    image_w, image_h = image.size
     transform = T.Compose([T.ToTensor()]) 
     image = transform(image)
+    
 
     pred = model([image]) 
     pred_score = list(pred[0]['scores'].detach().cpu().numpy())
@@ -69,7 +70,10 @@ def get_prediction(model, image_path, threshold=0.5):
         pred_t = [pred_score.index(x) for x in pred_score if x > threshold][-1]
     except IndexError:
         print("No predictions for threshold.")
-        return [], [], []
+        empty_array = np.zeros((1, image_h, image_w), dtype=np.int32)
+        empty_dict = {}
+        empty_list = []
+        return empty_array, empty_dict, empty_list
     
     pred_masks = (pred[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
     pred_class = [coral_classes[i] for i in list(pred[0]['labels'].cpu().numpy())]
@@ -97,8 +101,9 @@ def merge_masks(masks):
     
     merged = masks[0]
     masks = masks[1:]
-      
+    
     for mask in masks:
+        print(mask.shape)
         for i, j in np.ndindex(mask.shape):
             cur_val = merged[i][j]
             nxt_val = mask[i][j]
@@ -122,13 +127,11 @@ def machine_magic(model_path, image_path, threshold=0.2):
         label_keys[i] = pred_class[i-1]
         
      
-    masks = masks.astype(int)
+    masks = masks.astype(np.int32)
     rslt_masks = []
     for index, mask in enumerate(masks):
         mask = np.where(mask == 1, mask * (index + 1), mask)
         rslt_masks.append(mask)
-        
-    rslt_masks = np.array(rslt_masks)
     
     mrg_mask = merge_masks(rslt_masks)
         
