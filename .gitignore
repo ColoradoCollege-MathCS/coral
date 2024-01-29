@@ -6,3 +6,4 @@ __pycache__
 test_images/
 CoralLabeler/images/mask.png
 CoralLabeler/3.11-venv
+*.pth
