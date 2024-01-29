@@ -4,6 +4,7 @@ import numpy as np
 import random
 
 from select_tools import labeled2rgb, rectangle_select
+from prediction import machine_magic
 
 def image_dims(filename):
     return imread(filename).shape
@@ -40,6 +41,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot()
     def getPrediction(self):
+        pred_labels = machine_magic("mrcnn_model.pth", self.filename)
         print("Here is where I would get my model predictions, and save them in labels")
 
     @QtCore.Slot(str)

@@ -6,6 +6,7 @@ This repo tracks the Coral Labeler application, which is in development by Dylan
 - PySide6 - Qt (and qt-quick) bindings for python
 - numpy - Working with the data structure that holds the labels for each pixel
 - Scikit Image - Provides flood fill functionality, as well as image dims
+- torch and torchvision - Used to train and run the machine learning model that provides predicted labels
 
 ### Running the application
 These instructions are to run the application while it is in develoment, and will be different when distributed to end users.
@@ -20,7 +21,7 @@ These instructions are to run the application while it is in develoment, and wil
 
     - `venv/bin/activate.bat` on Windows
 
-4. Install the dependencies: `pip install PySide6 scikit-image numpy`
+4. Install the dependencies: `pip install PySide6 scikit-image numpy torch torchvision matplotlib`
 
 5. Run the program: `python3 main.py`
 
