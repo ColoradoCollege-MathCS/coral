@@ -3,7 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts 
-//import Qt.labs.platform
+import Qt.labs.folderlistmodel
 
 
 //import QtGraphicalEffects 1.15
@@ -16,13 +16,19 @@ ApplicationWindow {
     height: 600
     visible: true
 
-function refreshMask() {
-    overlay.source = "images/mask2.png"
-    overlay.source = "images/mask.png"
-}
+    function refreshMask() {
+        overlay.source = "images/mask2.png"
+        overlay.source = "images/mask.png"
+    }
 
-///
- menuBar: MenuBar {
+    //change main image function
+    function changeImage(filename){
+            image.source = filename;
+            
+    }
+
+    ///
+    menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
             Action { text: qsTr("&New...") }
@@ -59,7 +65,7 @@ function refreshMask() {
 
 
 
-//row tool bar
+    //row tool bar
     header: ToolBar {
         
         RowLayout {
@@ -71,6 +77,16 @@ function refreshMask() {
                 onClicked: fileDialog.open()
                 Layout.alignment: Qt.AlignLeft
 
+            }
+
+
+            ToolButton {
+                text: qsTr("Choose Folder")
+
+                onClicked: {
+                   folderDialog.open()
+                }
+                Layout.alignment: Qt.AlignLeft
             }
                    
 
@@ -124,13 +140,19 @@ function refreshMask() {
 
     }
 
+    //random rectangle for now to push image away from tool bar margin for image
+    Rectangle{
+        id: yuh
+        width: parent.width/8
+    }
+
     //file image
     Image {
         id: image
-        anchors.fill: parent
+        anchors.left: yuh.right
 
-        Layout.preferredWidth: 100
-        Layout.preferredHeight: 100
+        width: parent.height - parent.width/8
+        height: parent.height - 50
     
         fillMode: Image.PreserveAspectFit
 
@@ -149,20 +171,23 @@ function refreshMask() {
         }
     }
 
-//////////
-   ToolBar {
+    //////////
+    ToolBar {
         ColumnLayout {
-                    anchors.fill: parent
+            id: toolbaryuh
                     
-                    Image {
+            width: parent.width/8
+            anchors.fill: parent
+                
+            Image {
 
-                    id:magicWandIcon
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 50
-                    source: "magicwand.png"
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
+                id:magicWandIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                source: "magicwand.png"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
                         console.info("image clicked!")
                     }
 
@@ -170,39 +195,39 @@ function refreshMask() {
             }
 
             Image {
-                    id:paintbrushIcon
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 50
-                    source: "paintbrush.png"
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
+                id:paintbrushIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                source: "paintbrush.png"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
                         console.info("image clicked!")
                     }
 
                 }
             }
             Image {
-                    id:circleSelectIcon
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 50
-                    source: "circleselect.png"
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
+                id:circleSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                source: "circleselect.png"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
                         console.info("image clicked!")
                     }
 
                 }
             }
             Image {
-                    id:squareSelectIcon
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 50
-                    source: "squareselect.png"
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
+                id:squareSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                source: "squareselect.png"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
                         console.info("image clicked!")
                     }
 
@@ -211,24 +236,73 @@ function refreshMask() {
        
 
         }
- }
-/*
-    GridView {
-            id: gallery
+    }
 
-            anchors.fill: parent
 
-            clip: true
+    //Gallery stuff
+    Rectangle{
+        id:allGallery
+        width: parent.width/8
+        height: parent.height
+        anchors.left: image.right
 
-            model: folderListModel
+        visible: false
 
-            delegate: fileDialog.delegateComponent
+        ListView {
+                id: gallery
 
-            cellWidth: parent.width / 4
-            cellHeight: parent.width / 4
+
+                width: parent.width; height: parent.height
+
+                flickableDirection: Flickable.VerticalFlick
+
+                FolderListModel {
+                    id: folderModel
+
+                    folder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+
+                    nameFilters: ["*.jpg"]
+                }
+
+                model: folderModel
+
+                Component {
+                    id: fileDelegate
+                    Image{
+                        source: folderModel.folder + "/" + fileName
+
+                        width: gallery.width
+                        height: width * (2/3)
+
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                changeImage(folderModel.folder + "/" + fileName)
+                                //FileDialog.close()
+                                //FileDialog.open()
+                            }
+
+                        }
+                    }
+                }
+
+                //model: ListTest {}
+                delegate: fileDelegate
         }
+    }
 
 
-*/
+    FolderDialog {
+        id: folderDialog
+        currentFolder: viewer.folder
+
+        onAccepted: {
+            folderModel.folder = selectedFolder
+            allGallery.visible = true
+        }
+    }
+
 
 }
+
