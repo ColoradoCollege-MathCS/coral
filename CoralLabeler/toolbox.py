@@ -22,7 +22,7 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(str)
     def initLabels(self, filename):
         self.labels = np.zeros((image_dims(filename)[:2]))
-        self.filename = filename
+        self.filename = filename[6:] #trim off file:// extension that QML uses
         self.updateMask()
 
     def updateMask(self):
@@ -41,8 +41,10 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot()
     def getPrediction(self):
-        pred_labels = machine_magic("mrcnn_model.pth", self.filename)
-        print("Here is where I would get my model predictions, and save them in labels")
+        label_dict, pred_labels = machine_magic("mrcnn_model.pth", self.filename)
+        #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
+        self.labels = pred_labels
+        self.updateMask()
 
     @QtCore.Slot(str)
     def printString(self, s):
