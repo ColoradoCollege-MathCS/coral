@@ -16,16 +16,13 @@ ApplicationWindow {
     height: 600
     visible: true
 
+    property var currentTool: ""
+
     function refreshMask() {
         overlay.source = "images/mask2.png"
         overlay.source = "images/mask.png"
     }
 
-    //change main image function
-    function changeImage(filename){
-            image.source = filename;
-            
-    }
 
     
 
@@ -166,6 +163,7 @@ ApplicationWindow {
     
         fillMode: Image.PreserveAspectFit
 
+        //Overlay mask
         Image {
             id: overlay
             anchors.fill: parent
@@ -178,6 +176,62 @@ ApplicationWindow {
             visible: true
             opacity: opacitySlider.value
             cache: false
+
+            property var holdedx: 0
+            property var holdedy: 0
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: { 
+                    if (currentTool == "magicwand"){
+                        console.log(mouseX, mouseY)
+                        tbox.magicWand(image.source, mouseX, mouseY, 5), refreshMask()
+                    }
+
+                    else if (currentTool == "paintbrush"){
+
+                    }
+
+                    else if (currentTool == "circleselect"){
+                        overlay.holdedx = mouseX
+                        overlay.holdedy = mouseY
+                    }
+
+                    else if (currentTool == "squareselect"){
+                        overlay.holdedx = mouseX
+                        overlay.holdedy = mouseY
+                    }
+
+                    else{
+                        console.log("Please choose a tool")
+                    }
+                }
+
+                onReleased: {
+                    if (currentTool == "magicwand"){
+                        console.log(mouseX, mouseY)
+                        tbox.magicWand(image.source, mouseX, mouseY, 5), refreshMask()
+                    }
+
+                    else if (currentTool == "paintbrush"){
+
+                    }
+
+                    else if (currentTool == "circleselect"){
+                        tbox.selectCircle(overlay.holdedx, overlay.holdedy, mouseX, mouseY), refreshMask()
+                    }
+
+                    else if (currentTool == "squareselect"){
+                        tbox.selectRect(overlay.holdedx, overlay.holdedy, mouseX, mouseY), refreshMask()
+                    }
+
+                    else{
+                        console.log("Please choose a tool")
+                    }
+
+                }
+            }
+
         }
     }
 
@@ -189,56 +243,76 @@ ApplicationWindow {
             width: parent.width/8
             anchors.fill: parent
                 
-            Image {
+            Button {
 
                 id:magicWandIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                source: "magicwand.png"
+                icon.source: "magicwand.png"
+                enabled: true
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.info("image clicked!")
+                        magicWandIcon.enabled = false
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        currentTool = "magicwand"
                     }
 
                 }
             }
 
-            Image {
+            Button {
                 id:paintbrushIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                source: "paintbrush.png"
+                icon.source: "paintbrush.png"
+                enabled: true
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.info("image clicked!")
+                        paintbrushIcon.enabled = false
+                        magicWandIcon.enabled = true
+                        circleSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        currentTool = "paintbrush"
                     }
 
                 }
             }
-            Image {
+            Button {
                 id:circleSelectIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                source: "circleselect.png"
+                icon.source: "circleselect.png"
+                enabled: true
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.info("image clicked!")
+                        circleSelectIcon.enabled = false
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        currentTool = "circleselect"
                     }
 
                 }
             }
-            Image {
+            Button {
                 id:squareSelectIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                source: "squareselect.png"
+                icon.source: "squareselect.png"
+                enabled: true
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.info("image clicked!")
+                        squareSelectIcon.enabled = false
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+                        currentTool = "squareselect"
                     }
 
                 }
