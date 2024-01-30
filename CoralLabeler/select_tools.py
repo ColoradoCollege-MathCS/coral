@@ -80,8 +80,5 @@ def magic_wand_select(image, labels, labelNum, pointClicked, threshold):
 #Returns:
 #RGB data as a w x h x 3 numpy array
 def labeled2rgb(labels, color_map):
-    out = np.zeros(labels.shape+(3,), dtype=np.uint8)
-    for y in range(labels.shape[0]):
-        for x in range(labels.shape[1]):
-            out[y,x]=color_map[labels[y,x]]
-    return out
+    v_get = np.vectorize(color_map.get)
+    return np.stack(v_get(labels), -1).astype(np.uint8)
