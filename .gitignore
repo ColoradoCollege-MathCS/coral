@@ -80,3 +80,4 @@ CoralLabeler/test_images/
 *.pyproject.user
 *result*.txt
 CoralLabeler/images/mask.png
+CoralLabeler/mrcnn_model.pth
