@@ -85,3 +85,4 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(str)
     def printString(self, s):
+        print(s)

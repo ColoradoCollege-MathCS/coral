@@ -117,7 +117,7 @@ def merge_masks(masks):
 # MACHINE MAGIC, 
 # return labels of the insances, a numpy array of pixels
 def machine_magic(model_path, image_path, threshold=0.2):
-    
+    image_path = image_path[6:]
     model = load_mrcnn_model(model_path)
     masks, pred_boxes, pred_class = get_prediction(model, image_path, threshold)
     
