@@ -56,13 +56,15 @@ ApplicationWindow {
             }
             Action {
                 text: qsTr("Get AI Predictions")
-                onTriggered: tbox.getPrediction(), refreshMask()
+                onTriggered: {
+                    var labels = tbox.getPrediction(); 
+                    refreshMask(); 
+                    populateLegend(labels)
+                    labelLegend.visible = true
+                }
             }
         }
     }
-
-
-
 
 
     //row tool bar
@@ -244,7 +246,7 @@ ApplicationWindow {
         id:allGallery
         width: parent.width/8
         height: parent.height
-        anchors.left: image.right
+        anchors.right: parent.right
 
         visible: false
 
@@ -302,6 +304,84 @@ ApplicationWindow {
             allGallery.visible = true
         }
     }
+
+
+    // Label Legend
+    Rectangle {
+        id: labelLegend
+        color: "white"
+        width: (allGallery.x - (image.x + image.width) ) - 20
+        height: image.height / 3
+        visible: false
+
+        border.color: "black"
+        anchors.verticalCenter: image.verticalCenter
+        anchors.left: image.right
+        anchors.leftMargin: 10
+        anchors.right: allGallery.left
+        anchors.rightMargin: 10
+
+        ListModel {
+            id: labelLegendModel
+        }
+
+        ListView {
+            id: labelLegendList
+            model: labelLegendModel
+            clip: true
+            spacing: 5
+
+            anchors.fill: labelLegend
+
+            delegate: Rectangle {
+                id: labelRow
+                height: 25
+                width: parent.width
+                color: "transparent"
+
+                Rectangle {
+                    id: labelSquare
+                    height: parent.height / 1.5
+                    width : parent.height / 1.5
+                    color: labelColor
+
+                    border.color: "black"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+                }
+                
+                Text {
+                    id: labelText
+                    text:labelName
+                    width: parent.width
+                    height: parent.height
+                    minimumPointSize: 20
+                    font.pointSize: 20
+                    fontSizeMode: Text.Fit
+
+                    anchors.verticalCenter: labelSquare.verticalCenter
+                    anchors.left: labelSquare.right
+                    anchors.leftMargin: 10 
+                }
+            }
+        }
+
+     }
+
+    function populateLegend(labels) {
+        labels.forEach(label => {
+            labelLegendModel.append( {
+                    labelColor: label[0],
+                    labelName: label[1]
+                })
+        })
+        
+
+     }
+
+
 
 
 }

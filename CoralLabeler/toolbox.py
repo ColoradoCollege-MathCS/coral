@@ -39,12 +39,18 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot()
+    @QtCore.Slot(result="QVariantList")
     def getPrediction(self):
-        label_dict, pred_labels = machine_magic("mrcnn_model.pth", self.filename)
+        label_dict, pred_labels = machine_magic("mrcnn_model1.pth", self.filename)
         #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
         self.labels = pred_labels
         self.updateMask()
+
+        label_list = []
+        for key, value in label_dict.items():
+            hex_color = '#%02x%02x%02x' % color_map[key]           
+            label_list.append([hex_color, value])
+        return  label_list
 
     @QtCore.Slot(str)
     def printString(self, s):
