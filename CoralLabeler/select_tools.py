@@ -47,12 +47,13 @@ def ellipse_select(labels, labelNum, point1, point2):
 #pointClicked - pixel coordinates on the image where the user clicked
 #radius - radius (px) of circle to draw around the point
 def circle_select(labels, labelNum, pointClicked, radius):
-    for y in range(labels.shape[0]):
-        for x in range(labels.shape[1]):
-            if ( (x-pointClicked[0])**2 + (y-pointClicked[1])**2  ) <= radius**2:
-                labels[y,x] = labelNum
-    
-
+    h = labels.shape[0]
+    w = labels.shape[1]
+    Y, X = np.ogrid[:h, :w] #height, width
+    #Calculate dist from center for each pt, mask according to radius to boolean
+    in_circle = np.sqrt((X-pointClicked[0])**2 + (Y-pointClicked[1])**2) <=radius
+    #Fill in labelNum where true
+    np.place(labels, in_circle, labelNum)    
 
 #When a user selects a point, this tool automatically changes the label of surrounding pixels with a hue that vaires by less than threshold 
 #Only uses hue data, so can't dirrefentiate between pure black and white.
