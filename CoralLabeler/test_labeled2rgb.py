@@ -3,11 +3,16 @@ import matplotlib.pyplot as plt
 from skimage.io import imsave
 def labeled2rgb(labels, color_map):
     v_get = np.vectorize(color_map.get)
-    return np.stack(v_get(labels), -1)
+    return np.stack(v_get(labels), -1).astype(np.uint8)
 
-def in_circle(x,y, pointClicked, radius):
-   return  ((x-pointClicked[0])**2 + (y-pointClicked[1])**2) <= radius**2
-
+def circle_select(labels, labelNum, pointClicked, radius):
+    h = labels.shape[0]
+    w = labels.shape[1]
+    Y, X = np.ogrid[:h, :w] #height, width
+    #Calculate dist from center for each pt, mask according to radius to boolean
+    in_circle = np.sqrt((X-pointClicked[0])**2 + (Y-pointClicked[1])**2) <=radius
+    #Fill in labelNum where true
+    np.place(labels, in_circle, labelNum)
 
 color_map = {
     0: (160,160,160), #gray
@@ -17,11 +22,10 @@ color_map = {
     4: (255, 128, 0) #orange
     }
 
-my_array = np.array([[1,2,2],
-                     [1,0,3],
-                     [4,3,0]],dtype=np.int32)
-rgb = labeled2rgb(my_array,color_map)
-plt.imshow(rgb.astype(np.uint8))
+labels = np.zeros((500,500),dtype=np.int32)
+circle_select(labels, 4, (500,600), 1000)
+
+
+rgb = labeled2rgb(labels,color_map)
+plt.imshow(rgb)
 plt.show()
-#print(rgb.dtype)
-imsave("test_images/testrgbsave.png",rgb.astype(np.uint8))
