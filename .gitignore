@@ -78,3 +78,5 @@ CoralLabeler/venv/
 CoralLabeler/test_images/
 .vscode
 *.pyproject.user
+*result*.txt
+CoralLabeler/images/mask.png

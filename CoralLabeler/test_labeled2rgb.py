@@ -5,6 +5,9 @@ def labeled2rgb(labels, color_map):
     v_get = np.vectorize(color_map.get)
     return np.stack(v_get(labels), -1)
 
+def in_circle(x,y, pointClicked, radius):
+   return  ((x-pointClicked[0])**2 + (y-pointClicked[1])**2) <= radius**2
+
 
 color_map = {
     0: (160,160,160), #gray
