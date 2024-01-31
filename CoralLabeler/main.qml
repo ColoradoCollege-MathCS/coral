@@ -23,10 +23,9 @@ ApplicationWindow {
         overlay.source = "images/mask.png"
     }
 
-
     
 
-    ///
+    ///Top menu
     menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
@@ -69,13 +68,13 @@ ApplicationWindow {
 
 
 
-
     //row tool bar
     header: ToolBar {
         
         RowLayout {
             anchors.fill: parent
             
+            //choose an image and display in image section
             ToolButton {
                 text: qsTr("Choose Image")
     
@@ -84,7 +83,7 @@ ApplicationWindow {
 
             }
 
-
+            //choose a folder for the gallery
             ToolButton {
                 text: qsTr("Choose Folder")
 
@@ -95,8 +94,8 @@ ApplicationWindow {
             }
                    
 
+            //save button
             Button {
-
                 id:saveIconButton
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
@@ -113,6 +112,14 @@ ApplicationWindow {
                     
                 }
             }
+
+            //slider value for opacity of mask
+            Label {
+                id: overlayTitle
+                text: "Opacity"
+                visible: true
+            }
+
             Slider {
                 id: opacitySlider
                 from: 0.0
@@ -124,10 +131,44 @@ ApplicationWindow {
                 height: 10
                 width: 100
             }
+
+            //slider value for either the magic wand or paintbrush
+            Label {
+                id: sliderTitle
+                text: "value"
+                visible: false
+            }
+            Slider {
+                id: valueSlider
+                from: 0.0
+                to: 255.0
+                visible: false
+                height: 10
+                width: 100
+                stepSize: .01
+                value: 1
+                onMoved: {
+                    if (currentTool == "magicwand"){
+                        from = 0
+                        to = 1
+                        imageMouse.value = value
+                    }
+
+                    else if (currentTool == "paintbrush"){
+                        from = 0
+                        to = 255
+                        imageMouse.value = value
+                    }
+
+                    else{
+                        visible = false
+                    }
+                    
+                }
     
-         
-
-
+            }
+    
+            //get image and put a mask on it
             FileDialog {
                 id: fileDialog
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
@@ -139,15 +180,10 @@ ApplicationWindow {
                 id: stack
                 anchors.fill: parent
             }
-
-
         }
-
-   
-
     }
 
-    //random rectangle for now to push image away from tool bar margin for image
+    //random rectangle for now to push image away from tool bar, gives margin for image
     Rectangle{
         id: yuh
         width: parent.width/8
@@ -177,65 +213,123 @@ ApplicationWindow {
             opacity: opacitySlider.value
             cache: false
 
-            property var holdedx: 0
-            property var holdedy: 0
 
+            //fix where mouse gets clicked
+            property var mouseFactorX: sourceSize.width / image.width
+            property var mouseFactorY: sourceSize.height / image.height
+
+
+            //When mouse is clicked with a certain tool
             MouseArea {
+                id: imageMouse
+
                 anchors.fill: parent
-                onClicked: { 
+
+                property var fixedMouseX: 0
+                property var fixedMouseY: 0
+
+
+                //variable to hold when the mouse is pressed
+                property var holdedx: 0
+                property var holdedy: 0
+
+                //variable for paint brush to be recognized when held down
+                property var isPressed: false
+
+                //threshold of magicwand or size of brush
+                property var value: 1
+
+                onPressed: { 
+                    //for magic wand
                     if (currentTool == "magicwand"){
                         console.log(mouseX, mouseY)
-                        tbox.magicWand(image.source, mouseX, mouseY, 5), refreshMask()
+                        
+                        fixedMouseX = mouseX * overlay.mouseFactorX
+                        fixedMouseY = mouseY * overlay.mouseFactorY
+
+                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
 
+                    //paintbrush if held down
                     else if (currentTool == "paintbrush"){
-
+                        isPressed = true
                     }
 
+                    //if circle is held down, record those coordinates
                     else if (currentTool == "circleselect"){
-                        overlay.holdedx = mouseX
-                        overlay.holdedy = mouseY
+                        fixedMouseX = mouseX * overlay.mouseFactorX
+                        fixedMouseY = mouseY * overlay.mouseFactorY
+
+                        holdedx = fixedMouseX
+                        holdedy = fixedMouseY
                     }
 
+                    //if square is held down, record those coordinates
                     else if (currentTool == "squareselect"){
-                        overlay.holdedx = mouseX
-                        overlay.holdedy = mouseY
+                        fixedMouseX = mouseX * overlay.mouseFactorX
+                        fixedMouseY = mouseY * overlay.mouseFactorY
+
+                        holdedx = fixedMouseX
+                        holdedy = fixedMouseY
                     }
 
+                    //means no tool was selected
                     else{
                         console.log("Please choose a tool")
                     }
                 }
 
+
+                //mouse released actions
                 onReleased: {
+
+                    //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
-                        console.log(mouseX, mouseY)
-                        tbox.magicWand(image.source, mouseX, mouseY, 5), refreshMask()
+                        //console.log(mouseX, mouseY)
+                        //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
+                        saveIconButton.enabled
                     }
 
+                    //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
-
+                        isPressed = false
+                        saveIconButton.enabled
                     }
 
+                    //get last coordinate to make circle, save needs to happen now
                     else if (currentTool == "circleselect"){
-                        tbox.selectCircle(overlay.holdedx, overlay.holdedy, mouseX, mouseY), refreshMask()
+                        fixedMouseX = mouseX * overlay.mouseFactorX
+                        fixedMouseY = mouseY * overlay.mouseFactorY
+
+                        tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+                        saveIconButton.enabled
                     }
 
+                    //get last coordinate to make square, save needs to happen now
                     else if (currentTool == "squareselect"){
-                        tbox.selectRect(overlay.holdedx, overlay.holdedy, mouseX, mouseY), refreshMask()
-                    }
+                        fixedMouseX = mouseX * overlay.mouseFactorX
+                        fixedMouseY = mouseY * overlay.mouseFactorY
 
-                    else{
-                        console.log("Please choose a tool")
+                        tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+                        saveIconButton.enabled
                     }
-
                 }
             }
-
-        }
+        }  
+    }
+    
+    //Timer to repeat the paintbrush action
+    Timer {
+        id: timer
+        interval: 5
+        repeat: true
+        triggeredOnStart: true
+        running: imageMouse.isPressed
+        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
     }
 
-    //////////
+    //Tool buttons
+    //diable when selected and enable everything else 
     ToolBar {
         ColumnLayout {
             id: toolbaryuh
@@ -253,6 +347,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        valueSlider.visible = true
+
+                        sliderTitle.text = "Threshold"
+                        sliderTitle.visible = true
+
                         magicWandIcon.enabled = false
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
@@ -272,6 +371,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        valueSlider.visible = true
+
+                        sliderTitle.text = "Size"
+                        sliderTitle.visible = true
+
                         paintbrushIcon.enabled = false
                         magicWandIcon.enabled = true
                         circleSelectIcon.enabled = true
@@ -290,6 +394,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
                         circleSelectIcon.enabled = false
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
@@ -308,6 +415,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
                         squareSelectIcon.enabled = false
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
@@ -436,7 +546,5 @@ ApplicationWindow {
             tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
         }
     }
-
-
 }
 
