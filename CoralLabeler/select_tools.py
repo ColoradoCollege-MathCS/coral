@@ -31,11 +31,13 @@ def ellipse_select(labels, labelNum, point1, point2):
     b=(max_y-min_y)//2
     h=min_x+a #center x
     k=min_y+b #center y
-    
-    for y in range(labels.shape[0]):
-        for x in range(labels.shape[1]):
-            if ( (x-h)**2/a**2 + (y-k)**2/b**2)<=1:
-                labels[y,x] = labelNum
+
+    img_h = labels.shape[0]
+    img_w = labels.shape[1]
+
+    Y, X = np.ogrid[:img_h, :img_w]
+    in_ellipse = ( (X-h)**2/a**2 + (Y-k)**2 / b**2 ) <=1
+    np.place(labels, in_ellipse, labelNum)
 
 #Circle formula: (x-h)^2 + (y-k)^2 = r^2
 #Selects a circle around clicked point, to be used repeatedly to achieve paintbrush tool
