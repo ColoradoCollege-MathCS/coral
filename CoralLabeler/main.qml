@@ -63,6 +63,7 @@ ApplicationWindow {
                     saveIconButton.enabled = true
                     populateLegend(labels)
                     labelLegend.visible = true
+                    saveIconButton.enabled = true
                 }
             }
         }
@@ -242,6 +243,7 @@ ApplicationWindow {
                 onPressed: { 
                     //for magic wand
                     if (currentTool == "magicwand"){
+
                         //console.log(mouseX, mouseY)
                         
                         fixedMouseX = mouseX * overlay.mouseFactorX
@@ -322,6 +324,7 @@ ApplicationWindow {
     Timer {
         id: timer
         interval: 50
+
         repeat: true
         triggeredOnStart: true
         running: imageMouse.isPressed
@@ -440,6 +443,7 @@ ApplicationWindow {
         height: parent.height
         anchors.right: parent.right
 
+
         visible: false
 
 
@@ -547,7 +551,6 @@ ApplicationWindow {
             tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
         }
     }
-
     // Label Legend
     Rectangle {
         id: labelLegend
@@ -622,5 +625,6 @@ ApplicationWindow {
         
 
      }
+
 }
 
