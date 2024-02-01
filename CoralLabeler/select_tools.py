@@ -31,11 +31,13 @@ def ellipse_select(labels, labelNum, point1, point2):
     b=(max_y-min_y)//2
     h=min_x+a #center x
     k=min_y+b #center y
-    
-    for y in range(labels.shape[0]):
-        for x in range(labels.shape[1]):
-            if ( (x-h)**2/a**2 + (y-k)**2/b**2)<=1:
-                labels[y,x] = labelNum
+
+    img_h = labels.shape[0]
+    img_w = labels.shape[1]
+
+    Y, X = np.ogrid[:img_h, :img_w]
+    in_ellipse = ( (X-h)**2/a**2 + (Y-k)**2 / b**2 ) <=1
+    np.place(labels, in_ellipse, labelNum)
 
 #Circle formula: (x-h)^2 + (y-k)^2 = r^2
 #Selects a circle around clicked point, to be used repeatedly to achieve paintbrush tool
@@ -45,12 +47,13 @@ def ellipse_select(labels, labelNum, point1, point2):
 #pointClicked - pixel coordinates on the image where the user clicked
 #radius - radius (px) of circle to draw around the point
 def circle_select(labels, labelNum, pointClicked, radius):
-    for y in range(labels.shape[0]):
-        for x in range(labels.shape[1]):
-            if ( (x-pointClicked[0])**2 + (y-pointClicked[1])**2  ) <= radius**2:
-                labels[y,x] = labelNum
-    
-
+    h = labels.shape[0]
+    w = labels.shape[1]
+    Y, X = np.ogrid[:h, :w] #height, width
+    #Calculate dist from center for each pt, mask according to radius to boolean
+    in_circle = np.sqrt((X-pointClicked[0])**2 + (Y-pointClicked[1])**2) <=radius
+    #Fill in labelNum where true
+    np.place(labels, in_circle, labelNum)    
 
 #When a user selects a point, this tool automatically changes the label of surrounding pixels with a hue that vaires by less than threshold 
 #Only uses hue data, so can't dirrefentiate between pure black and white.
@@ -80,8 +83,5 @@ def magic_wand_select(image, labels, labelNum, pointClicked, threshold):
 #Returns:
 #RGB data as a w x h x 3 numpy array
 def labeled2rgb(labels, color_map):
-    out = np.zeros(labels.shape+(3,), dtype=np.uint8)
-    for y in range(labels.shape[0]):
-        for x in range(labels.shape[1]):
-            out[y,x]=color_map[labels[y,x]]
-    return out
+    v_get = np.vectorize(color_map.get)
+    return np.stack(v_get(labels), -1).astype(np.uint8)

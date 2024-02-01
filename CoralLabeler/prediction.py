@@ -36,7 +36,8 @@ def load_mrcnn_model(model_path, num_classes=9):
     model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, 
                                                        hidden_layer, 
                                                        num_classes)
-    weights = torch.load(model_path)
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    weights = torch.load(model_path, map_location=device)
     model.load_state_dict(weights)
     model.eval()
     
@@ -103,7 +104,6 @@ def merge_masks(masks):
     masks = masks[1:]
     
     for mask in masks:
-        print(mask.shape)
         for i, j in np.ndindex(mask.shape):
             cur_val = merged[i][j]
             nxt_val = mask[i][j]
@@ -117,7 +117,7 @@ def merge_masks(masks):
 # MACHINE MAGIC, 
 # return labels of the insances, a numpy array of pixels
 def machine_magic(model_path, image_path, threshold=0.2):
-    
+    image_path = image_path[6:]
     model = load_mrcnn_model(model_path)
     masks, pred_boxes, pred_class = get_prediction(model, image_path, threshold)
     
