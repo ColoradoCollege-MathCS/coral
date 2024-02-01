@@ -62,9 +62,6 @@ ApplicationWindow {
     }
 
 
-
-
-
     //row tool bar
     header: ToolBar {
         
@@ -72,29 +69,34 @@ ApplicationWindow {
             anchors.fill: parent
             
             ToolButton {
+                id:chooseimg
                 text: qsTr("Choose Image")
     
-                onClicked: fileDialog.open()
+                onClicked: {
+                    fileDialog.open()
+                }
                 Layout.alignment: Qt.AlignLeft
+                //anchors.left: parent
 
             }
 
 
             ToolButton {
+                id:choosefolder
                 text: qsTr("Choose Folder")
 
                 onClicked: {
                    folderDialog.open()
                 }
-                Layout.alignment: Qt.AlignLeft
+                //Layout.alignment: Qt.AlignLeft
+                anchors.left: chooseimg.right
             }
                    
 
             Image {
-
                     id:saveIconButton
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 50
+                    Layout.preferredWidth: 40
+                    Layout.preferredHeight: 40
                     source: "save.png"
                 
                     MouseArea {
@@ -102,9 +104,11 @@ ApplicationWindow {
                         
                         onClicked: {
                         console.info("image clicked!")
-                    }
-                    
+                    }  
                 }
+                anchors.left: choosefolder.right
+
+
             }
             Slider {
                 id: opacitySlider
@@ -244,7 +248,9 @@ ApplicationWindow {
         id:allGallery
         width: parent.width/8
         height: parent.height
-        anchors.left: image.right
+        //fixed the position of the gallery 
+        anchors.right: parent.right
+
 
         visible: false
 
@@ -293,6 +299,79 @@ ApplicationWindow {
     }
 
 
+// arrow buttons to navigate the gallery-----------------
+
+/*
+RowLayout{
+    id:arrowbuttons
+    anchors.bottom: parent.bottom
+    spacing: 10 
+
+Rectangle{
+
+width: 50
+height: 50
+color: "blue"
+
+MouseArea{
+
+anchors.fill: parent
+
+onClicked: {
+
+if (gallery.currentIndex > 0){
+gallery.currentIndex--
+
+}
+
+}
+
+}
+Text {
+    anchors.centerIn: parent
+    text: "<"
+    font.pixelSize: 20
+}
+
+}
+
+
+Rectangle{
+
+width: 50
+height: 50
+color: "blue"
+
+MouseArea{
+
+anchors.fill: parent
+onClicked: {
+
+if (gallery.currentIndex > 0){
+gallery.currentIndex++
+
+}
+
+}
+
+}
+Text {
+    anchors.centerIn: parent
+    text: ">"
+    font.pixelSize: 20
+}
+
+}
+
+
+
+}
+
+*/
+
+//------------------------
+
+
     FolderDialog {
         id: folderDialog
         currentFolder: viewer.folder
@@ -302,6 +381,8 @@ ApplicationWindow {
             allGallery.visible = true
         }
     }
+
+
 
 
 }
