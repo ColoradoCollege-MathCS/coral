@@ -216,7 +216,7 @@ ApplicationWindow {
         width: parent.height - parent.width/8
         height: parent.height - 50
     
-        fillMode: Image.PreserveAspectFit
+        fillMode: Image.PreserveAspectFit  
 
         //Overlay mask
         Image {
@@ -234,8 +234,8 @@ ApplicationWindow {
 
 
             //fix where mouse gets clicked
-            property var mouseFactorX: sourceSize.width / image.width
-            property var mouseFactorY: sourceSize.height / image.height
+            property var mouseFactorX: image.paintedWidth / image.sourceSize.width
+            property var mouseFactorY: image.paintedHeight / image.sourceSize.height
 
 
             //When mouse is clicked with a certain tool
@@ -258,14 +258,29 @@ ApplicationWindow {
                 //threshold of magicwand or size of brush
                 property var value: 1
 
+
+                //fix mouse coordinate
+                function getMouseX(image) {
+                    return (overlay.width - overlay.paintedWidth) * 0.5
+                }
+
+                function getMouseY(image) {
+                    return (overlay.height - overlay.paintedHeight) * 0.5
+                }
+
+                function fixMouse(image) {
+                    fixedMouseX = Math.floor((mouseX - getMouseX(image)) / overlay.mouseFactorX)
+                    fixedMouseY = Math.floor((mouseY - getMouseY(image)) / overlay.mouseFactorY)             
+                }
+
+
                 onPressed: { 
                     //for magic wand
                     if (currentTool == "magicwand"){
 
                         //console.log(mouseX, mouseY)
                         
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
@@ -277,8 +292,7 @@ ApplicationWindow {
 
                     //if circle is held down, record those coordinates
                     else if (currentTool == "circleselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
@@ -286,8 +300,7 @@ ApplicationWindow {
 
                     //if square is held down, record those coordinates
                     else if (currentTool == "squareselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
@@ -318,8 +331,7 @@ ApplicationWindow {
 
                     //get last coordinate to make circle, save needs to happen now
                     else if (currentTool == "circleselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
                         saveIconButton.enabled
@@ -327,8 +339,7 @@ ApplicationWindow {
 
                     //get last coordinate to make square, save needs to happen now
                     else if (currentTool == "squareselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
                         saveIconButton.enabled
