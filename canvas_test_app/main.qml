@@ -43,6 +43,18 @@ ApplicationWindow {
 		Shape {
 			anchors.fill: parent
 			ShapePath {
+				id: shapepth2
+				strokeWidth: 3
+				strokeColor: "blue"
+				startX: 100
+				startY: 100
+				PathLine {
+					x: 200
+					y: 200
+				}
+			}
+
+			ShapePath {
 				id: myfirstpath
 				strokeWidth: 3
 				strokeColor: "darkgray"
