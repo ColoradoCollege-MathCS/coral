@@ -41,7 +41,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(result="QVariantList")
     def getPrediction(self):
-        label_dict, pred_labels = machine_magic("mrcnn_model.pth", self.filename)
+        label_dict, pred_labels = machine_magic("mrcnn_model1.pth", self.filename)
         #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
         self.labels = pred_labels
         self.updateMask()

@@ -76,7 +76,7 @@ def get_prediction(model, image_path, threshold=0.5):
         empty_list = []
         return empty_array, empty_list, empty_dict
     
-    pred_masks = (pred[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
+    pred_masks = (pred[0]['masks'] > threshold).squeeze().detach().cpu().numpy()
     pred_class = [coral_classes[i] for i in list(pred[0]['labels'].cpu().numpy())]
     pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().cpu().numpy())]
 

@@ -23,6 +23,24 @@ ApplicationWindow {
         overlay.source = "images/mask.png"
     }
 
+    function changeImage(filename){
+            image.source = filename;
+
+    }
+
+    function populateLegend(labels) {
+        labels.forEach(label => {
+            labelLegendModel.append( {
+                    labelColor: label[0],
+                    labelName: label[1]
+                })
+        })
+     }
+
+    function refreshLegend() {
+        labelLegendModel.clear()
+    }
+
     
 
     ///Top menu
@@ -173,7 +191,7 @@ ApplicationWindow {
             FileDialog {
                 id: fileDialog
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-                onAccepted: image.source = selectedFile, tbox.initLabels(selectedFile), refreshMask()
+                onAccepted: image.source = selectedFile, tbox.initLabels(selectedFile), refreshMask(), refreshLegend()
             }
 
 
@@ -490,7 +508,7 @@ ApplicationWindow {
                                 savemask.open()
                             }
                             else{
-                                tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                                tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask(), refreshLegend()
                                 changeImage(folderModel.folder + "/" + fileName)
                             }
                             
@@ -543,12 +561,12 @@ ApplicationWindow {
             console.log("save when we know how to save")
             saveIconButton.enabled = false
             changeImage(folderModel.folder + "/" + savemask.title)
-            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
+            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask(), refreshLegend()
         }
 
         onRejected: {
             changeImage(folderModel.folder + "/" + savemask.title)
-            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
+            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask(), refreshLegend()
         }
     }
     // Label Legend
@@ -581,7 +599,7 @@ ApplicationWindow {
             delegate: Rectangle {
                 id: labelRow
                 height: 25
-                width: parent.width
+                width: parent ? parent.width : 0
                 color: "transparent"
 
                 Rectangle {
@@ -614,17 +632,6 @@ ApplicationWindow {
         }
 
      }
-
-    function populateLegend(labels) {
-        labels.forEach(label => {
-            labelLegendModel.append( {
-                    labelColor: label[0],
-                    labelName: label[1]
-                })
-        })
-        
-
-     }
-
+     
 }
 
