@@ -46,15 +46,17 @@ ApplicationWindow {
 				id: myfirstpath
 				strokeWidth: 3
 				strokeColor: "darkgray"
-				property PathPolyline currentPL
 			}
 		}
-		onPressed: myfirstpath.currentPL= addNewPolyline(), console.log(myfirstpath.currentPL.path)
+		onPressed: {
+			myfirstpath.startX= mouseX;
+			myfirstpath.startY=mouseY;
+			}
 		onPositionChanged: {
-			var newPath = myfirstpath.currentPL.path.slice()
-			newPath.push(Qt.point(mouseX,mouseY));
-			myfirstpath.currentPL.path = newPath;
-			console.log(myfirstpath.currentPL.path);
+			var path = Qt.createQmlObject('import QtQuick; PathLine{}', myfirstpath)
+			path.x = mouseX
+			path.y = mouseY
+			myfirstpath.pathElements.push(path)
 		}
 		//onReleased: myfirstpathline.x= mouseX,	myfirstpathline.y = mouseY, console.log("mouse up")
 
