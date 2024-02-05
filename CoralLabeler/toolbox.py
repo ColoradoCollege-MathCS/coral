@@ -2,8 +2,10 @@ from PySide6 import QtCore
 from skimage.io import imread, imsave
 import numpy as np
 import random
+import csv
+import os
 
-from select_tools import labeled2rgb, rectangle_select
+from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import machine_magic
 
 def image_dims(filename):
@@ -39,11 +41,72 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot()
+    @QtCore.Slot(result="QVariantList")
     def getPrediction(self):
-        pred_labels = machine_magic("mrcnn_model.pth", self.filename)
-        print("Here is where I would get my model predictions, and save them in labels")
+        label_dict, pred_labels = machine_magic("mrcnn_model.pth", self.filename)
+        #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
+        self.labels = pred_labels
+        self.updateMask()
+
+        label_list = []
+        for key, value in label_dict.items():
+            hex_color = '#%02x%02x%02x' % color_map[key]           
+            label_list.append([hex_color, value])
+        return  label_list
+
+
+    @QtCore.Slot(str, int, int, float)
+    def magicWand(self, image, mouse1, mouse2, threshold):
+        label = random.randint(1, 4)
+        coor = (mouse1, mouse2)
+        magic_wand_select(image, self.labels, label, coor, threshold)
+        self.updateMask()
+
+    @QtCore.Slot(int, int, int, int)
+    def selectCircle(self, point1x, point1y, point2x, point2y):
+        label = random.randint(1, 4)
+        point1 = (point1x, point1y)
+        point2 = (point2x, point2y)
+        ellipse_select(self.labels, label, point1, point2)
+        self.updateMask()
+
+    @QtCore.Slot(int, int, int, int)
+    def selectRect(self, point1x, point1y, point2x, point2y):
+        label = random.randint(1, 4)
+        point1 = (point1x, point1y)
+        point2 = (point2x, point2y)
+        rectangle_select(self.labels, label, point1, point2)
+        self.updateMask()
+
+    @QtCore.Slot(int, int, int)
+    def paintBrush(self, point1x, point1y, size):
+        label = random.randint(1, 4)
+        point1 = (point1x, point1y)
+        circle_select(self.labels, label, point1, size)
+        self.updateMask()
+
+    @QtCore.Slot(str, result="QVariantList")
+    def readCSV(self, fileName):
+        labelsFile = open(fileName)
+        csvreader = csv.reader(labelsFile)
+
+        labels = []
+
+        for row in csvreader:
+            labels.append(row)
+
+        return labels
+    
+    @QtCore.Slot(str, result = bool)
+    def fileExists(self, fileName):
+        return os.path.exists(fileName)
+    
+    @QtCore.Slot(str, result="QString")
+    def splited(self, fileName):
+        yuh = fileName.split('/')
+        return yuh[-1]
 
     @QtCore.Slot(str)
     def printString(self, s):
         print(s)
+

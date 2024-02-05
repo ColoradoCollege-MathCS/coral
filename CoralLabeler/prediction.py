@@ -3,7 +3,6 @@ import torch
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-import matplotlib.pyplot as plt
 from torchvision import transforms as T
 
 from PIL import Image
@@ -37,7 +36,8 @@ def load_mrcnn_model(model_path, num_classes=9):
     model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, 
                                                        hidden_layer, 
                                                        num_classes)
-    weights = torch.load(model_path)
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    weights = torch.load(model_path, map_location=device)
     model.load_state_dict(weights)
     model.eval()
     
@@ -59,8 +59,10 @@ def nms(masks, scores, threshold=0.1):
 def get_prediction(model, image_path, threshold=0.5):
 
     image = Image.open(image_path) 
+    image_w, image_h = image.size
     transform = T.Compose([T.ToTensor()]) 
     image = transform(image)
+    
 
     pred = model([image]) 
     pred_score = list(pred[0]['scores'].detach().cpu().numpy())
@@ -69,7 +71,10 @@ def get_prediction(model, image_path, threshold=0.5):
         pred_t = [pred_score.index(x) for x in pred_score if x > threshold][-1]
     except IndexError:
         print("No predictions for threshold.")
-        return [], [], []
+        empty_array = np.zeros((1, image_h, image_w), dtype=np.int32)
+        empty_dict = {}
+        empty_list = []
+        return empty_array, empty_list, empty_dict
     
     pred_masks = (pred[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
     pred_class = [coral_classes[i] for i in list(pred[0]['labels'].cpu().numpy())]
@@ -97,7 +102,7 @@ def merge_masks(masks):
     
     merged = masks[0]
     masks = masks[1:]
-      
+    
     for mask in masks:
         for i, j in np.ndindex(mask.shape):
             cur_val = merged[i][j]
@@ -112,7 +117,7 @@ def merge_masks(masks):
 # MACHINE MAGIC, 
 # return labels of the insances, a numpy array of pixels
 def machine_magic(model_path, image_path, threshold=0.2):
-    
+    image_path = image_path[8:]
     model = load_mrcnn_model(model_path)
     masks, pred_boxes, pred_class = get_prediction(model, image_path, threshold)
     
@@ -122,13 +127,11 @@ def machine_magic(model_path, image_path, threshold=0.2):
         label_keys[i] = pred_class[i-1]
         
      
-    masks = masks.astype(int)
+    masks = masks.astype(np.int32)
     rslt_masks = []
     for index, mask in enumerate(masks):
         mask = np.where(mask == 1, mask * (index + 1), mask)
         rslt_masks.append(mask)
-        
-    rslt_masks = np.array(rslt_masks)
     
     mrg_mask = merge_masks(rslt_masks)
         

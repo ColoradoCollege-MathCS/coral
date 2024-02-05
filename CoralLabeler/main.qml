@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts 
+import QtQuick.Shapes 1.6
 import Qt.labs.folderlistmodel
 
 
@@ -17,15 +18,119 @@ ApplicationWindow {
     visible: true
 
     property var currentTool: ""
+    property var labelsAndCoords: {}
+    property var labelNames: []
+
+    property var shapes: []
+
+
+    /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
         overlay.source = "images/mask2.png"
         overlay.source = "images/mask.png"
     }
 
+    function changeImage(fileName){
+        image.source = fileName
+        image.width = sourceSize.width / parent.width * 4/8
+        image.height = sourceSize.height / (parent.height - 50)
+    }
+
+    function resetLabels(){
+        labelsAndCoords = {}
+        labelNames = []
+    }
+
+    function split(filePath){
+        return tbox.splited(filePath)
+    }
+
+
+    //function to parse a big array and load all labels if an image has a set of labels
+    function loadLabels(imgLoad){
+        //load in csv from python function
+        var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
+
+        //holding dictionaries, arrays, and variables
+        var labelsAndCoordinates = {};
+        var labelNames1 = new Array(0);
+        var shapeAndCoordinates = {};
+        var coordinates = new Array(0);
+
+        var hold = ""
+        var shape = 0
+
+
+        //loop through the whole array per line
+        for (var i = 0; i < everything.length; i++){
+
+            //if we have a label line, make a new label
+            if (everything[i][0] == "Label"){
+                if (coordinates.length == 0){
+                    labelNames1.push(everything[i][1]);
+                    hold = everything[i][1];
+                }
+                else{
+                    shapeAndCoordinates[shape] = coordinates;
+                    labelsAndCoordinates[hold] = shapeAndCoordinates;
+
+                    shape = 0
+                    shapeAndCoordinates = {};
+                    labelNames1.push(everything[i][1]);
+                    hold = everything[i][1];
+                }
+            }
+
+            //if we have a shape line, make a new shape for the label
+            else if (everything[i][0] == "Shape"){
+                if (coordinates.length == 0){
+                    shape += 1;
+                }
+                else{
+                    shapeAndCoordinates[shape] = coordinates;
+                    coordinates = new Array(0);
+                    shape += 1;
+                }
+            }
+
+            //if we have a coordinate line, make a new coordinate for the line
+            else{
+                coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
+            }
+            
+        }
+
+        //reached end, place all items in correct locations
+        shapeAndCoordinates[shape] = coordinates;
+        labelsAndCoordinates[hold] = shapeAndCoordinates;
+
+        //make them global variables
+        labelsAndCoords = labelsAndCoordinates
+        labelNames = labelNames1
+    }
+
+    function hasLabels(imgsource){
+        console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
+        return tbox.fileExists("labels/" + imgsource + ".csv")
+    }
+
+    function populateLegend(labels) {
+        labels.forEach(label => {
+            labelLegendModel.append( {
+                    labelColor: label[0],
+                    labelName: label[1]
+                })
+        })
+        
+
+    }
+
+
+
     
 
-    ///Top menu
+    ///////////////////////////////////////////////////////////Top menu/////////////////////////////////////////////////////////
     menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
@@ -58,17 +163,17 @@ ApplicationWindow {
             Action {
                 text: qsTr("Get AI Predictions")
                 onTriggered: {
-                    tbox.getPrediction(), refreshMask()
+                    var labels = tbox.getPrediction(); 
+                    refreshMask(); 
                     saveIconButton.enabled = true
+                    populateLegend(labels)
+                    labelLegend.visible = true
                 }
             }
         }
     }
 
-
-
-
-    //row tool bar
+    /////////////////////////////////////////////////////////row tool bar////////////////////////////////////////////////////////
     header: ToolBar {
         
         RowLayout {
@@ -88,7 +193,7 @@ ApplicationWindow {
                 text: qsTr("Choose Folder")
 
                 onClicked: {
-                   folderDialog.open()
+                    folderDialog.open()
                 }
                 Layout.alignment: Qt.AlignLeft
             }
@@ -172,16 +277,33 @@ ApplicationWindow {
             FileDialog {
                 id: fileDialog
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-                onAccepted: image.source = selectedFile, tbox.initLabels(selectedFile), refreshMask()
+                onAccepted: {
+                    image.source = selectedFile
+                    tbox.initLabels(selectedFile)
+                    refreshMask()
+                    console.log(split(image.source))
+                    if(hasLabels(split(image.source))){
+                        console.log("periodt")
+                        loadLabels(split(image.source))
+
+                    }
+                    else{
+                        resetLabels()
+                    }
+                }
             }
 
 
             StackView {
                 id: stack
-                anchors.fill: parent
+                //anchors.fill: parent
             }
         }
     }
+
+
+    /////////////////////////////////////////////////////////image interface////////////////////////////////////////////////////////
+
 
     //random rectangle for now to push image away from tool bar, gives margin for image
     Rectangle{
@@ -194,7 +316,7 @@ ApplicationWindow {
         id: image
         anchors.left: yuh.right
 
-        width: parent.height - parent.width/8
+        width: parent.width * 4/8
         height: parent.height - 50
     
         fillMode: Image.PreserveAspectFit
@@ -203,10 +325,6 @@ ApplicationWindow {
         Image {
             id: overlay
             anchors.fill: parent
-            x: 0
-            y: 0
-            Layout.preferredWidth: 100
-            Layout.preferredHeight: 100
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: true
@@ -217,13 +335,15 @@ ApplicationWindow {
             //fix where mouse gets clicked
             property var mouseFactorX: sourceSize.width / image.width
             property var mouseFactorY: sourceSize.height / image.height
-
+            
 
             //When mouse is clicked with a certain tool
             MouseArea {
+
                 id: imageMouse
 
                 anchors.fill: parent
+
 
                 property var fixedMouseX: 0
                 property var fixedMouseY: 0
@@ -247,7 +367,7 @@ ApplicationWindow {
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
 
-                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
+                        //tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
 
                     //paintbrush if held down
@@ -288,6 +408,7 @@ ApplicationWindow {
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
                         saveIconButton.enabled
+
                     }
 
                     //tell timer to stop and save needs to happen now
@@ -315,9 +436,10 @@ ApplicationWindow {
                     }
                 }
             }
-        }  
+        }
+
     }
-    
+
     //Timer to repeat the paintbrush action
     Timer {
         id: timer
@@ -328,7 +450,56 @@ ApplicationWindow {
         onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
     }
 
-    //Tool buttons
+
+    /////////////////////////////////////////////////////////labels//////////////////////////////////////////////////////////////
+            
+    ComboBox{
+            id: comboyuh
+
+            anchors.left: image.right
+            
+            // Set the initial currentIndex to the value stored in the backend.
+            Component.onCompleted: currentIndex = indexOfValue(backend.modifier)
+
+            model: labelNames
+            
+            //a function to loop through the current label's shapes and create shapes from coordinates
+            function loopy(comp, label){
+                var shapess = []
+
+                for(var i = 1; i <= 2; i++){
+                    shapess.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i]}));
+                }
+
+                return shapess
+            }
+
+            // When a label is chosen, change the shapes for that label.
+            onActivated: {
+                //destroy previous objects before changing
+                for(var i = 0; i < shapes.length; i++){
+                    shapes[i].destroy()
+                }
+                shapes = []
+
+                //create a QML component from shapes.qml
+                const component = Qt.createComponent("shapes.qml");
+
+                //make sure component works properly
+                if (component.status === Component.Ready) {
+                    //make shapes
+                    shapes = loopy(component, currentText)
+                }
+                else if (component.status === Component.Error){
+                    console.log(component.errorString())
+                }
+            }
+
+    }
+            
+    
+
+    //////////////////////////////////////////////////////////side tool bar////////////////////////////////////////////////////////
     //diable when selected and enable everything else 
     ToolBar {
         ColumnLayout {
@@ -433,12 +604,12 @@ ApplicationWindow {
     }
 
 
-    //Gallery stuff
+    ////////////////////////////////////////////////////////////gallery///////////////////////////////////////////////////////////
     Rectangle{
         id:allGallery
         width: parent.width/8
         height: parent.height
-        anchors.left: image.right
+        anchors.right: parent.right
 
         visible: false
 
@@ -487,7 +658,15 @@ ApplicationWindow {
                             }
                             else{
                                 tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                                
                                 changeImage(folderModel.folder + "/" + fileName)
+
+                                if(hasLabels(folderModel.folder + "/" + fileName)){
+                                    loadLabels(fileName)
+                                }
+                                else{
+                                    resetLabels()
+                                }
                             }
                             
                         }
@@ -514,7 +693,7 @@ ApplicationWindow {
     }
 
     
-    //save dialog
+    //////////////////////////////////////////////////////////////save////////////////////////////////////////////////////////////
     Dialog{
         id: savemask
 
@@ -532,6 +711,7 @@ ApplicationWindow {
         Text{
             text: "Would you like to save your mask before changing images?"
 
+
         }
 
         onAccepted: {
@@ -546,5 +726,72 @@ ApplicationWindow {
             tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
         }
     }
+
+
+
+
+    /////////////////////////////////////////////////////////label legend////////////////////////////////////////////////////////
+    Rectangle {
+        id: labelLegend
+        color: "white"
+        width: (allGallery.x - (image.x + image.width) ) - 20
+        height: image.height / 3
+        visible: false
+
+        border.color: "black"
+        anchors.verticalCenter: image.verticalCenter
+        anchors.left: image.right
+        anchors.leftMargin: 10
+        anchors.right: allGallery.left
+        anchors.rightMargin: 10
+
+        ListModel {
+            id: labelLegendModel
+        }
+
+        ListView {
+            id: labelLegendList
+            model: labelLegendModel
+            clip: true
+            spacing: 5
+
+            anchors.fill: labelLegend
+
+            delegate: Rectangle {
+                id: labelRow
+                height: 25
+                width: parent.width
+                color: "transparent"
+
+                Rectangle {
+                    id: labelSquare
+                    height: parent.height / 1.5
+                    width : parent.height / 1.5
+                    color: labelColor
+
+                    border.color: "black"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+                }
+                
+                Text {
+                    id: labelText
+                    text:labelName
+                    width: parent.width
+                    height: parent.height
+                    minimumPointSize: 20
+                    font.pointSize: 20
+                    fontSizeMode: Text.Fit
+
+                    anchors.verticalCenter: labelSquare.verticalCenter
+                    anchors.left: labelSquare.right
+                    anchors.leftMargin: 10 
+                }
+            }
+        }
+
+     }
 }
 
