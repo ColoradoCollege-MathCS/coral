@@ -23,6 +23,21 @@ ApplicationWindow {
 		return newPolyline;
 	}
 
+	function addNewShapePath(x, y) {
+		var newShapePath = Qt.createQmlObject(`
+			import QtQuick
+			import QtQuick.Shapes
+			ShapePath {
+				strokeWidth: 3
+				strokeColor: "darkgray"
+			}
+		`, labelshape);
+		newShapePath.startX = x;
+		newShapePath.startY = y;
+		labelshape.all_paths.push(newShapePath)
+		labelshape.data.push(newShapePath)
+	}
+
 
     Button {
     id: save_canvas
@@ -41,18 +56,9 @@ ApplicationWindow {
 		width: 640
 		height: 450
 		Shape {
+			id: labelshape
 			anchors.fill: parent
-			ShapePath {
-				id: shapepth2
-				strokeWidth: 3
-				strokeColor: "blue"
-				startX: 100
-				startY: 100
-				PathLine {
-					x: 200
-					y: 200
-				}
-			}
+			property list<ShapePath> all_paths: []
 
 			ShapePath {
 				id: myfirstpath
@@ -60,17 +66,19 @@ ApplicationWindow {
 				strokeColor: "darkgray"
 			}
 		}
-		onPressed: {
-			myfirstpath.startX= mouseX;
-			myfirstpath.startY=mouseY;
-			}
+		onPressed: addNewShapePath(mouseX, mouseY)
 		onPositionChanged: {
-			var path = Qt.createQmlObject('import QtQuick; PathLine{}', myfirstpath)
-			path.x = mouseX
-			path.y = mouseY
-			myfirstpath.pathElements.push(path)
+			var path = Qt.createQmlObject('import QtQuick; PathLine{}', labelshape.all_paths.slice(-1)[0]);
+			path.x = mouseX;
+			path.y = mouseY;
+			labelshape.all_paths.slice(-1)[0].pathElements.push(path);
 		}
-		//onReleased: myfirstpathline.x= mouseX,	myfirstpathline.y = mouseY, console.log("mouse up")
+		onReleased: { //close the shape by returning to the beginning
+			var path = Qt.createQmlObject('import QtQuick; PathLine{}', labelshape.all_paths.slice(-1)[0]);
+			path.x = labelshape.all_paths.slice(-1)[0].startX;
+			path.y = labelshape.all_paths.slice(-1)[0].startY;
+			labelshape.all_paths.slice(-1)[0].pathElements.push(path);
+		}
 
 
 	}
