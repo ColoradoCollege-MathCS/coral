@@ -30,6 +30,7 @@ ApplicationWindow {
 			ShapePath {
 				strokeWidth: 3
 				strokeColor: "darkgray"
+				fillColor: "transparent"
 			}
 		`, labelshape);
 		newShapePath.startX = x;
@@ -78,6 +79,7 @@ ApplicationWindow {
 			path.x = labelshape.all_paths.slice(-1)[0].startX;
 			path.y = labelshape.all_paths.slice(-1)[0].startY;
 			labelshape.all_paths.slice(-1)[0].pathElements.push(path);
+			labelshape.all_paths.slice(-1)[0].fillColor="blue"
 		}
 
 
