@@ -794,4 +794,3 @@ ApplicationWindow {
 
      }
 }
-

@@ -5,6 +5,7 @@ import random
 import csv
 import os
 
+
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import machine_magic
 
