@@ -98,6 +98,30 @@ class Toolbox(QtCore.QObject):
 
         return labels
     
+    @QtCore.Slot(dict, str, result="QVariantList")
+    def saveLabels(self, data, fileName):
+        
+        filename = 'labels/' + fileName + '.csv'
+        with open(filename, 'w') as file:
+            for keys in data.keys():
+                file.write('Label'+',' + keys)
+                file.write('\n')
+                for shapes in data[keys].keys():
+                        file.write('Shape')
+                        file.write('\n')
+                        for coord in range(len(data[keys][shapes])):
+                            if coord == 0:
+                                file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))
+                                file.write('\n')
+                                file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                            else:
+                                file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+
+                            file.write('\n')
+        
+        file.close()
+
+    
     @QtCore.Slot(str, result = bool)
     def fileExists(self, fileName):
         return os.path.exists(fileName)

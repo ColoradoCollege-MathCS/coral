@@ -110,9 +110,79 @@ ApplicationWindow {
         labelNames = labelNames1
     }
 
+    //function to check if current image has a label file
     function hasLabels(imgsource){
         console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
         return tbox.fileExists("labels/" + imgsource + ".csv")
+    }
+
+    //a function to loop through the current label's shapes and create shapes from coordinates
+    function loopy(comp, label){
+        for(var i = 1; i <= 2; i++){
+            shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, "color": "blue"}));
+        }
+    }
+
+    //a function to display shapes
+    function loadShapes(){
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("shapes.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            for(var i = 0; i < labelNames.length; i++){
+                loopy(component, labelNames[i])
+            }
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+    }
+
+    //a function to destroy all shapes
+    function resetShapes(){
+        for(var i = 0; i < shapes.length; i++){
+            shapes[i].destroy()
+        }
+        shapes = []
+    }
+
+
+    //function to update labels and coords to save
+    function updateLabelsAndCoords(){
+        labelsAndCoords = {}
+        var holdDict = {};
+        var hold = [];
+
+        var count = 0;
+
+        //dictionary stuff
+        for(var f = 0; f < labelNames.length; f++){
+            for(var i = 0; i < shapes.length; i++){
+                //get label
+                if(shapes[i].label == labelNames[f]){
+                    //for each shape, find its label, add coordinates to hold
+                    for(var g = 0; g < shapes[i].child.pathElements.length; g++){
+                        hold.push([shapes[i].child.pathElements[g].x, shapes[i].child.pathElements[g].y])
+                    }
+
+                    //add coordinates to shape
+                    holdDict[count] = hold;
+
+                    hold = []
+                    
+                    count += 1;
+                }
+            }
+            
+            //place all shapes in label dict
+            labelsAndCoords[labelNames[f]] = holdDict
+            holdDict = {};
+            count = 0;
+        }
+
+        
     }
 
     function populateLegend(labels) {
@@ -212,7 +282,10 @@ ApplicationWindow {
                         
                     onClicked: {
                         enabled = false
-                        console.info("image clicked!")
+                        
+                        updateLabelsAndCoords()
+                        tbox.saveLabels(labelsAndCoords, split(image.source))
+
                     }
                     
                 }
@@ -286,9 +359,12 @@ ApplicationWindow {
                         console.log("periodt")
                         loadLabels(split(image.source))
 
+                        loadShapes()
+
                     }
                     else{
                         resetLabels()
+                        resetShapes()
                     }
                 }
             }
@@ -403,7 +479,7 @@ ApplicationWindow {
                 //mouse released actions
                 onReleased: {
 
-                    //just not that the save needs to happen now
+                    //nothing happens, the save needs to happen now
                     if (currentTool == "magicwand"){
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
@@ -463,36 +539,18 @@ ApplicationWindow {
 
             model: labelNames
             
-            //a function to loop through the current label's shapes and create shapes from coordinates
-            function loopy(comp, label){
-                var shapess = []
-
-                for(var i = 1; i <= 2; i++){
-                    shapess.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i]}));
-                }
-
-                return shapess
-            }
 
             // When a label is chosen, change the shapes for that label.
             onActivated: {
-                //destroy previous objects before changing
-                for(var i = 0; i < shapes.length; i++){
-                    shapes[i].destroy()
+                for (var i = 0; i < shapes.length; i++){
+                    if (shapes[i].label == currentText){
+                        shapes[i].color = "green"
+                    }
+                    else {
+                        shapes[i].color = "blue"
+                    }
                 }
-                shapes = []
-
-                //create a QML component from shapes.qml
-                const component = Qt.createComponent("shapes.qml");
-
-                //make sure component works properly
-                if (component.status === Component.Ready) {
-                    //make shapes
-                    shapes = loopy(component, currentText)
-                }
-                else if (component.status === Component.Error){
-                    console.log(component.errorString())
-                }
+                
             }
 
     }

@@ -12,12 +12,18 @@ Shape{
     anchors.fill: parent
 
     property var coords: []
+    property var label: ""
+    property var color: ""
+    property var colorline: ""
+
+    property var child: thePath
 
     //create its path
     ShapePath{
-        strokeColor: "black"
-        strokeWidth: 18
-        fillColor: "blue"
+        id: thePath
+        strokeColor: theShape.colorline
+        strokeWidth: 1
+        fillColor: theShape.color
         capStyle: ShapePath.RoundCap
 
 
