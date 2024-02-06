@@ -15,16 +15,25 @@ class Action(QObject):
     
     @target.setter
     def target(self, target):
-        self.target = target
+        self._target = target
     
     @Property(QObject, doc="The parent that the target shape is attached to / should be attached to")
     def shapeParent(self):
-        return self.shapeParent
+        return self._shapeParent
     
     @shapeParent.setter
     def shapeParent(self, shapeParent):
-        self.shapeParent = shapeParent
+        self._shapeParent = shapeParent
+
+    def do(self):
+        """Execute the action represented by this class"""
+        #Abstract class to be overriden by children    
+        pass
     
+    def undo(self):
+        """Execute the opposite of the action represented by this class"""
+        #Abstract class to be overriden by children
+        pass
 
 
 @QmlElement
@@ -36,8 +45,8 @@ class CreateAction(Action) :
             print("Creating from arrays in python not supported yet", file=sys.stderr)
         if coordinate_array is None and target is None:
             print("No coordinate array or pre-created object provided", file=sys.stderr)
-        self.target = target
-        self.shapeParent = shapeParent
+        self._target = target
+        self._shapeParent = shapeParent
 
 
 @QmlElement
@@ -45,8 +54,8 @@ class DeleteAction(Action) :
     """This action deletes a specified shape"""
     def __init__(self,parent=None, shapeParent=None, target=None):
         super().__init__(parent)
-        self.target = target
-        self.shapeParent = shapeParent
+        self._target = target
+        self._shapeParent = shapeParent
 
 
 @QmlElement
@@ -54,26 +63,26 @@ class MoveAction(Action) :
     """This action moves a shape by specified distances in the x and y directions"""
     def __init(self,parent = None,shapeParent=None, target=None, dX=0, dY=0):
         super().__init__(parent)
-        self.target = target
-        self.shapeParent = shapeParent
-        self.dX = dX
-        self.dY = dY
+        self._target = target
+        self._shapeParent = shapeParent
+        self._dX = dX
+        self._dY = dY
     
     @Property(int, doc="The change in X position performed by this move")
     def dX(self):
-        return self.dX
+        return self._dX
     
     @dX.setter
     def dX(self, dX):
-        self.dX = dX
+        self._dX = dX
     
     @Property(int, doc="The change in Y position performed by this move")
     def dY(self):
-        return self.dY
+        return self._dY
     
     @dY.setter
     def dY(self, dY):
-        self.dY = dY
+        self._dY = dY
 
 @QmlElement
 class ScaleAction(Action):
@@ -82,23 +91,23 @@ class ScaleAction(Action):
     """
     def __init__(self, parent = None, shapeParent=None, target=None,sX=1,sY=1):
         super().__init__(parent)
-        self.target = target
+        self._target = target
         self.shapeParent = shapeParent
-        self.sX = sX
-        self.sY = sY
+        self._sX = sX
+        self._sY = sY
 
     @Property(int, doc="The scaling factor for the width of this object")
     def sX(self):
-        return self.sX
+        return self._sX
     
     @sX.setter
     def sX(self,sX):
-        self.sX= sX
+        self._sX= sX
     
     @Property(int, doc="The scaling factor for the height of this object")
     def sY(self):
-        return self.sY
+        return self._sY
 
     @sY.setter
     def sY(self,sY):
-        self.sY= sY
+        self._sY= sY
