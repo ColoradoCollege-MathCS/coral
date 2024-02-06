@@ -68,9 +68,31 @@ ApplicationWindow {
 				id: myfirstpath
 				strokeWidth: 3
 				strokeColor: "darkgray"
+				fillColor: "blue"
+				startX: 100
+				startY: 50
+				PathLine {
+					x: 150
+					y:79
+				}
+				PathLine {
+					x:175
+					y:180
+				}
+				PathLine {
+					x: 150
+					y: 200
+				}
+				PathLine{
+					x: 100
+					y: 50
+				}
+			}
+			MouseArea {
+				onPressed: console.log("Inside Triangle")
 			}
 		}
-		onPressed: addNewShapePath(mouseX, mouseY), console.log(actionStack)
+		onPressed: addNewShapePath(mouseX, mouseY)
 		onPositionChanged: {
 			var path = Qt.createQmlObject('import QtQuick; PathLine{}', labelshape.all_paths.slice(-1)[0]);
 			path.x = mouseX;
