@@ -19,6 +19,7 @@ ApplicationWindow {
 
     property var currentTool: ""
     property var labelsAndCoords: {}
+    property var labelAndColor: {}
     property var labelNames: []
 
     property var shapes: []
@@ -56,6 +57,7 @@ ApplicationWindow {
         var labelsAndCoordinates = {};
         var labelNames1 = new Array(0);
         var shapeAndCoordinates = {};
+        var labelAndCol = {};
         var coordinates = new Array(0);
 
         var hold = ""
@@ -80,6 +82,8 @@ ApplicationWindow {
                     labelNames1.push(everything[i][1]);
                     hold = everything[i][1];
                 }
+                labelAndCol[everything[i][1]] = ""
+                
             }
 
             //if we have a shape line, make a new shape for the label
@@ -101,6 +105,7 @@ ApplicationWindow {
             
         }
 
+
         //reached end, place all items in correct locations
         shapeAndCoordinates[shape] = coordinates;
         labelsAndCoordinates[hold] = shapeAndCoordinates;
@@ -108,6 +113,7 @@ ApplicationWindow {
         //make them global variables
         labelsAndCoords = labelsAndCoordinates
         labelNames = labelNames1
+        labelAndColor = labelAndCol
     }
 
     //function to check if current image has a label file
@@ -119,7 +125,16 @@ ApplicationWindow {
     //a function to loop through the current label's shapes and create shapes from coordinates
     function loopy(comp, label){
         for(var i = 1; i <= 2; i++){
-            shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, "color": "blue"}));
+            if(labelAndColor[label] != ""){
+                shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
+                "color": labelAndColor[label], "colorline": labelAndColor[label]}));
+            }
+            else{
+                var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+                labelAndColor[label] = color
+                shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
+                "color": color, "colorline": color}));
+            }
         }
     }
 
@@ -544,10 +559,10 @@ ApplicationWindow {
             onActivated: {
                 for (var i = 0; i < shapes.length; i++){
                     if (shapes[i].label == currentText){
-                        shapes[i].color = "green"
+                        shapes[i].colorline = "yellow"
                     }
                     else {
-                        shapes[i].color = "blue"
+                        shapes[i].colorline = labelAndColor[shapes[i].label]
                     }
                 }
                 
