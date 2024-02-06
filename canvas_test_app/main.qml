@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Shapes
 
+import Actions
+
 ApplicationWindow {
     visible: true
     width: 640
@@ -56,6 +58,7 @@ ApplicationWindow {
 		id: myMouseArea
 		width: 640
 		height: 450
+		property list<Action> actionStack: [MoveAction {}, DeleteAction {}, CreateAction {}, ScaleAction {}]
 		Shape {
 			id: labelshape
 			anchors.fill: parent
@@ -67,7 +70,7 @@ ApplicationWindow {
 				strokeColor: "darkgray"
 			}
 		}
-		onPressed: addNewShapePath(mouseX, mouseY)
+		onPressed: addNewShapePath(mouseX, mouseY), console.log(actionStack)
 		onPositionChanged: {
 			var path = Qt.createQmlObject('import QtQuick; PathLine{}', labelshape.all_paths.slice(-1)[0]);
 			path.x = mouseX;
