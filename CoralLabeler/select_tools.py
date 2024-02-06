@@ -3,12 +3,12 @@ from skimage.segmentation import flood
 import numpy as np
 
 
-
 #Parameters:
 #labels - numpy array with an int for each pixel. 0=no label, other ints have meaning
 #labelNum - What label ID to set select values to.
 #point1 - Point in image where selection was started from
 #point2 - point in image where selection ended.
+
 def rectangle_select(labels, labelNum, point1, point2):
     min_x = max(min(point1[0],point2[0]),0)#if selection goes off the screen, truncate at 0
     max_x = max(point1[0],point2[0])
@@ -21,6 +21,7 @@ def rectangle_select(labels, labelNum, point1, point2):
 #(x-h)^2/a^2 + (y-k)^2/b^2 = 1. width = 2a, h = 2b
 #<=1 defines all the space inside ellipse
 #Same parameters as rectangle_select
+    
 def ellipse_select(labels, labelNum, point1, point2):
     min_x = max(min(point1[0],point2[0]),0)#if selection goes off the screen, truncate at 0
     max_x = max(point1[0],point2[0])
@@ -46,6 +47,7 @@ def ellipse_select(labels, labelNum, point1, point2):
 #labelNum - what number to change the selected pixels to
 #pointClicked - pixel coordinates on the image where the user clicked
 #radius - radius (px) of circle to draw around the point
+
 def circle_select(labels, labelNum, pointClicked, radius):
     h = labels.shape[0]
     w = labels.shape[1]

@@ -6,9 +6,6 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 
 
-//import QtGraphicalEffects 1.15
-//import AppStyle 1.0
-
 
 
 ApplicationWindow {
@@ -18,12 +15,53 @@ ApplicationWindow {
 
     property var currentTool: ""
 
+
     function refreshMask() {
+        
         overlay.source = "images/mask2.png"
         overlay.source = "images/mask.png"
     }
 
-    
+    function changeImage(fileName){
+        image.source = fileName
+        image.width = sourceSize.width / parent.width * 4/8
+        image.height = sourceSize.height / (parent.height - 50)
+
+    }
+
+function turnonRect() {
+    mainRect.visible = true
+    circlebottom.visible = true
+    circletop.visible = true 
+    circleleft.visible = true
+    circleright.visible = true
+}
+
+function turnoffRect(){
+    mainRect.visible = false
+    circlebottom.visible = false
+    circletop.visible = false
+    circleleft.visible = false
+    circleright.visible = false
+
+}
+
+function turnonEllipse() {
+    mainEllipse.visible = true
+    circlebottom2.visible = true
+    circletop2.visible = true 
+    circleleft2.visible = true
+    circleright2.visible = true
+}
+
+function turnoffEllipse(){
+    mainEllipse.visible = false
+    circlebottom2.visible = false
+    circletop2.visible = false
+    circleleft2.visible = false
+    circleright2.visible = false
+
+}
 
     ///Top menu
     menuBar: MenuBar {
@@ -156,6 +194,7 @@ ApplicationWindow {
                 width: 100
                 stepSize: .01
                 value: 1
+
                 onMoved: {
                     if (currentTool == "magicwand"){
                         from = 0
@@ -265,32 +304,43 @@ ApplicationWindow {
                         isPressed = true
                     }
 
+            
                     //if circle is held down, record those coordinates
                     else if (currentTool == "circleselect"){
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
 
-                        holdedx = fixedMouseX
-                        holdedy = fixedMouseY
+                       //holdedx = fixedMouseX
+                       //holdedy = fixedMouseY
                     }
-
+           
+                
+                 
                     //if square is held down, record those coordinates
                     else if (currentTool == "squareselect"){
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
 
-                        holdedx = fixedMouseX
-                        holdedy = fixedMouseY
+                        
+
+                        //holdedx = fixedMouseX
+                        //holdedy = fixedMouseY
                     }
 
+                   
                     //means no tool was selected
+
                     else{
                         console.log("Please choose a tool")
                     }
+                    
                 }
-
+            }
+            
 
                 //mouse released actions
+    /*
+
                 onReleased: {
 
                     //just not that the save needs to happen now
@@ -307,24 +357,44 @@ ApplicationWindow {
                     }
 
                     //get last coordinate to make circle, save needs to happen now
-                    else if (currentTool == "circleselect"){
+                    else if (currentTool == "ellipseselect"){
+
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
 
                         tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
-                        saveIconButton.enabled
+                        
+                        *
+                       saveIconButton.enabled
+                        
+
+
+
+
                     }
+
 
                     //get last coordinate to make square, save needs to happen now
                     else if (currentTool == "squareselect"){
+
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
 
                         tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+
+                       
                         saveIconButton.enabled
-                    }
+                        
+
+
+
+                    
                 }
             }
+
+
+*/
+
         }  
     }
     
@@ -368,6 +438,10 @@ ApplicationWindow {
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "magicwand"
+                        //mainRect.visible = false
+                        turnoffRect()
+                        turnoffEllipse()
+
                     }
 
                 }
@@ -392,6 +466,9 @@ ApplicationWindow {
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "paintbrush"
+                        //mainRect.visible = false
+                        turnoffRect()
+                        turnoffEllipse()
                     }
 
                 }
@@ -413,6 +490,9 @@ ApplicationWindow {
                         paintbrushIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "circleselect"
+                        //mainRect.visible = false
+                        turnoffRect()
+                        turnonEllipse()
                     }
 
                 }
@@ -434,9 +514,17 @@ ApplicationWindow {
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
                         currentTool = "squareselect"
+                        //mainRect.visible = true
+                        turnonRect()
+                        turnoffEllipse()
                     }
 
                 }
+
+
+            
+
+
             }
        
 
@@ -512,12 +600,11 @@ ApplicationWindow {
             delegate: fileDelegate
         }
     }
+//--------------------------------------------------------
 
-//-----------------------------------------
-/*
-  
-Rectangle
-    {
+
+ // rectangle select ------------------------------------- 
+Rectangle{
         id: mainRect
 
         width: 100
@@ -525,6 +612,8 @@ Rectangle
 
         x: parent.width/2 - (width/2)
         y: parent.height/2 - (height/2)
+
+        visible: false
 
         border {
             color: "red"
@@ -549,6 +638,7 @@ Rectangle {
     radius: 20
     width: radius
     height: radius
+    visible: false
 
         anchors {
             horizontalCenter: mainRect.left
@@ -577,6 +667,7 @@ Rectangle {
     radius: 20
     width: radius
     height: radius
+    visible: false
 
 
 
@@ -604,6 +695,7 @@ Rectangle {
     radius: 20
     width: radius
     height: radius
+    visible: false
 
         anchors {
             horizontalCenter: mainRect.horizontalCenter
@@ -630,6 +722,7 @@ Rectangle {
     radius: 20
     width: radius
     height: radius
+    visible: false
 
         anchors
         {
@@ -648,82 +741,167 @@ Rectangle {
                 }
             }
         }
+
+
+
     }
 
-*/
 
 
-// arrow buttons to navigate the gallery-----------------
 
-/*
-RowLayout{
-    id:arrowbuttons
-    anchors.bottom: parent.bottom
-    spacing: 10 
+//--------------------------------------------------------
+
+
+
+// ellipse select-----------------------------------------
 
 Rectangle{
+        id: mainEllipse
 
-width: 50
-height: 50
-color: "blue"
+        radius: 100
+        width: radius
+        height: radius
 
-MouseArea{
+        visible: false
 
-anchors.fill: parent
+        x: parent.width/2 - (width/2)
+        y: parent.height/2 - (height/2)
 
-onClicked: {
+        border {
+            color: "red"
+            width: 2
+        }
 
-if (gallery.currentIndex > 0){
-gallery.currentIndex--
+        Drag.active: mouseArea2.drag.active
 
-}
+        MouseArea
+        {
+            id: mouseArea2
 
-}
+            anchors.fill: parent
+            drag.target: mainEllipse
+        }
+    }
 
-}
-Text {
-    anchors.centerIn: parent
-    text: "<"
-    font.pixelSize: 20
-}
+Rectangle {
 
-}
+    id: circleleft2
+    color: "black"
+    radius: 20
+    width: radius
+    height: radius
 
+    visible: false
 
-Rectangle{
+        anchors {
+            horizontalCenter: mainEllipse.left
+            verticalCenter: mainEllipse.verticalCenter
+        }
+        MouseArea {
 
-width: 50
-height: 50
-color: "blue"
+            anchors.fill: parent
 
-MouseArea{
-
-anchors.fill: parent
-onClicked: {
-
-if (gallery.currentIndex > 0){
-gallery.currentIndex++
-
-}
-
-}
-
-}
-Text {
-    anchors.centerIn: parent
-    text: ">"
-    font.pixelSize: 20
-}
-
-}
-
+            onMouseXChanged: {
+                mainEllipse.x = mainEllipse.x + mouseX
+                mainEllipse.width = mainEllipse.width - mouseX
+                if(mainEllipse.width < 5)
+                {
+                    mainEllipse.width = 5
+                }
+            }
+        }
+    }
 
 
-}
+Rectangle {
 
-*/
+    id:circleright2
+    color: "black"
+    radius: 20
+    width: radius
+    height: radius
 
-//------------------------
+    visible: false
+
+
+
+        anchors {
+            horizontalCenter: mainEllipse.right
+            verticalCenter: mainEllipse.verticalCenter
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onMouseXChanged: {
+                mainEllipse.width = mainEllipse.width + mouseX
+                if(mainEllipse.width < 5)
+                {
+                    mainEllipse.width = 5
+                }
+            }
+        }
+    }
+
+
+  Rectangle {
+    id:circletop2
+    color: "black"
+    radius: 20
+    width: radius
+    height: radius
+
+    visible: false
+
+        anchors {
+            horizontalCenter: mainEllipse.horizontalCenter
+            verticalCenter: mainEllipse.top
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onMouseYChanged: {
+                mainEllipse.y = mainEllipse.y + mouseY
+                mainEllipse.height = mainEllipse.height - mouseY
+                if(mainEllipse.height < 5)
+                {
+                    mainEllipse.height = 5
+                }
+            }
+        }
+    }
+
+   Rectangle {
+
+    id:circlebottom2
+    color: "black"
+    radius: 20
+    width: radius
+    height: radius
+
+    visible: false
+
+        anchors
+        {
+
+            horizontalCenter: mainEllipse.horizontalCenter
+            verticalCenter: mainEllipse.bottom
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onMouseYChanged: {
+                mainEllipse.height = mainEllipse.height + mouseY
+                if(mainEllipse.height < 5)
+                {
+                    mainEllipse.height = 5
+                }
+            }
+        }
+    }
+
+//---------------------------------------------------------------------------------
+
+
 
 
     FolderDialog {
@@ -845,6 +1023,7 @@ Text {
      }
 
 
-
+    
+    
 }
 
