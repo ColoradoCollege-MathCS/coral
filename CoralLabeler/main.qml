@@ -118,7 +118,7 @@ ApplicationWindow {
 
     //function to check if current image has a label file
     function hasLabels(imgsource){
-        console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
+        //console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
         return tbox.fileExists("labels/" + imgsource + ".csv")
     }
 
