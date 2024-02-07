@@ -96,7 +96,7 @@ def blob_ML(img_path, seed):
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
         polygon = largest_contour.reshape(-1, 2)
-        polygon = approximate_polygon(polygon, tolerance=10)
+        polygon = approximate_polygon(polygon, tolerance=5)
     
     write_shape(polygon)
     

@@ -76,10 +76,10 @@ ApplicationWindow {
             Action {
                 text: qsTr("Get AI Predictions")
                 onTriggered: {
-                    var labels = tbox.getPrediction(); 
-                    refreshMask(); 
-                    saveIconButton.enabled = true
-                    populateLegend(labels)
+                    // var labels = tbox.getPrediction(filename, (30,30)); 
+                    tbox.getPrediction(image.source, 225, 250)
+                    refreshMask()
+                    // populateLegend(labels)
                     labelLegend.visible = true
                     saveIconButton.enabled = true
                 }
