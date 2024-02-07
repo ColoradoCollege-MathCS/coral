@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, Property, Signal
+from PySide6.QtCore import QObject, Property, Signal, Slot
 from PySide6.QtQml import QmlElement, QmlUncreatable
 import sys
 
@@ -24,7 +24,8 @@ class Action(QObject):
     @shapeParent.setter
     def shapeParent(self, shapeParent):
         self._shapeParent = shapeParent
-
+    
+    @Slot()
     def do(self):
         """Execute the action represented by this class"""
         #Abstract class to be overriden by children    
@@ -56,6 +57,13 @@ class DeleteAction(Action) :
         super().__init__(parent)
         self._target = target
         self._shapeParent = shapeParent
+    
+    @Slot()
+    def do(self):
+        """Execute the delete action, removing the shape from its parent"""
+        self.__target.deleteLater()
+    
+    do_method = Property("QVariant",do)
 
 
 @QmlElement

@@ -46,7 +46,15 @@ ApplicationWindow {
     id: save_canvas
 	width: 100
 	height:30
-	text: qsTr("Save canvas")
+	text: qsTr("next action")
+	onPressed: {
+			delLabelShape.do()
+			var curAction = myMouseArea.actionStack.pop()
+			console.log(curAction)
+			//if (curAction instanceOf DeleteAction) {
+			//	console.log("I should delete yo ass...")
+			//}
+		}
     }
 
     Rectangle {
@@ -58,7 +66,7 @@ ApplicationWindow {
 		id: myMouseArea
 		width: 640
 		height: 450
-		property list<Action> actionStack: [MoveAction {}, DeleteAction {}, CreateAction {}, ScaleAction {}]
+		property list<Action> actionStack: [MoveAction {}, DeleteAction {}, CreateAction {}, ScaleAction {}, DeleteAction { id: delLabelShape; target: labelshape; shapeParent: myMouseArea}]
 		Shape {
 			id: labelshape
 			anchors.fill: parent
