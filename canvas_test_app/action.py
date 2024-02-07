@@ -24,6 +24,10 @@ class Action(QObject):
     @shapeParent.setter
     def shapeParent(self, shapeParent):
         self._shapeParent = shapeParent
+
+    @Property(str, doc="The string representation of the class name")
+    def typeString(self):
+        return self._typeString
     
     @Slot()
     def do(self):
@@ -48,6 +52,7 @@ class CreateAction(Action) :
             print("No coordinate array or pre-created object provided", file=sys.stderr)
         self._target = target
         self._shapeParent = shapeParent
+        self._typeString = "CreateAction"
 
 
 @QmlElement
@@ -57,6 +62,7 @@ class DeleteAction(Action) :
         super().__init__(parent)
         self._target = target
         self._shapeParent = shapeParent
+        self._typeString = "DeleteAction"
     
     @Slot()
     def do(self):
@@ -75,6 +81,7 @@ class MoveAction(Action) :
         self._shapeParent = shapeParent
         self._dX = dX
         self._dY = dY
+        self._typeString = "MoveAction"
     
     @Property(int, doc="The change in X position performed by this move")
     def dX(self):
@@ -103,6 +110,7 @@ class ScaleAction(Action):
         self.shapeParent = shapeParent
         self._sX = sX
         self._sY = sY
+        self._typeString = "ScaleAction"
 
     @Property(int, doc="The scaling factor for the width of this object")
     def sX(self):
