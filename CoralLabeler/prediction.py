@@ -40,7 +40,7 @@ def transform_img(img_path):
 def get_fm(img_path):
     mrcnn_model = get_model()
     
-     # extract layer with forward hook
+    # extract layer with forward hook
     activation = {}
     def get_activation(name):
         def hook(model, input, output):
@@ -51,7 +51,7 @@ def get_fm(img_path):
     
     img = transform_img(img_path)
     
-    fm = mrcnn_model([img])
+    preds = mrcnn_model([img])
     
     ext_fm = activation['backbone']
     
