@@ -248,11 +248,12 @@ ApplicationWindow {
             Action {
                 text: qsTr("Get AI Predictions")
                 onTriggered: {
-                    var labels = tbox.getPrediction(); 
-                    refreshMask(); 
-                    saveIconButton.enabled = true
-                    populateLegend(labels)
+                    // var labels = tbox.getPrediction(filename, (30,30)); 
+                    tbox.getPrediction(image.source, 225, 250)
+                    refreshMask()
+                    // populateLegend(labels)
                     labelLegend.visible = true
+                    saveIconButton.enabled = true
                 }
             }
         }
@@ -407,15 +408,19 @@ ApplicationWindow {
         id: image
         anchors.left: yuh.right
 
-        width: parent.width * 4/8
+        width: parent.height - parent.width/8
         height: parent.height - 50
     
-        fillMode: Image.PreserveAspectFit
+        fillMode: Image.PreserveAspectFit  
 
         //Overlay mask
         Image {
             id: overlay
             anchors.fill: parent
+            x: 0
+            y: 0
+            Layout.preferredWidth: 100
+            Layout.preferredHeight: 100
             fillMode: Image.PreserveAspectFit
             smooth: true
             visible: true
@@ -424,17 +429,15 @@ ApplicationWindow {
 
 
             //fix where mouse gets clicked
-            property var mouseFactorX: sourceSize.width / image.width
-            property var mouseFactorY: sourceSize.height / image.height
-            
+            property var mouseFactorX: image.paintedWidth / image.sourceSize.width
+            property var mouseFactorY: image.paintedHeight / image.sourceSize.height
+
 
             //When mouse is clicked with a certain tool
             MouseArea {
-
                 id: imageMouse
 
                 anchors.fill: parent
-
 
                 property var fixedMouseX: 0
                 property var fixedMouseY: 0
@@ -450,15 +453,31 @@ ApplicationWindow {
                 //threshold of magicwand or size of brush
                 property var value: 1
 
+
+                //fix mouse coordinate
+                function getMouseX(image) {
+                    return (overlay.width - overlay.paintedWidth) * 0.5
+                }
+
+                function getMouseY(image) {
+                    return (overlay.height - overlay.paintedHeight) * 0.5
+                }
+
+                function fixMouse(image) {
+                    fixedMouseX = Math.floor((mouseX - getMouseX(image)) / overlay.mouseFactorX)
+                    fixedMouseY = Math.floor((mouseY - getMouseY(image)) / overlay.mouseFactorY)             
+                }
+
+
                 onPressed: { 
                     //for magic wand
                     if (currentTool == "magicwand"){
+
                         //console.log(mouseX, mouseY)
                         
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
-                        //tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
+                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
 
                     //paintbrush if held down
@@ -468,8 +487,7 @@ ApplicationWindow {
 
                     //if circle is held down, record those coordinates
                     else if (currentTool == "circleselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
@@ -477,8 +495,7 @@ ApplicationWindow {
 
                     //if square is held down, record those coordinates
                     else if (currentTool == "squareselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
@@ -494,12 +511,11 @@ ApplicationWindow {
                 //mouse released actions
                 onReleased: {
 
-                    //nothing happens, the save needs to happen now
+                    //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
                         saveIconButton.enabled
-
                     }
 
                     //tell timer to stop and save needs to happen now
@@ -510,8 +526,7 @@ ApplicationWindow {
 
                     //get last coordinate to make circle, save needs to happen now
                     else if (currentTool == "circleselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
                         saveIconButton.enabled
@@ -519,16 +534,14 @@ ApplicationWindow {
 
                     //get last coordinate to make square, save needs to happen now
                     else if (currentTool == "squareselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
                         saveIconButton.enabled
                     }
                 }
             }
-        }
-
+        }  
     }
 
     //Timer to repeat the paintbrush action
