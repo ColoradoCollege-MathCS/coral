@@ -15,10 +15,12 @@ from toolbox import Toolbox
 
 if __name__ == "__main__":
     tbox = Toolbox()
+
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
     qml_file = Path(__file__).resolve().parent / "main.qml"
     engine.load(qml_file)
+
     context = engine.rootContext()
     context.setContextProperty("tbox",tbox)
 

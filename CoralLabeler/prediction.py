@@ -101,4 +101,4 @@ def blob_ML(img_path, seed):
     write_shape(polygon)
     
     return polygon
-
+  

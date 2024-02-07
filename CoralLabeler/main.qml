@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts 
+import QtQuick.Shapes 1.6
 import Qt.labs.folderlistmodel
 
 
@@ -17,15 +18,186 @@ ApplicationWindow {
     visible: true
 
     property var currentTool: ""
+    property var labelsAndCoords: {}
+    property var labelAndColor: {}
+    property var labelNames: []
+
+    property var shapes: []
+
+
+    /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
         overlay.source = "images/mask2.png"
         overlay.source = "images/mask.png"
     }
 
-    function changeImage(filename){
-            image.source = filename;
+    function changeImage(fileName){
+        image.source = fileName
+        image.width = sourceSize.width / parent.width * 4/8
+        image.height = sourceSize.height / (parent.height - 50)
+    }
 
+    function resetLabels(){
+        labelsAndCoords = {}
+        labelNames = []
+    }
+
+    function split(filePath){
+        return tbox.splited(filePath)
+    }
+
+
+    //function to parse a big array and load all labels if an image has a set of labels
+    function loadLabels(imgLoad){
+        //load in csv from python function
+        var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
+
+        //holding dictionaries, arrays, and variables
+        var labelsAndCoordinates = {};
+        var labelNames1 = new Array(0);
+        var shapeAndCoordinates = {};
+        var labelAndCol = {};
+        var coordinates = new Array(0);
+
+        var hold = ""
+        var shape = 0
+
+
+        //loop through the whole array per line
+        for (var i = 0; i < everything.length; i++){
+
+            //if we have a label line, make a new label
+            if (everything[i][0] == "Label"){
+                if (coordinates.length == 0){
+                    labelNames1.push(everything[i][1]);
+                    hold = everything[i][1];
+                }
+                else{
+                    shapeAndCoordinates[shape] = coordinates;
+                    labelsAndCoordinates[hold] = shapeAndCoordinates;
+
+                    shape = 0
+                    shapeAndCoordinates = {};
+                    labelNames1.push(everything[i][1]);
+                    hold = everything[i][1];
+                }
+                labelAndCol[everything[i][1]] = ""
+                
+            }
+
+            //if we have a shape line, make a new shape for the label
+            else if (everything[i][0] == "Shape"){
+                if (coordinates.length == 0){
+                    shape += 1;
+                }
+                else{
+                    shapeAndCoordinates[shape] = coordinates;
+                    coordinates = new Array(0);
+                    shape += 1;
+                }
+            }
+
+            //if we have a coordinate line, make a new coordinate for the line
+            else{
+                coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
+            }
+            
+        }
+
+
+        //reached end, place all items in correct locations
+        shapeAndCoordinates[shape] = coordinates;
+        labelsAndCoordinates[hold] = shapeAndCoordinates;
+
+        //make them global variables
+        labelsAndCoords = labelsAndCoordinates
+        labelNames = labelNames1
+        labelAndColor = labelAndCol
+    }
+
+    //function to check if current image has a label file
+    function hasLabels(imgsource){
+        console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
+        return tbox.fileExists("labels/" + imgsource + ".csv")
+    }
+
+    //a function to loop through the current label's shapes and create shapes from coordinates
+    function loopy(comp, label){
+        for(var i = 1; i <= 2; i++){
+            if(labelAndColor[label] != ""){
+                shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
+                "color": labelAndColor[label], "colorline": labelAndColor[label]}));
+            }
+            else{
+                var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+                labelAndColor[label] = color
+                shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
+                "color": color, "colorline": color}));
+            }
+        }
+    }
+
+    //a function to display shapes
+    function loadShapes(){
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("shapes.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            for(var i = 0; i < labelNames.length; i++){
+                loopy(component, labelNames[i])
+            }
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+    }
+
+    //a function to destroy all shapes
+    function resetShapes(){
+        for(var i = 0; i < shapes.length; i++){
+            shapes[i].destroy()
+        }
+        shapes = []
+    }
+
+
+    //function to update labels and coords to save
+    function updateLabelsAndCoords(){
+        labelsAndCoords = {}
+        var holdDict = {};
+        var hold = [];
+
+        var count = 0;
+
+        //dictionary stuff
+        for(var f = 0; f < labelNames.length; f++){
+            for(var i = 0; i < shapes.length; i++){
+                //get label
+                if(shapes[i].label == labelNames[f]){
+                    //for each shape, find its label, add coordinates to hold
+                    for(var g = 0; g < shapes[i].child.pathElements.length; g++){
+                        hold.push([shapes[i].child.pathElements[g].x, shapes[i].child.pathElements[g].y])
+                    }
+
+                    //add coordinates to shape
+                    holdDict[count] = hold;
+
+                    hold = []
+                    
+                    count += 1;
+                }
+            }
+            
+            //place all shapes in label dict
+            labelsAndCoords[labelNames[f]] = holdDict
+            holdDict = {};
+            count = 0;
+        }
+
+        
     }
 
     function populateLegend(labels) {
@@ -35,15 +207,15 @@ ApplicationWindow {
                     labelName: label[1]
                 })
         })
-     }
+        
 
-    function refreshLegend() {
-        labelLegendModel.clear()
     }
+
+
 
     
 
-    ///Top menu
+    ///////////////////////////////////////////////////////////Top menu/////////////////////////////////////////////////////////
     menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
@@ -87,7 +259,7 @@ ApplicationWindow {
         }
     }
 
-    //row tool bar
+    /////////////////////////////////////////////////////////row tool bar////////////////////////////////////////////////////////
     header: ToolBar {
         
         RowLayout {
@@ -107,7 +279,7 @@ ApplicationWindow {
                 text: qsTr("Choose Folder")
 
                 onClicked: {
-                   folderDialog.open()
+                    folderDialog.open()
                 }
                 Layout.alignment: Qt.AlignLeft
             }
@@ -126,7 +298,10 @@ ApplicationWindow {
                         
                     onClicked: {
                         enabled = false
-                        console.info("image clicked!")
+                        
+                        updateLabelsAndCoords()
+                        tbox.saveLabels(labelsAndCoords, split(image.source))
+
                     }
                     
                 }
@@ -191,16 +366,36 @@ ApplicationWindow {
             FileDialog {
                 id: fileDialog
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-                onAccepted: image.source = selectedFile, tbox.initLabels(selectedFile), refreshMask(), refreshLegend()
+                onAccepted: {
+                    image.source = selectedFile
+                    tbox.initLabels(selectedFile)
+                    refreshMask()
+                    console.log(split(image.source))
+                    if(hasLabels(split(image.source))){
+                        console.log("periodt")
+                        loadLabels(split(image.source))
+
+                        loadShapes()
+
+                    }
+                    else{
+                        resetLabels()
+                        resetShapes()
+                    }
+                }
             }
 
 
             StackView {
                 id: stack
-                anchors.fill: parent
+                //anchors.fill: parent
             }
         }
     }
+
+
+    /////////////////////////////////////////////////////////image interface////////////////////////////////////////////////////////
+
 
     //random rectangle for now to push image away from tool bar, gives margin for image
     Rectangle{
@@ -348,19 +543,49 @@ ApplicationWindow {
             }
         }  
     }
-    
+
     //Timer to repeat the paintbrush action
     Timer {
         id: timer
         interval: 50
-
         repeat: true
         triggeredOnStart: true
         running: imageMouse.isPressed
         onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
     }
 
-    //Tool buttons
+
+    /////////////////////////////////////////////////////////labels//////////////////////////////////////////////////////////////
+            
+    ComboBox{
+            id: comboyuh
+
+            anchors.left: image.right
+            
+            // Set the initial currentIndex to the value stored in the backend.
+            Component.onCompleted: currentIndex = indexOfValue(backend.modifier)
+
+            model: labelNames
+            
+
+            // When a label is chosen, change the shapes for that label.
+            onActivated: {
+                for (var i = 0; i < shapes.length; i++){
+                    if (shapes[i].label == currentText){
+                        shapes[i].colorline = "yellow"
+                    }
+                    else {
+                        shapes[i].colorline = labelAndColor[shapes[i].label]
+                    }
+                }
+                
+            }
+
+    }
+            
+    
+
+    //////////////////////////////////////////////////////////side tool bar////////////////////////////////////////////////////////
     //diable when selected and enable everything else 
     ToolBar {
         ColumnLayout {
@@ -465,13 +690,12 @@ ApplicationWindow {
     }
 
 
-    //Gallery stuff
+    ////////////////////////////////////////////////////////////gallery///////////////////////////////////////////////////////////
     Rectangle{
         id:allGallery
         width: parent.width/8
         height: parent.height
         anchors.right: parent.right
-
 
         visible: false
 
@@ -519,8 +743,16 @@ ApplicationWindow {
                                 savemask.open()
                             }
                             else{
-                                tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask(), refreshLegend()
+                                tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                                
                                 changeImage(folderModel.folder + "/" + fileName)
+
+                                if(hasLabels(folderModel.folder + "/" + fileName)){
+                                    loadLabels(fileName)
+                                }
+                                else{
+                                    resetLabels()
+                                }
                             }
                             
                         }
@@ -547,7 +779,7 @@ ApplicationWindow {
     }
 
     
-    //save dialog
+    //////////////////////////////////////////////////////////////save////////////////////////////////////////////////////////////
     Dialog{
         id: savemask
 
@@ -572,15 +804,19 @@ ApplicationWindow {
             console.log("save when we know how to save")
             saveIconButton.enabled = false
             changeImage(folderModel.folder + "/" + savemask.title)
-            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask(), refreshLegend()
+            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
         }
 
         onRejected: {
             changeImage(folderModel.folder + "/" + savemask.title)
-            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask(), refreshLegend()
+            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
         }
     }
-    // Label Legend
+
+
+
+
+    /////////////////////////////////////////////////////////label legend////////////////////////////////////////////////////////
     Rectangle {
         id: labelLegend
         color: "white"
@@ -610,7 +846,7 @@ ApplicationWindow {
             delegate: Rectangle {
                 id: labelRow
                 height: 25
-                width: parent ? parent.width : 0
+                width: parent.width
                 color: "transparent"
 
                 Rectangle {
@@ -643,6 +879,4 @@ ApplicationWindow {
         }
 
      }
-     
 }
-
