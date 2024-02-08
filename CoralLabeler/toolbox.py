@@ -7,7 +7,7 @@ import os
 
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
-from prediction import machine_magic
+from prediction import blob_ML
 
 def image_dims(filename):
     return imread(filename).shape
@@ -42,18 +42,11 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(result="QVariantList")
-    def getPrediction(self):
-        label_dict, pred_labels = machine_magic("mrcnn_model.pth", self.filename)
+    @QtCore.Slot(str, int, int)
+    def getPrediction(self, img_path, seedX, seedY):
+        polygon = blob_ML(img_path[6:], (seedX, seedY))
         #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
-        self.labels = pred_labels
-        self.updateMask()
-
-        label_list = []
-        for key, value in label_dict.items():
-            hex_color = '#%02x%02x%02x' % color_map[key]           
-            label_list.append([hex_color, value])
-        return  label_list
+        print(polygon)
 
 
     @QtCore.Slot(str, int, int, float)
