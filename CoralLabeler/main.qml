@@ -118,13 +118,13 @@ ApplicationWindow {
 
     //function to check if current image has a label file
     function hasLabels(imgsource){
-        console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
+        // console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
         return tbox.fileExists("labels/" + imgsource + ".csv")
     }
 
     //a function to loop through the current label's shapes and create shapes from coordinates
     function loopy(comp, label){
-        for(var i = 1; i <= 2; i++){
+        for(var i = 1; i < 2; i++){
             if(labelAndColor[label] != ""){
                 shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
                 "color": labelAndColor[label], "colorline": labelAndColor[label]}));
@@ -369,9 +369,9 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
-                    console.log(split(image.source))
+                    // console.log(split(image.source))
                     if(hasLabels(split(image.source))){
-                        console.log("periodt")
+                        // console.log("periodt")
                         loadLabels(split(image.source))
 
                         loadShapes()

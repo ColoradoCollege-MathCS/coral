@@ -32,7 +32,6 @@ Shape{
 
         //when this class is completed, create its path based on the coordinates
         Component.onCompleted:{
-
             //loop through all coordinates and create a new PathLine per coordinate
             //https://stackoverflow.com/questions/55299987/qml-append-new-pathcurve-elements-to-listpathelements-in-shapepath
             for(var i = 1; i < theShape.coords.length; i++){

@@ -30,7 +30,7 @@ class Toolbox(QtCore.QObject):
 
     def updateMask(self):
         rgb = labeled2rgb(self.labels,color_map)
-        imsave("images/mask.png",rgb)
+        imsave("images/mask.png",rgb, check_contrast=False)
 
     @QtCore.Slot()
     def randomRectangle(self):
