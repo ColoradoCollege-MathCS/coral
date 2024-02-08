@@ -20,8 +20,8 @@ QtObject {
                 }
                 curAction.idxInParent = idx
                 //sucessfully removed, time 2 put the others back
-                for (element of toPutBack) {
-                    curAction.shapeParent.data.push(element)
+                for (removedElement of toPutBack) {
+                    curAction.shapeParent.data.push(removedElement)
                 }
                 break;
             case "MoveAction":
@@ -37,11 +37,21 @@ QtObject {
         switch (curAction.typeString) {
             case "CreateAction"://undo a create = remove
                 //can we assume it will always be at the end and not save idx?
-                var idx = curAction.shapeParent.data.indexOf(curAction.target);
-                curAction.shapeParent.data.splice(idx,1);
+                curAction.shapeParent.data.pop()
                 break;
             case "DeleteAction": //here we are undoing a delete, so putting it back
-                curAction.shapeParent.data.splice(curAction.idxInParent, 0, curAction.target);
+                //temporarily remove all elements in front of it
+                var removedElement;
+                var toPutBack = [];
+                for (var i = 0; i<curAction.idxInParent; i++) {
+                    toPutBack.push(curAction.shapeParent.data.pop());
+                }
+                //insert target
+                curAction.shapeParent.data.push(curAction.target);
+                //put things back
+                for (var i = 0; i<curAction.idxInParent; i++) {
+                    curAction.shapeParent.data.push(toPutBack.pop())
+                }
                 break;
             case "MoveAction":
                 break;

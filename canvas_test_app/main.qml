@@ -61,7 +61,16 @@ ApplicationWindow {
 			//}
 		}
     }
-
+	Button {
+		id: undo_del
+		width: 100
+		height: 30
+		x: 110
+		text: qsTr("Undo del")
+		onPressed: {
+			actHandler.parseActionUndo(delLabelShape)
+		}
+	}
     Rectangle {
 	width: 640
 	height: 450
@@ -103,6 +112,33 @@ ApplicationWindow {
 			}
 			MouseArea {
 				onPressed: console.log("Inside Triangle")
+			}
+		}
+		Shape {
+			id: shape2
+			anchors.fill: parent
+			ShapePath{
+				strokeWidth: 3
+				strokeColor: "darkgray"
+				fillColor: "pink"
+				startX: 150
+				startY: 60
+				PathLine {
+					x: 300
+					y: 250
+				}
+				PathLine {
+					x:300
+					y:300
+				}
+				PathLine {
+					x:175
+					y:300
+				}
+				PathLine {
+					x:150
+					y:60
+				}
 			}
 		}
 		onPressed: addNewShapePath(mouseX, mouseY)
