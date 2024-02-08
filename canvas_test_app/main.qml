@@ -10,6 +10,10 @@ ApplicationWindow {
     height: 480
     title: "QML Canvas Test"
 
+	ActionHandler {
+		id: actHandler
+	}
+
 	function addNewPolyline(){
 		//var newPolyline = PathPolyline([Qt.point(myMouseArea.mouseX,myMouseArea.mouseY)]);
 		var newPolyline = Qt.createQmlObject(`
@@ -48,8 +52,9 @@ ApplicationWindow {
 	height:30
 	text: qsTr("next action")
 	onPressed: {
-			delLabelShape.do()
 			var curAction = myMouseArea.actionStack.pop()
+			actHandler.parseActionDo(curAction)
+
 			console.log(curAction)
 			//if (curAction instanceOf DeleteAction) {
 			//	console.log("I should delete yo ass...")
