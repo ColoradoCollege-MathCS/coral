@@ -36,6 +36,41 @@ QtObject {
                 }
                 break;
             case "ScaleAction":
+                //get max/min for x and y to calculate midpoint
+                var sp = curAction.target.child;
+                var max_pt = (sp.startX, sp.startY);
+                var min_pt = (sp.startX, sp.startY);
+                for (pathEle of sp.PathElements) {
+                    if (pathEle.x > max_pt[0]) {
+                        max_pt[0] = pathEle.x
+                    }
+                    else if (pathEle.x < min_pt[0]) {
+                        min_pt[0] = pathEle.x
+                    }
+                    if (pathEle.y > max_pt[1]) {
+                        max_pt[1] = pathEle.y
+                    }
+                    else if (pathEle.y < min_pt[1]) {
+                        min_pt[1] = pathEle.y
+                    }
+                }
+                //calc midpoint, pull out scale factors
+                var midpoint = (min_pt[0] + (max_pt[0]-min_pt[0])/2,min_pt[1]+ (max_pt[1]-min_pt[1])/2)
+                var sX = curAction.sX
+                var sY = curAction.sY
+                //fns to find offset for point
+                function dX(x) {
+                    return (x-midpoint[0])*(sX-1)
+                }
+                function dY(y) {
+                    return (y-midpoint[1])*(sY-1)
+                }
+                //apply offset to start and every stored coordinate
+                sp.startX +=dX(sp.startX)
+                sp.startY +=dY(sp.startY)
+                for (pathEle of sp.PathElements)
+                    pathEle.x += dX(pathEle.x)
+                    pathEle.y += dY(pathEle.y)
                 break;
             
         }
@@ -74,6 +109,41 @@ QtObject {
                 }
                 break;
             case "ScaleAction":
+                //get max/min for x and y to calculate midpoint
+                var sp = curAction.target.child;
+                var max_pt = (sp.startX, sp.startY);
+                var min_pt = (sp.startX, sp.startY);
+                for (pathEle of sp.PathElements) {
+                    if (pathEle.x > max_pt[0]) {
+                        max_pt[0] = pathEle.x
+                    }
+                    else if (pathEle.x < min_pt[0]) {
+                        min_pt[0] = pathEle.x
+                    }
+                    if (pathEle.y > max_pt[1]) {
+                        max_pt[1] = pathEle.y
+                    }
+                    else if (pathEle.y < min_pt[1]) {
+                        min_pt[1] = pathEle.y
+                    }
+                }
+                //calc midpoint, pull out scale factors
+                var midpoint = (min_pt[0] + (max_pt[0]-min_pt[0])/2,min_pt[1]+ (max_pt[1]-min_pt[1])/2)
+                var sX = 1/curAction.sX //scale by the reciprocal to undo?
+                var sY = 1/curAction.sY
+                //fns to find offset for point
+                function dX(x) {
+                    return (x-midpoint[0])*(sX-1)
+                }
+                function dY(y) {
+                    return (y-midpoint[1])*(sY-1)
+                }
+                //apply offset to start and every stored coordinate
+                sp.startX +=dX(sp.startX)
+                sp.startY +=dY(sp.startY)
+                for (pathEle of sp.PathElements)
+                    pathEle.x += dX(pathEle.x)
+                    pathEle.y += dY(pathEle.y)
                 break;
             
         }
