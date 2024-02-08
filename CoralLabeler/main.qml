@@ -4,8 +4,7 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts 
 import Qt.labs.folderlistmodel
-
-
+import QtQuick.Shapes
 
 
 ApplicationWindow {
@@ -29,6 +28,7 @@ ApplicationWindow {
 
     }
 
+/*
 function turnonRect() {
     mainRect.visible = true
     circlebottom.visible = true
@@ -46,6 +46,7 @@ function turnoffRect(){
 
 }
 
+
 function turnonEllipse() {
     mainEllipse.visible = true
     circlebottom2.visible = true
@@ -62,6 +63,47 @@ function turnoffEllipse(){
     circleright2.visible = false
 
 }
+
+*/
+
+
+
+function rectangleComponent(){
+
+//create a QML component from shapes.qml
+        const component = Qt.createComponent("rectangleSelect.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh1")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
+
+function ellipseComponent(){
+
+//create a QML component from shapes.qml
+        const component = Qt.createComponent("ellipseSelect.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh2")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
+
 
     ///Top menu
     menuBar: MenuBar {
@@ -122,7 +164,7 @@ function turnoffEllipse(){
                     fileDialog.open()
                 }
                 Layout.alignment: Qt.AlignLeft
-                //anchors.left: parent
+                
 
             }
 
@@ -273,6 +315,10 @@ function turnoffEllipse(){
 
                 anchors.fill: parent
 
+                property var rectComponent: rectangleComponent()
+                property var ellipComponent: ellipseComponent()
+
+
                 property var fixedMouseX: 0
                 property var fixedMouseY: 0
 
@@ -309,6 +355,7 @@ function turnoffEllipse(){
                     else if (currentTool == "circleselect"){
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
+                        ellipComponent.createObject(overlay)
 
                        //holdedx = fixedMouseX
                        //holdedy = fixedMouseY
@@ -320,6 +367,7 @@ function turnoffEllipse(){
                     else if (currentTool == "squareselect"){
                         fixedMouseX = mouseX * overlay.mouseFactorX
                         fixedMouseY = mouseY * overlay.mouseFactorY
+                        rectComponent.createObject(overlay)
 
                         
 
@@ -438,9 +486,9 @@ function turnoffEllipse(){
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "magicwand"
-                        //mainRect.visible = false
-                        turnoffRect()
-                        turnoffEllipse()
+                        
+                       // turnoffRect()
+                       // turnoffEllipse()
 
                     }
 
@@ -466,9 +514,9 @@ function turnoffEllipse(){
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "paintbrush"
-                        //mainRect.visible = false
-                        turnoffRect()
-                        turnoffEllipse()
+                        
+                       // turnoffRect()
+                       // turnoffEllipse()
                     }
 
                 }
@@ -490,9 +538,9 @@ function turnoffEllipse(){
                         paintbrushIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "circleselect"
-                        //mainRect.visible = false
-                        turnoffRect()
-                        turnonEllipse()
+                        //turnoffRect()
+                        //turnonEllipse()
+                     
                     }
 
                 }
@@ -514,9 +562,10 @@ function turnoffEllipse(){
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
                         currentTool = "squareselect"
-                        //mainRect.visible = true
-                        turnonRect()
-                        turnoffEllipse()
+                        
+                       // turnonRect()
+                        //turnoffEllipse()
+                        
                     }
 
                 }
@@ -600,25 +649,40 @@ function turnoffEllipse(){
             delegate: fileDelegate
         }
     }
+
 //--------------------------------------------------------
 
 
+
+/*
+
+
  // rectangle select ------------------------------------- 
-Rectangle{
+Item{ 
         id: mainRect
-
-        width: 100
-        height: 100
-
-        x: parent.width/2 - (width/2)
-        y: parent.height/2 - (height/2)
 
         visible: false
 
-        border {
-            color: "red"
-            width: 2
+         
+            width: 100
+            height: 100
+
+            x: parent.width/2 - (width/2)
+            y: parent.height/2 - (height/2)
+    
+    Shape{
+                
+            ShapePath{
+                startX: mainRect.width / 2
+                startY: 0
+
+                PathLine{ x: mainRect.width; y: 0}
+                PathLine{ x: mainRect.width; y: mainRect.height }
+                PathLine{ x: 0; y: mainRect.height }
+                PathLine{ x: 0; y: 0}
+
         }
+    }
 
         Drag.active: mouseArea.drag.active
 
@@ -629,7 +693,8 @@ Rectangle{
             anchors.fill: parent
             drag.target: mainRect
         }
-    }
+
+    
 
 Rectangle {
 
@@ -745,7 +810,7 @@ Rectangle {
 
 
     }
-
+}
 
 
 
@@ -755,22 +820,43 @@ Rectangle {
 
 // ellipse select-----------------------------------------
 
-Rectangle{
-        id: mainEllipse
+Item {
 
-        radius: 100
-        width: radius
-        height: radius
+    id: mainEllipse
+
+            width: 100
+            height: 100
 
         visible: false
 
         x: parent.width/2 - (width/2)
         y: parent.height/2 - (height/2)
 
-        border {
-            color: "red"
-            width: 2
+
+        Shape{
+            
+
+    
+            ShapePath{
+                startX: mainEllipse.width / 2
+                startY: 0
+
+                PathAngleArc{ 
+
+                        centerX: mainEllipse.width/2
+                        centerY: mainEllipse.height/2
+                        radiusX: mainEllipse.width/2
+                        radiusY: mainEllipse.height/2
+                     
+                       
+                        sweepAngle: 360
+   
+               
+
+            }
         }
+
+    }    
 
         Drag.active: mouseArea2.drag.active
 
@@ -781,7 +867,7 @@ Rectangle{
             anchors.fill: parent
             drag.target: mainEllipse
         }
-    }
+    
 
 Rectangle {
 
@@ -899,6 +985,9 @@ Rectangle {
         }
     }
 
+}
+
+*/
 //---------------------------------------------------------------------------------
 
 
@@ -1023,7 +1112,9 @@ Rectangle {
      }
 
 
-    
+
+
+
     
 }
 

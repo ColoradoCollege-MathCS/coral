@@ -60,21 +60,21 @@ class Toolbox(QtCore.QObject):
         magic_wand_select(image, self.labels, label, coor, threshold)
         self.updateMask()
 
-    @QtCore.Slot(int, int, int, int)
-    def selectCircle(self, point1x, point1y, point2x, point2y):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        point2 = (point2x, point2y)
-        ellipse_select(self.labels, label, point1, point2)
-        self.updateMask()
+    #@QtCore.Slot(int, int, int, int)
+    #def selectCircle(self, point1x, point1y, point2x, point2y):
+    #    label = random.randint(1, 4)
+    #    point1 = (point1x, point1y)
+    #    point2 = (point2x, point2y)
+    #    ellipse_select(self.labels, label, point1, point2)
+    #    self.updateMask()
 
-    @QtCore.Slot(int, int, int, int)
-    def selectRect(self, point1x, point1y, point2x, point2y):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        point2 = (point2x, point2y)
-        rectangle_select(self.labels, label, point1, point2)
-        self.updateMask()
+    #@QtCore.Slot(int, int, int, int)
+    #def selectRect(self, point1x, point1y, point2x, point2y):
+    #    label = random.randint(1, 4)
+    #    point1 = (point1x, point1y)
+    #    point2 = (point2x, point2y)
+    #    rectangle_select(self.labels, label, point1, point2)
+    #    self.updateMask()
 
     @QtCore.Slot(int, int, int)
     def paintBrush(self, point1x, point1y, size):
