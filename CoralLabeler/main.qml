@@ -10,9 +10,11 @@ import Qt.labs.folderlistmodel
 //import QtGraphicalEffects 1.15
 //import AppStyle 1.0
 
-
+import Actions
 
 ApplicationWindow {
+    id: window
+
     width: 800
     height: 600
     visible: true
@@ -22,7 +24,23 @@ ApplicationWindow {
     property var labelAndColor: {}
     property var labelNames: []
 
+    property var labelAndSize: {}
+
     property var shapes: []
+
+    property var species: tbox.readCSV("SpeciesList.csv")
+    property var imageSpecies: []
+
+    //////////////////////////////////////////////////////////toolbox/////////////////////////////////////////////////////////
+    LoadFunctions{
+        id: lf
+
+        win: window
+    }
+
+    ToolFunctions{
+        id:tf
+    }
 
 
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
@@ -38,167 +56,6 @@ ApplicationWindow {
         image.height = sourceSize.height / (parent.height - 50)
     }
 
-    function resetLabels(){
-        labelsAndCoords = {}
-        labelNames = []
-    }
-
-    function split(filePath){
-        return tbox.splited(filePath)
-    }
-
-
-    //function to parse a big array and load all labels if an image has a set of labels
-    function loadLabels(imgLoad){
-        //load in csv from python function
-        var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
-
-        //holding dictionaries, arrays, and variables
-        var labelsAndCoordinates = {};
-        var labelNames1 = new Array(0);
-        var shapeAndCoordinates = {};
-        var labelAndCol = {};
-        var coordinates = new Array(0);
-
-        var hold = ""
-        var shape = 0
-
-
-        //loop through the whole array per line
-        for (var i = 0; i < everything.length; i++){
-
-            //if we have a label line, make a new label
-            if (everything[i][0] == "Label"){
-                if (coordinates.length == 0){
-                    labelNames1.push(everything[i][1]);
-                    hold = everything[i][1];
-                }
-                else{
-                    shapeAndCoordinates[shape] = coordinates;
-                    labelsAndCoordinates[hold] = shapeAndCoordinates;
-
-                    shape = 0
-                    shapeAndCoordinates = {};
-                    labelNames1.push(everything[i][1]);
-                    hold = everything[i][1];
-                }
-                labelAndCol[everything[i][1]] = ""
-                
-            }
-
-            //if we have a shape line, make a new shape for the label
-            else if (everything[i][0] == "Shape"){
-                if (coordinates.length == 0){
-                    shape += 1;
-                }
-                else{
-                    shapeAndCoordinates[shape] = coordinates;
-                    coordinates = new Array(0);
-                    shape += 1;
-                }
-            }
-
-            //if we have a coordinate line, make a new coordinate for the line
-            else{
-                coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
-            }
-            
-        }
-
-
-        //reached end, place all items in correct locations
-        shapeAndCoordinates[shape] = coordinates;
-        labelsAndCoordinates[hold] = shapeAndCoordinates;
-
-        //make them global variables
-        labelsAndCoords = labelsAndCoordinates
-        labelNames = labelNames1
-        labelAndColor = labelAndCol
-    }
-
-    //function to check if current image has a label file
-    function hasLabels(imgsource){
-        // console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
-        return tbox.fileExists("labels/" + imgsource + ".csv")
-    }
-
-    //a function to loop through the current label's shapes and create shapes from coordinates
-    function loopy(comp, label){
-        for(var i = 1; i < 2; i++){
-            if(labelAndColor[label] != ""){
-                shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
-                "color": labelAndColor[label], "colorline": labelAndColor[label]}));
-            }
-            else{
-                var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
-                labelAndColor[label] = color
-                shapes.push(comp.createObject(overlay, {"coords": labelsAndCoords[label][i], "label": label, 
-                "color": color, "colorline": color}));
-            }
-        }
-    }
-
-    //a function to display shapes
-    function loadShapes(){
-        //create a QML component from shapes.qml
-        const component = Qt.createComponent("shapes.qml");
-
-        //make sure component works properly
-        if (component.status === Component.Ready) {
-            //make shapes
-            for(var i = 0; i < labelNames.length; i++){
-                loopy(component, labelNames[i])
-            }
-        }
-        else if (component.status === Component.Error){
-            console.log(component.errorString())
-        }
-    }
-
-    //a function to destroy all shapes
-    function resetShapes(){
-        for(var i = 0; i < shapes.length; i++){
-            shapes[i].destroy()
-        }
-        shapes = []
-    }
-
-
-    //function to update labels and coords to save
-    function updateLabelsAndCoords(){
-        labelsAndCoords = {}
-        var holdDict = {};
-        var hold = [];
-
-        var count = 0;
-
-        //dictionary stuff
-        for(var f = 0; f < labelNames.length; f++){
-            for(var i = 0; i < shapes.length; i++){
-                //get label
-                if(shapes[i].label == labelNames[f]){
-                    //for each shape, find its label, add coordinates to hold
-                    for(var g = 0; g < shapes[i].child.pathElements.length; g++){
-                        hold.push([shapes[i].child.pathElements[g].x, shapes[i].child.pathElements[g].y])
-                    }
-
-                    //add coordinates to shape
-                    holdDict[count] = hold;
-
-                    hold = []
-                    
-                    count += 1;
-                }
-            }
-            
-            //place all shapes in label dict
-            labelsAndCoords[labelNames[f]] = holdDict
-            holdDict = {};
-            count = 0;
-        }
-
-        
-    }
 
     function populateLegend(labels) {
         labels.forEach(label => {
@@ -209,6 +66,49 @@ ApplicationWindow {
         })
         
 
+    }
+
+    function findLabel(sp){
+        var hold = ""
+        for(var i = 0; i < species.length; i++){
+            if(sp == species[i][1]){
+                hold = species[i][0]
+            }
+        }
+        return hold
+
+    }
+
+
+	function actionCreate(shape){
+		//actionStack.push(CreateAction{"target": shape});
+	}
+
+	function actionMove(shape, dx, dy){
+		//actionStack.push(MoveAction{"target": shape, "dX": dx, "dY": dy});
+	}
+
+    function labelToSpecies(yuh){
+        var hold = []
+        for(var i = 0; i < yuh.length; i++){
+            for(var g = 0; g < species.length; g++){
+                if(yuh[i] == species[g][0]){
+                    hold.push(species[g][1])
+                }
+            }
+        }
+        return hold
+    }
+
+    function getImageSpecies(labnames){
+        var hold = []
+        for(var i = 0; i < labnames.length; i++){
+            for(var g = 0; g < species.length; g++){
+                if(labnames[i] == species[g][0]){
+                    imageSpecies.push(species[g])
+                }
+            }
+        }
     }
 
 
@@ -290,7 +190,7 @@ ApplicationWindow {
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
                 enabled: false
-                icon.source: "save.png"
+                icon.source: "icons/save.png"
                 
                 MouseArea {
                     anchors.fill: parent
@@ -298,8 +198,8 @@ ApplicationWindow {
                     onClicked: {
                         enabled = false
                         
-                        updateLabelsAndCoords()
-                        tbox.saveLabels(labelsAndCoords, split(image.source))
+                        lf.updateLabelsAndCoords()
+                        tbox.saveLabels(labelsAndCoords, lf.split(image.source))
 
                     }
                     
@@ -369,17 +269,19 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
-                    // console.log(split(image.source))
-                    if(hasLabels(split(image.source))){
-                        // console.log("periodt")
-                        loadLabels(split(image.source))
+                    //console.log(lf.split(image.source))
+                    if(lf.hasLabels(lf.split(image.source))){
+                        
+                        lf.loadLabels(lf.split(image.source))
 
-                        loadShapes()
+                        lf.loadShapes()
+                        getImageSpecies(labelNames)
 
                     }
                     else{
-                        resetLabels()
-                        resetShapes()
+                        lf.resetLabels()
+                        lf.resetShapes()
+                        imageSpecies = []
                     }
                 }
             }
@@ -452,6 +354,17 @@ ApplicationWindow {
                 //threshold of magicwand or size of brush
                 property var value: 1
 
+                property var comp: tf.createLassoComponent()
+
+                property var g: undefined
+
+                property var ogx: 0
+                property var ogy: 0
+
+                property var dx: 0
+                property var dy: 0
+
+                property var shapeCurrent: undefined
 
                 //fix mouse coordinate
                 function getMouseX() {
@@ -469,8 +382,32 @@ ApplicationWindow {
 
 
                 onPressed: { 
+                    //lasso tool
+                    if (currentTool == "lassotool"){
+                        g = comp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                        g.child.startX = mouseX
+                        g.child.startY = mouseY
+                        shapes.push(g)
+                    }
+
+                    //move tool
+                    else if (currentTool == "movetool"){
+                        shapeCurrent = undefined
+                        for(var i = 0; i < shapes.length; i++){
+                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                shapeCurrent = shapes[i]
+                            }
+                            
+                        }
+                        dx = mouseX
+                        ogx = mouseX
+                        dy = mouseY
+                        ogy = mouseY
+                        
+                    }
+
                     //for magic wand
-                    if (currentTool == "magicwand"){
+                    else if (currentTool == "magicwand"){
 
                         //console.log(mouseX, mouseY)
                         
@@ -510,9 +447,44 @@ ApplicationWindow {
                     }
                 }
 
+                
+                onPositionChanged: {
+                    if (currentTool == "lassotool"){
+                        tf.drawShape(g, mouseX, mouseY)
+                    }
+                    else if (currentTool == "movetool"){
+                        if(shapeCurrent != undefined){
+                            for(var i = 0; i < shapeCurrent.child.pathElements.length; i++){
+                                shapeCurrent.child.pathElements[i].x += (mouseX - dx)
+                                shapeCurrent.child.pathElements[i].y += (mouseY - dy)
+                    
+                            }
+                            shapeCurrent.child.startX += (mouseX - dx)
+                            shapeCurrent.child.startY += (mouseY - dy)
+                            dx = mouseX
+                            dy = mouseY
+                        }
+                    }
+                }
+
 
                 //mouse released actions
                 onReleased: {
+                    //lasso tool
+                    if (currentTool == "lassotool"){
+                        tf.endShape(g, labelAndColor[g.label])
+                        actionCreate(g)
+                    }
+
+                    //move tool
+                    else if (currentTool == "movetool"){
+                        if(shapeCurrent != undefined){
+                            dx = mouseX - ogx
+                            dy = mouseY - ogy
+
+                            actionMove(shapeCurrent, dx, dy)
+                        }
+                    }
 
                     //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
@@ -564,17 +536,15 @@ ApplicationWindow {
             id: comboyuh
 
             anchors.left: image.right
-            
-            // Set the initial currentIndex to the value stored in the backend.
-            Component.onCompleted: currentIndex = indexOfValue(backend.modifier)
 
-            model: labelNames
+            model: labelToSpecies(labelNames)
+
             
 
             // When a label is chosen, change the shapes for that label.
             onActivated: {
                 for (var i = 0; i < shapes.length; i++){
-                    if (shapes[i].label == currentText){
+                    if (shapes[i].label == findLabel(currentText)){
                         shapes[i].colorline = "yellow"
                     }
                     else {
@@ -602,7 +572,7 @@ ApplicationWindow {
                 id:magicWandIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "magicwand.png"
+                icon.source: "icons/magicwand.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -616,6 +586,9 @@ ApplicationWindow {
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "magicwand"
                     }
 
@@ -626,7 +599,7 @@ ApplicationWindow {
                 id:paintbrushIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "paintbrush.png"
+                icon.source: "icons/paintbrush.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -640,6 +613,9 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "paintbrush"
                     }
 
@@ -649,7 +625,7 @@ ApplicationWindow {
                 id:circleSelectIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "circleselect.png"
+                icon.source: "icons/circleselect.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -661,6 +637,9 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
                         squareSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "circleselect"
                     }
 
@@ -670,7 +649,7 @@ ApplicationWindow {
                 id:squareSelectIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "squareselect.png"
+                icon.source: "icons/squareselect.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -682,10 +661,66 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "squareselect"
                     }
 
                 }
+            }
+
+            Button {
+                id:moveSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                icon.source: "icons/move.png"
+                enabled: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
+                        moveSelectIcon.enabled = false
+                        lassoSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+
+                        currentTool = "movetool"
+                    }
+
+                }
+            }
+
+            Button {
+                id: lassoSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                icon.source: "icons/lasso.png"
+                enabled: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
+                        lassoSelectIcon.enabled = false
+                        moveSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+
+                        currentTool = "lassotool"
+                    }
+
+                }
+
             }
        
 
@@ -750,11 +785,13 @@ ApplicationWindow {
                                 
                                 changeImage(folderModel.folder + "/" + fileName)
 
-                                if(hasLabels(folderModel.folder + "/" + fileName)){
-                                    loadLabels(fileName)
+                                if(lf.hasLabels(folderModel.folder + "/" + fileName)){
+                                    lf.loadLabels(fileName)
+                                    getImageSpecies(labelNames)
                                 }
                                 else{
-                                    resetLabels()
+                                    lf.resetLabels()
+                                    imageSpecies = []
                                 }
                             }
                             

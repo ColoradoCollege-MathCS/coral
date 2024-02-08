@@ -3,13 +3,15 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts 
-import QtQuick.Shapes 1.6
+import QtQuick.Shapes
 import Qt.labs.folderlistmodel
 
 //create a shape
 Shape{
     id: theShape
     anchors.fill: parent
+
+    containsMode: Shape.FillContains
 
     property var coords: []
     property var label: ""
@@ -18,11 +20,14 @@ Shape{
 
     property var child: thePath
 
+
     //create its path
     ShapePath{
         id: thePath
         strokeColor: theShape.colorline
         strokeWidth: 1
+
+
         fillColor: theShape.color
         capStyle: ShapePath.RoundCap
 
