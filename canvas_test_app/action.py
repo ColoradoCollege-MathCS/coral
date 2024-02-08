@@ -28,7 +28,14 @@ class Action(QObject):
     @Property(str, doc="The string representation of the class name")
     def typeString(self):
         return self._typeString
-    
+
+    @Property(int, doc="The index of this element in its parent's array. Stored so items are restored at the right z value")
+    def idxInParent(self):
+        return self._idxInParent
+    @idxInParent.setter
+    def idxInParent(self, _idxInParent):
+        self._idxInParent = _idxInParent
+
     @Slot()
     def do(self):
         """Execute the action represented by this class"""
