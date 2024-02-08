@@ -42,11 +42,9 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(str, int, int)
-    def getPrediction(self, img_path, seedX, seedY):
-        polygon = blob_ML(img_path[6:], (seedX, seedY))
-        #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
-        print(polygon)
+    @QtCore.Slot(str, int, int, int, int, float, float)
+    def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
+        polygon = blob_ML(img_path[6:], (seedX, seedY), x_coord, y_coord, x_factor, y_factor)
 
 
     @QtCore.Slot(str, int, int, float)

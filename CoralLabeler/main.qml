@@ -249,7 +249,6 @@ ApplicationWindow {
                 text: qsTr("Get AI Predictions")
                 onTriggered: {
                     // var labels = tbox.getPrediction(filename, (30,30)); 
-                    tbox.getPrediction(image.source, 225, 250)
                     refreshMask()
                     // populateLegend(labels)
                     labelLegend.visible = true
@@ -455,17 +454,17 @@ ApplicationWindow {
 
 
                 //fix mouse coordinate
-                function getMouseX(image) {
+                function getMouseX() {
                     return (overlay.width - overlay.paintedWidth) * 0.5
                 }
 
-                function getMouseY(image) {
+                function getMouseY() {
                     return (overlay.height - overlay.paintedHeight) * 0.5
                 }
 
                 function fixMouse(image) {
-                    fixedMouseX = Math.floor((mouseX - getMouseX(image)) / overlay.mouseFactorX)
-                    fixedMouseY = Math.floor((mouseY - getMouseY(image)) / overlay.mouseFactorY)             
+                    fixedMouseX = Math.floor((mouseX - getMouseX()) / overlay.mouseFactorX)
+                    fixedMouseY = Math.floor((mouseY - getMouseY()) / overlay.mouseFactorY)             
                 }
 
 
@@ -476,8 +475,12 @@ ApplicationWindow {
                         //console.log(mouseX, mouseY)
                         
                         fixMouse(image)
+                        
+                        tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
+                        loadLabels(split(image.source))
+                        loadShapes()
 
-                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
+                        // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
 
                     //paintbrush if held down
