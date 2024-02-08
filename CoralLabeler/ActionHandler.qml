@@ -21,10 +21,19 @@ QtObject {
                 curAction.idxInParent = idx
                 //sucessfully removed, time 2 put the others back
                 for (removedElement of toPutBack) {
-                    curAction.shapeParent.data.push(removedElement)
+                    curAction.shapeParent.data.push(removedElement);
                 }
                 break;
             case "MoveAction":
+                var dX = curAction.dX;
+                var dY = curAction.dY;
+                var sp = curAction.target.child; //Assuming target is a Shape containing a ShapePath
+                sp.startX += dX;
+                sp.startY +=dY;
+                for (pathEle of sp.PathElements) {
+                    pathEle.x+=dX;
+                    pathEle.y+=dY;
+                }
                 break;
             case "ScaleAction":
                 break;
@@ -54,6 +63,15 @@ QtObject {
                 }
                 break;
             case "MoveAction":
+                var dX = curAction.dX;
+                var dY = curAction.dY;
+                var sp = curAction.target.child; //Assuming target is a Shape containing a ShapePath
+                sp.startX -= dX;
+                sp.startY -=dY;
+                for (pathEle of sp.PathElements) {
+                    pathEle.x-=dX;
+                    pathEle.y-=dY;
+                }
                 break;
             case "ScaleAction":
                 break;
