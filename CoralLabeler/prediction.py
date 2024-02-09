@@ -41,7 +41,7 @@ def transform_img(img_path):
     return img
     
     
-def get_fm(img_path):
+def get_fm(img_path):   
     mrcnn_model = get_model()
     
     # extract layer with forward hook
@@ -77,29 +77,40 @@ def process_fm(fm):
 def write_shape(polygon, img_path, x_coord, y_coord, x_factor, y_factor):
     img_path = './labels/' + img_path.rsplit('/',1)[1] + '.csv'
 
-    mode = ''
+    cur_content = []
+    line_append = -1
+
+    to_add = []
+    for vert in polygon:
+        vert_x = str(math.floor((vert[0] * x_factor) + x_coord))
+        vert_y = str(math.floor((vert[1] * y_factor) + y_coord))
+        to_add.append([vert_x, vert_y])
+    
     if os.path.exists(img_path):
-        mode = 'a'
-    else:
-        mode = 'w'
-
-    with open(img_path, mode) as file:
         with open(img_path, 'r') as file_r:
-            label_count = 1
-            s = 'Label'
+            line_num = 0
+            label = '1'
             for line in file_r:
-                if s in line:
-                    label_count += 1
+                line_num += 1
+                cur_content.append(line.strip().split(','))
+                if label in line:
+                    line_append = line_num
+        
+    with open(img_path, 'w') as file:
+        writer = csv.writer(file, delimiter=',')     
+        
+        if line_append != -1:
+            to_add.insert(0, ['Shape'])
+            for coords in reversed(to_add):
+                cur_content.insert(line_append, coords)
+        else:
+            cur_content.append(['Label', '1'])
+            cur_content.append(['Shape'])
+            for coords in to_add:
+                cur_content.append(coords)
 
-        writer = csv.writer(file, delimiter=',')
-
-        writer.writerow(['Label', 'unknown' + str(label_count)])
-        writer.writerow(['Shape'])
-
-        for vert in polygon:
-            vert_x = str(math.floor((vert[0] * x_factor) + x_coord))
-            vert_y = str(math.floor((vert[1] * y_factor) + y_coord))
-            writer.writerow([vert_x, vert_y])
+        for line in cur_content:
+                writer.writerow(line)
     
 
 def blob_ML(img_path, seed, x_coord, y_coord, x_factor, y_factor):

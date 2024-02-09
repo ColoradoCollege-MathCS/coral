@@ -412,10 +412,10 @@ ApplicationWindow {
                         //console.log(mouseX, mouseY)
                         
                         fixMouse(image)
-                        
+                        lf.resetShapes()
                         tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
-                        loadLabels(split(image.source))
-                        loadShapes()
+                        lf.loadLabels(lf.split(image.source))
+                        lf.loadShapes()
 
                         // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
