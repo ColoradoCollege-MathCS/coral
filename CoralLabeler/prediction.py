@@ -74,7 +74,7 @@ def process_fm(fm):
     return max_pool_chnls
 
 
-def write_shape(polygon, img_path, x_coord, y_coord, x_factor, y_factor):
+def write_shape(label_name, polygon, img_path, x_coord, y_coord, x_factor, y_factor):
     img_path = './labels/' + img_path.rsplit('/',1)[1] + '.csv'
 
     cur_content = []
@@ -89,12 +89,11 @@ def write_shape(polygon, img_path, x_coord, y_coord, x_factor, y_factor):
     if os.path.exists(img_path):
         with open(img_path, 'r') as file_r:
             line_num = 0
-            label = '1'
             for line in file_r:
-                line_num += 1
                 cur_content.append(line.strip().split(','))
-                if label in line:
+                if label_name in line.strip().split(','):
                     line_append = line_num
+                line_num +=1
         
     with open(img_path, 'w') as file:
         writer = csv.writer(file, delimiter=',')     
@@ -102,9 +101,9 @@ def write_shape(polygon, img_path, x_coord, y_coord, x_factor, y_factor):
         if line_append != -1:
             to_add.insert(0, ['Shape'])
             for coords in reversed(to_add):
-                cur_content.insert(line_append, coords)
+                cur_content.insert(line_append + 1, coords)
         else:
-            cur_content.append(['Label', '1'])
+            cur_content.append(['Label', label_name])
             cur_content.append(['Shape'])
             for coords in to_add:
                 cur_content.append(coords)
@@ -113,7 +112,7 @@ def write_shape(polygon, img_path, x_coord, y_coord, x_factor, y_factor):
                 writer.writerow(line)
     
 
-def blob_ML(img_path, seed, x_coord, y_coord, x_factor, y_factor):
+def blob_ML(label_name, img_path, seed, x_coord, y_coord, x_factor, y_factor):
     ext_fm = get_fm(img_path)
     
     pro_fm = process_fm(ext_fm)
@@ -128,7 +127,7 @@ def blob_ML(img_path, seed, x_coord, y_coord, x_factor, y_factor):
         polygon = largest_contour.reshape(-1, 2)
         polygon = approximate_polygon(polygon, tolerance=1)
     
-    write_shape(polygon, img_path, x_coord, y_coord, x_factor, y_factor)
+    write_shape(label_name, polygon, img_path, x_coord, y_coord, x_factor, y_factor)
     
     return polygon
   

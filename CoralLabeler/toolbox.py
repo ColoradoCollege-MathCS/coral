@@ -42,9 +42,9 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(str, int, int, int, int, float, float)
-    def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
-        polygon = blob_ML(img_path[6:], (seedX, seedY), x_coord, y_coord, x_factor, y_factor)
+    @QtCore.Slot(str, str, int, int, int, int, float, float)
+    def getPrediction(self, label_name, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
+        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY), x_coord, y_coord, x_factor, y_factor)
 
 
     @QtCore.Slot(str, int, int, float)
@@ -126,3 +126,15 @@ class Toolbox(QtCore.QObject):
     def printString(self, s):
         print(s)
 
+    @QtCore.Slot(str, str, str, result="QVariantList")
+    def addToCSV(self, data, name, fileName):
+        with open(fileName, 'a') as file:
+
+            # write row
+            file.write("\n")
+            file.write(str(int(data) + 1) + "," + name)
+
+            # Close the file object
+            file.close()
+
+        return [str(int(data) + 1), name]

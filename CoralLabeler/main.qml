@@ -21,7 +21,7 @@ ApplicationWindow {
 
     property var currentTool: ""
     property var labelsAndCoords: {}
-    property var labelAndColor: {}
+    property var labelAndColor: ({})
     property var labelNames: []
 
     property var labelAndSize: {}
@@ -271,17 +271,22 @@ ApplicationWindow {
                     refreshMask()
                     //console.log(lf.split(image.source))
                     if(lf.hasLabels(lf.split(image.source))){
+                        lf.resetLabels()
+                        lf.resetShapes()
+                        imageSpecies = []
                         
                         lf.loadLabels(lf.split(image.source))
 
                         lf.loadShapes()
                         getImageSpecies(labelNames)
+                        comboyuh.model = labelToSpecies(labelNames)
 
                     }
                     else{
                         lf.resetLabels()
                         lf.resetShapes()
                         imageSpecies = []
+                        comboyuh.model = []
                     }
                 }
             }
@@ -384,10 +389,12 @@ ApplicationWindow {
                 onPressed: { 
                     //lasso tool
                     if (currentTool == "lassotool"){
-                        g = comp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
-                        g.child.startX = mouseX
-                        g.child.startY = mouseY
-                        shapes.push(g)
+                        if(comboyuh.currentText != undefined){
+                            g = comp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                            g.child.startX = mouseX
+                            g.child.startY = mouseY
+                            shapes.push(g)
+                        }
                     }
 
                     //move tool
@@ -413,9 +420,10 @@ ApplicationWindow {
                         
                         fixMouse(image)
                         lf.resetShapes()
-                        tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
+                        tbox.getPrediction(findLabel(comboyuh.currentText), image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
                         lf.loadLabels(lf.split(image.source))
                         lf.loadShapes()
+                        
 
                         // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
@@ -450,7 +458,9 @@ ApplicationWindow {
                 
                 onPositionChanged: {
                     if (currentTool == "lassotool"){
-                        tf.drawShape(g, mouseX, mouseY)
+                        if(comboyuh.currentText != undefined){
+                            tf.drawShape(g, mouseX, mouseY)
+                        }
                     }
                     else if (currentTool == "movetool"){
                         if(shapeCurrent != undefined){
@@ -472,8 +482,17 @@ ApplicationWindow {
                 onReleased: {
                     //lasso tool
                     if (currentTool == "lassotool"){
-                        tf.endShape(g, labelAndColor[g.label])
-                        actionCreate(g)
+                        if(comboyuh.currentText != undefined){
+                            tf.endShape(g, labelAndColor[g.label])
+                            actionCreate(g)
+                            if(comboyuh.currentText != undefined){
+                                tf.endShape(g, labelAndColor[g.label])
+                                actionCreate(g)
+                            }
+                            else{
+                                console.log("select a label")
+                            }
+                        }
                     }
 
                     //move tool
@@ -537,7 +556,9 @@ ApplicationWindow {
 
             anchors.left: image.right
 
-            model: labelToSpecies(labelNames)
+            property var thisModel: labelToSpecies(labelNames)
+
+            model: thisModel
 
             
 
@@ -555,8 +576,75 @@ ApplicationWindow {
             }
 
     }
-            
-    
+
+    //new label text field
+    TextField {
+        anchors.top: comboyuh.bottom
+        anchors.left: image.right
+        placeholderText: qsTr("Enter new label")
+
+        //went typed and pressed enter
+        onAccepted: {
+            var aSpecies = false
+            var alreadyInList = false
+
+            var curText = text
+
+
+            //find if species already has text
+            for (var i = 0; i < species.length; i++){
+                if(species[i][1] == curText){
+                    //check if the species is already in our combobox
+                    for(var g = 0; g < imageSpecies; g++){
+                        if(imageSpecies[i][1] == curText){
+                            alreadyInList = true
+                        }
+                    }
+
+                    //if it is, just ignore text
+                    if(alreadyInList == true){
+                        aSpecies = false
+                        comboyuh.currentText = curText
+                    }
+
+                    //else, add it to the combobox and our image labels
+                    else{
+                        aSpecies = true
+                        imageSpecies.push(species[i])
+                        labelNames.push(species[i][0])
+                        comboyuh.thisModel.push(species[i][1])
+                        comboyuh.model = comboyuh.thisModel
+
+                        var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+
+
+                        labelAndColor[species[i][0]] = color;
+                    }
+
+                }
+            }
+
+            //if it is a new label
+            if(aSpecies != true){
+                //add to combobox and species list and all other variables
+                species.push(lf.addToSpeciesList(species[species.length-1][0], curText))
+                imageSpecies.push([species[species.length-1]])
+                labelNames.push(species[species.length-1][0])
+                comboyuh.thisModel.push(species[species.length-1][1])
+                comboyuh.model = comboyuh.thisModel
+
+
+                var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+                labelAndColor[species[species.length-1][0]] = color;
+            }
+
+            //remove the text from box
+            remove(0, text.length)
+
+
+        }
+    }
+     
 
     //////////////////////////////////////////////////////////side tool bar////////////////////////////////////////////////////////
     //diable when selected and enable everything else 
@@ -786,12 +874,20 @@ ApplicationWindow {
                                 changeImage(folderModel.folder + "/" + fileName)
 
                                 if(lf.hasLabels(folderModel.folder + "/" + fileName)){
+                                    lf.resetLabels()
+                                    lf.resetShapes()
+                                    imageSpecies = []
+
+
                                     lf.loadLabels(fileName)
                                     getImageSpecies(labelNames)
+                                    comboyuh.model = labelToSpecies(labelNames)
                                 }
                                 else{
                                     lf.resetLabels()
+                                    lf.resetShapes()
                                     imageSpecies = []
+                                    comboyuh.model = []
                                 }
                             }
                             
