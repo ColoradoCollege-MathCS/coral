@@ -3,7 +3,6 @@ from skimage.segmentation import flood
 import numpy as np
 
 
-
 #Parameters:
 #labels - numpy array with an int for each pixel. 0=no label, other ints have meaning
 #labelNum - What label ID to set select values to.
