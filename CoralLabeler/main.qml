@@ -111,6 +111,41 @@ ApplicationWindow {
         }
     }
 
+    function rectangleComponent(){
+
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("rectangleSelect.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh1")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
+
+    function ellipseComponent(){
+
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("ellipseSelect.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh2")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
 
 
     
@@ -362,6 +397,9 @@ ApplicationWindow {
 
                 property var comp: tf.createLassoComponent()
 
+                property var rectComponent: rectangleComponent()
+                property var ellipComponent: ellipseComponent()
+
                 property var g: undefined
 
                 property var ogx: 0
@@ -435,6 +473,13 @@ ApplicationWindow {
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
+
+                        for(var i = 0; i < 2; i++){
+                            console.log(labelAndColor[i])
+                        }
+                        
+
+                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
                     }
 
                     //if square is held down, record those coordinates
@@ -443,6 +488,8 @@ ApplicationWindow {
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
+
+                        shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
                     }
 
                     //means no tool was selected
@@ -485,6 +532,8 @@ ApplicationWindow {
                         else{
                             console.log("select a label")
                         }
+
+                        saveIconButton.enabled = true
                     }
 
                     //move tool
@@ -495,35 +544,36 @@ ApplicationWindow {
 
                             actionMove(shapeCurrent, dx, dy)
                         }
+                        saveIconButton.enabled = true
                     }
 
                     //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
-                        saveIconButton.enabled
+                        saveIconButton.enabled = true
                     }
 
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
                         isPressed = false
-                        saveIconButton.enabled
+                        saveIconButton.enabled = true
                     }
 
                     //get last coordinate to make circle, save needs to happen now
                     else if (currentTool == "circleselect"){
                         fixMouse(image)
 
-                        tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
-                        saveIconButton.enabled
+                        //tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+                        saveIconButton.enabled = true
                     }
 
                     //get last coordinate to make square, save needs to happen now
                     else if (currentTool == "squareselect"){
                         fixMouse(image)
 
-                        tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
-                        saveIconButton.enabled
+                        //tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+                        saveIconButton.enabled = true
                     }
                 }
             }
@@ -558,9 +608,12 @@ ApplicationWindow {
             onActivated: {
                 for (var i = 0; i < shapes.length; i++){
                     if (shapes[i].label == findLabel(currentText)){
+                        console.log(shapes[i].colorline)
                         shapes[i].colorline = "yellow"
                     }
                     else {
+                        console.log(shapes[i].label)
+                        console.log(labelAndColor[shapes[i].label])
                         shapes[i].colorline = labelAndColor[shapes[i].label]
                     }
                 }
