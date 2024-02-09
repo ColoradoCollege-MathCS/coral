@@ -15,8 +15,8 @@ Rectangle{
     property var win: null
 
     function resetLabels(){
-        labelsAndCoords = {}
-        labelNames = []
+        win.labelsAndCoords = {}
+        win.labelNames = []
     }
 
     function split(filePath){
@@ -106,7 +106,7 @@ Rectangle{
     //a function to loop through the current label's shapes and create shapes from coordinates
     function loopy(comp, label, size){
         for(var i = 1; i <= size; i++){
-            if(labelAndColor[label] != ""){
+            if(win.labelAndColor[label] != ""){
                 win.shapes.push(comp.createObject(overlay, {"coords": win.labelsAndCoords[label][i], "label": label, 
                 "color": win.labelAndColor[label], "colorline": win.labelAndColor[label]}));
             }
@@ -160,7 +160,7 @@ Rectangle{
                 if(win.shapes[i].label == win.labelNames[f]){
                     //for each shape, find its label, add coordinates to hold
                     for(var g = 0; g < win.shapes[i].child.pathElements.length; g++){
-                        hold.push([shapes[i].child.pathElements[g].x, win.shapes[i].child.pathElements[g].y])
+                        hold.push([win.shapes[i].child.pathElements[g].x, win.shapes[i].child.pathElements[g].y])
                     }
 
                     //add coordinates to shape
@@ -173,10 +173,15 @@ Rectangle{
             }
             
             //place all shapes in label dict
-            win.labelsAndCoords[labelNames[f]] = holdDict
+            win.labelsAndCoords[win.labelNames[f]] = holdDict
             holdDict = {};
             count = 0;
         }
+    }
+
+    //add new label
+    function addToSpeciesList(labelNumber, name){
+        return tbox.addToCSV(labelNumber, name, "SpeciesList.csv")
     }
 
  

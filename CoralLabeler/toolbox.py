@@ -128,3 +128,16 @@ class Toolbox(QtCore.QObject):
     def printString(self, s):
         print(s)
 
+    @QtCore.Slot(str, str, str, result="QVariantList")
+    def addToCSV(self, data, name, fileName):
+        with open(fileName, 'a') as file:
+ 
+            # write row
+            file.write("\n")
+            file.write(str(int(data) + 1) + "," + name)
+        
+            # Close the file object
+            file.close()
+
+        return [str(int(data) + 1), name]
+
