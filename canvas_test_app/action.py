@@ -114,7 +114,7 @@ class ScaleAction(Action):
     def __init__(self, parent = None, shapeParent=None, target=None,sX=1,sY=1):
         super().__init__(parent)
         self._target = target
-        self.shapeParent = shapeParent
+        self._shapeParent = shapeParent
         self._sX = sX
         self._sY = sY
         self._typeString = "ScaleAction"
