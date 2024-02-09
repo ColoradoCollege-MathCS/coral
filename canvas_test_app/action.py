@@ -82,7 +82,7 @@ class DeleteAction(Action) :
 @QmlElement
 class MoveAction(Action) :
     """This action moves a shape by specified distances in the x and y directions"""
-    def __init(self,parent = None,shapeParent=None, target=None, dX=0, dY=0):
+    def __init__(self,parent = None,shapeParent=None, target=None, dX=0, dY=0):
         super().__init__(parent)
         self._target = target
         self._shapeParent = shapeParent
