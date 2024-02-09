@@ -58,9 +58,6 @@ ApplicationWindow {
 				actHandler.parseActionDo(curAction)
 			}
 			myMouseArea.doneStack.push(curAction)
-			//if (curAction instanceOf DeleteAction) {
-			//	console.log("I should delete yo ass...")
-			//}
 		}
     }
 	Button {
@@ -102,7 +99,7 @@ ApplicationWindow {
 		height: 450
 		property list<Action> todoStack: [
 			DeleteAction { id: delLabelShape; target: labelshape; shapeParent: myMouseArea},
-			ScaleAction {id:shd; target: labelshape; shapeParent: myMouseArea; sX:2; sY:3},
+			ScaleAction {id:shd; target: labelshape; shapeParent: myMouseArea; sX:2; sY:1},
 			MoveAction {id:ash; target: labelshape; shapeParent: myMouseArea; dX:100; dY: 50}
 			];
 		property list<Action> doneStack: []

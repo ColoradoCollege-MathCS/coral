@@ -137,7 +137,7 @@ QtObject {
                     }
                 }
                 //calc midpoint, pull out scale factors
-                var midpoint = [min_pt[0] + (max_pt[0]-min_pt[0])/2,min_pt[1]+ (max_pt[1]-min_pt[1])/2]
+                var midpoint = [min_pt[0] + (max_pt[0]-min_pt[0])/2, min_pt[1]+ (max_pt[1]-min_pt[1])/2]
                 var sX = 1/curAction.sX //scale by the reciprocal to undo?
                 var sY = 1/curAction.sY
                 //fns to find offset for point
