@@ -47,28 +47,48 @@ ApplicationWindow {
 
 
     Button {
-    id: save_canvas
-	width: 100
-	height:30
-	text: qsTr("next action")
-	onPressed: {
-			var curAction = myMouseArea.actionStack.pop()
-			actHandler.parseActionDo(curAction)
-
-			console.log(curAction)
+    	id: do_action
+		width: 100
+		height:30
+		text: qsTr("do action")
+		onPressed: {
+			var curAction = myMouseArea.todoStack.pop()
+			console.log(curAction.typeString)
+			if (curAction !== null) {
+				actHandler.parseActionDo(curAction)
+			}
+			myMouseArea.doneStack.push(curAction)
 			//if (curAction instanceOf DeleteAction) {
 			//	console.log("I should delete yo ass...")
 			//}
 		}
     }
 	Button {
-		id: undo_del
+		id: undo_action
 		width: 100
 		height: 30
 		x: 110
-		text: qsTr("Undo del")
+		text: qsTr("Undo action")
 		onPressed: {
-			actHandler.parseActionUndo(delLabelShape)
+			var  curAction = myMouseArea.doneStack.pop()
+			if (curAction !== null) {
+				actHandler.parseActionUndo(curAction)
+			}
+			myMouseArea.undoneStack.push(curAction)
+		}
+	}
+	Button {
+		id: redo_action
+		width: 100
+		height: 30
+		x: 220
+		text: qsTr("Redo action")
+		onPressed: {
+			var curAction = myMouseArea.undoneStack.pop()
+			if (curAction !== null) {
+				actHandler.parseActionDo(curAction)
+			}
+			myMouseArea.doneStack.push(curAction)
 		}
 	}
     Rectangle {
@@ -80,7 +100,13 @@ ApplicationWindow {
 		id: myMouseArea
 		width: 640
 		height: 450
-		property list<Action> actionStack: [MoveAction {}, DeleteAction {}, CreateAction {}, ScaleAction {}, DeleteAction { id: delLabelShape; target: labelshape; shapeParent: myMouseArea}]
+		property list<Action> todoStack: [
+			DeleteAction { id: delLabelShape; target: labelshape; shapeParent: myMouseArea},
+			ScaleAction {id:shd; target: labelshape; shapeParent: myMouseArea; sX:2; sY:3},
+			MoveAction {id:ash; target: labelshape; shapeParent: myMouseArea; dX:100; dY: 50}
+			];
+		property list<Action> doneStack: []
+		property list<Action> undoneStack: []
 		Shape {
 			id: labelshape
 			anchors.fill: parent
@@ -110,9 +136,6 @@ ApplicationWindow {
 					y: 50
 				}
 			}
-			MouseArea {
-				onPressed: console.log("Inside Triangle")
-			}
 		}
 		Shape {
 			id: shape2
@@ -121,8 +144,8 @@ ApplicationWindow {
 				strokeWidth: 3
 				strokeColor: "darkgray"
 				fillColor: "pink"
-				startX: 150
-				startY: 60
+				startX: 200
+				startY: 200
 				PathLine {
 					x: 300
 					y: 250
@@ -136,8 +159,8 @@ ApplicationWindow {
 					y:300
 				}
 				PathLine {
-					x:150
-					y:60
+					x:200
+					y:200
 				}
 			}
 		}

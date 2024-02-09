@@ -6,9 +6,11 @@ QtObject {
     function parseActionDo(curAction) {
         switch (curAction.typeString) {
             case "CreateAction"://insert into parent data at end
+                console.log("doing create action")
                 curAction.shapeParent.data.push(curAction.target);
                 break;
             case "DeleteAction":
+                console.log("doing delete action")
                 //remove elements until I have removed the right element.
                 var removedElement = curAction.shapeParent.data.pop();
                 var toPutBack = [];
@@ -25,22 +27,24 @@ QtObject {
                 }
                 break;
             case "MoveAction":
+                console.log("Doing move action")
                 var dX = curAction.dX;
                 var dY = curAction.dY;
-                var sp = curAction.target.child; //Assuming target is a Shape containing a ShapePath
+                var sp = curAction.target.data[0]; //Assuming target is a Shape containing a ShapePath
                 sp.startX += dX;
                 sp.startY +=dY;
-                for (pathEle of sp.PathElements) {
+                for (var pathEle of sp.pathElements) {
                     pathEle.x+=dX;
                     pathEle.y+=dY;
                 }
                 break;
             case "ScaleAction":
+                console.log("doing scale action")
                 //get max/min for x and y to calculate midpoint
-                var sp = curAction.target.child;
+                var sp = curAction.target.data[0];
                 var max_pt = (sp.startX, sp.startY);
                 var min_pt = (sp.startX, sp.startY);
-                for (pathEle of sp.PathElements) {
+                for (var pathEle of sp.pathElements) {
                     if (pathEle.x > max_pt[0]) {
                         max_pt[0] = pathEle.x
                     }
@@ -68,7 +72,7 @@ QtObject {
                 //apply offset to start and every stored coordinate
                 sp.startX +=dX(sp.startX)
                 sp.startY +=dY(sp.startY)
-                for (pathEle of sp.PathElements)
+                for (var pathEle of sp.pathElements)
                     pathEle.x += dX(pathEle.x)
                     pathEle.y += dY(pathEle.y)
                 break;
@@ -100,20 +104,20 @@ QtObject {
             case "MoveAction":
                 var dX = curAction.dX;
                 var dY = curAction.dY;
-                var sp = curAction.target.child; //Assuming target is a Shape containing a ShapePath
+                var sp = curAction.target.data[0]; //Assuming target is a Shape containing a ShapePath
                 sp.startX -= dX;
                 sp.startY -=dY;
-                for (pathEle of sp.PathElements) {
+                for (var pathEle of sp.pathElements) {
                     pathEle.x-=dX;
                     pathEle.y-=dY;
                 }
                 break;
             case "ScaleAction":
                 //get max/min for x and y to calculate midpoint
-                var sp = curAction.target.child;
+                var sp = curAction.target.data[0];
                 var max_pt = (sp.startX, sp.startY);
                 var min_pt = (sp.startX, sp.startY);
-                for (pathEle of sp.PathElements) {
+                for (var pathEle of sp.pathElements) {
                     if (pathEle.x > max_pt[0]) {
                         max_pt[0] = pathEle.x
                     }
@@ -141,7 +145,7 @@ QtObject {
                 //apply offset to start and every stored coordinate
                 sp.startX +=dX(sp.startX)
                 sp.startY +=dY(sp.startY)
-                for (pathEle of sp.PathElements)
+                for (var pathEle of sp.pathElements)
                     pathEle.x += dX(pathEle.x)
                     pathEle.y += dY(pathEle.y)
                 break;
