@@ -25,6 +25,18 @@ class Actions(QObject):
     def shapeParent(self, shapeParent):
         self._shapeParent = shapeParent
 
+    @Property(str, doc="The string representation of the class name")
+    def typeString(self):
+        return self._typeString
+
+    @Property(int, doc="The index of this element in its parent's array. Stored so items are restored at the right z value")
+    def idxInParent(self):
+        return self._idxInParent
+    
+    @idxInParent.setter
+    def idxInParent(self, _idxInParent):
+        self._idxInParent = _idxInParent
+
     def do(self):
         """Execute the action represented by this class"""
         #Abstract class to be overriden by children    
@@ -47,6 +59,7 @@ class CreateAction(Actions) :
         #    print("No coordinate array or pre-created object provided", file=sys.stderr)
         self._target = target
         self._shapeParent = shapeParent
+        self._typeString = "CreateAction"
 
 
 @QmlElement
@@ -56,17 +69,19 @@ class DeleteAction(Actions) :
         super().__init__(parent)
         self._target = target
         self._shapeParent = shapeParent
+        self._typeString = "DeleteAction"
 
 
 @QmlElement
 class MoveAction(Actions) :
     """This action moves a shape by specified distances in the x and y directions"""
-    def __init(self,parent = None,shapeParent=None, target=None, dX=0, dY=0):
+    def __init__(self,parent = None,shapeParent=None, target=None, dX=0, dY=0):
         super().__init__(parent)
         self._target = target
         self._shapeParent = shapeParent
         self._dX = dX
         self._dY = dY
+        self._typeString = "MoveAction"
     
     @Property(int, doc="The change in X position performed by this move")
     def dX(self):
@@ -95,6 +110,7 @@ class ScaleAction(Actions):
         self.shapeParent = shapeParent
         self._sX = sX
         self._sY = sY
+        self._typeString = "ScaleAction"
 
     @Property(int, doc="The scaling factor for the width of this object")
     def sX(self):
