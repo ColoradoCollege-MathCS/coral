@@ -6,11 +6,9 @@ QtObject {
     function parseActionDo(curAction) {
         switch (curAction.typeString) {
             case "CreateAction"://insert into parent data at end
-                console.log("doing create action")
                 curAction.shapeParent.data.push(curAction.target);
                 break;
             case "DeleteAction":
-                console.log("doing delete action")
                 //remove elements until I have removed the right element.
                 var removedElement = curAction.shapeParent.data.pop();
                 var toPutBack = [];
@@ -27,7 +25,6 @@ QtObject {
                 }
                 break;
             case "MoveAction":
-                console.log("Doing move action")
                 var dX = curAction.dX;
                 var dY = curAction.dY;
                 var sp = curAction.target.data[0]; //Assuming target is a Shape containing a ShapePath
@@ -39,12 +36,10 @@ QtObject {
                 }
                 break;
             case "ScaleAction":
-                console.log("doing scale action")
                 //get max/min for x and y to calculate midpoint
                 var sp = curAction.target.data[0];
                 var max_pt = [sp.startX, sp.startY];
                 var min_pt = [sp.startX, sp.startY];
-                console.log(sp.startY)
                 for (var pathEle of sp.pathElements) {
                     if (pathEle.x > max_pt[0]) {
                         max_pt[0] = pathEle.x
@@ -61,7 +56,6 @@ QtObject {
                 }
                 //calc midpoint, pull out scale factors
                 var midpointX = min_pt[0] + (max_pt[0]-min_pt[0])/2
-                console.log(min_pt)
                 var midpoint = [min_pt[0] + (max_pt[0]-min_pt[0])/2, min_pt[1]+ (max_pt[1]-min_pt[1])/2]
                 var sX = curAction.sX
                 var sY = curAction.sY
@@ -73,8 +67,6 @@ QtObject {
                     return (y-midpoint[1])*(sY-1)
                 }
                 //apply offset to start and every stored coordinate
-                //console.log(dX(sp.startX))
-                //console.log(dY(sp.startY))
                 sp.startX +=dX(sp.startX)
                 sp.startY +=dY(sp.startY)
                 for (var pathEle of sp.pathElements) {
@@ -119,7 +111,6 @@ QtObject {
                 }
                 break;
             case "ScaleAction":
-                console.log("Undoing ScaleAction")
                 //get max/min for x and y to calculate midpoint
                 var sp = curAction.target.data[0];
                 var max_pt = [sp.startX, sp.startY];
