@@ -99,7 +99,7 @@ ApplicationWindow {
 		height: 450
 		property list<Action> todoStack: [
 			DeleteAction { id: delLabelShape; target: labelshape; shapeParent: myMouseArea},
-			ScaleAction {id:shd; target: scaleshape; shapeParent: myMouseArea; sX:1; sY:2},
+			ScaleAction {id:shd; target: labelshape; shapeParent: myMouseArea; sX:1; sY:2},
 			MoveAction {id:ash; target: scaleshape; shapeParent: myMouseArea; dX:100; dY: 50}
 			];
 		property list<Action> doneStack: []
