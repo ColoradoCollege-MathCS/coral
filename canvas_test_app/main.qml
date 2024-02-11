@@ -99,8 +99,8 @@ ApplicationWindow {
 		height: 450
 		property list<Action> todoStack: [
 			DeleteAction { id: delLabelShape; target: labelshape; shapeParent: myMouseArea},
-			ScaleAction {id:shd; target: labelshape; shapeParent: myMouseArea; sX:2; sY:1},
-			MoveAction {id:ash; target: labelshape; shapeParent: myMouseArea; dX:100; dY: 50}
+			ScaleAction {id:shd; target: scaleshape; shapeParent: myMouseArea; sX:1; sY:2},
+			MoveAction {id:ash; target: scaleshape; shapeParent: myMouseArea; dX:100; dY: 50}
 			];
 		property list<Action> doneStack: []
 		property list<Action> undoneStack: []
@@ -158,6 +158,34 @@ ApplicationWindow {
 				PathLine {
 					x:200
 					y:200
+				}
+			}
+		}
+		Shape {
+			id: scaleshape
+			anchors.fill: parent
+			ShapePath{
+				startX: 250
+				startY: 250
+				strokeWidth: 3
+				strokeColor: "darkgray"
+				fillColor: "green"
+			
+				PathLine {
+					x: 300
+					y: 250
+				}
+				PathLine {
+					x: 300
+					y: 300
+				}
+				PathLine {
+					x: 250
+					y: 300
+				}
+				PathLine {
+					x: 250
+					y: 250
 				}
 			}
 		}
