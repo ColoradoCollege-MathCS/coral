@@ -251,7 +251,7 @@ ApplicationWindow {
                         
                         lf.updateLabelsAndCoords()
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source))
-
+                        tbox.toPixels(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                     }
                     
                 }
@@ -567,6 +567,7 @@ ApplicationWindow {
                         }
                         refreshLegend()
                         populateLegend()
+                        saveIconButton.enabled = true
                     }
 
                     //move tool

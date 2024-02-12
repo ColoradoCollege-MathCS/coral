@@ -1,5 +1,6 @@
 from PySide6 import QtCore
 from skimage.io import imread, imsave
+from skimage.draw import polygon
 import numpy as np
 import random
 import csv
@@ -147,3 +148,33 @@ class Toolbox(QtCore.QObject):
             file.close()
 
         return [str(int(data) + 1), name]
+    
+
+    @QtCore.Slot(dict, int, int, float, float, int, int, str)
+    def toPixels(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename):
+        numpy_shapes = {}
+        for label_num, coords_dict in coords.items():
+            numpy_shapes[label_num] = {}
+            for shape_num, shape_coords in coords_dict.items():
+                numpy_shapes[label_num][shape_num] = []
+                for coord in shape_coords:
+                    x = math.floor((coord[0] - x_coord) / x_factor)
+                    y  = math.floor((coord[1] - y_coord) / y_factor) 
+
+                    numpy_coord = [x, y]
+                    numpy_shapes[label_num][shape_num].append(numpy_coord)
+                
+                numpy_shapes[label_num][shape_num] = np.array(numpy_shapes[label_num][shape_num])
+
+        final_array = np.zeros((img_height, img_width))
+        
+        for n_label_num, n_coords_dict in numpy_shapes.items():
+            for n_shape_num, n_shape_coords in n_coords_dict.items():
+                r = n_shape_coords[:, 0]
+                c = n_shape_coords[:, 1]
+                rr, cc = polygon(c, r)
+                final_array[rr, cc] = n_label_num
+ 
+        np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
+        
+
