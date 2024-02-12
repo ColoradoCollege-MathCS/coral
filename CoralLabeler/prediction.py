@@ -1,165 +1,126 @@
 import torch
+import torch.nn as nn
 
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
-from torchvision import transforms as T
+import torchvision.transforms as T
+from torchvision.models.detection import maskrcnn_resnet50_fpn, MaskRCNN_ResNet50_FPN_Weights
+
+from skimage.morphology import flood
+from skimage.segmentation import find_boundaries
+from skimage.measure import approximate_polygon
+
+import cv2
 
 from PIL import Image
 
 import numpy as np
 
-# hard coded instances for the training dataset
-coral_classes = {
-    0: "Coral-growth-forms",
-    1: "Encrusting",
-    2: "Parascolymia",
-    3: "branching",
-    4: "foliose",
-    5: "massive",
-    6: "mushroom",
-    7: "phaceolid",
-    8: "submassive"
-}
-
-
-# load Pytorch model, hard coded number of instances for the traning data set
-def load_mrcnn_model(model_path, num_classes=9):
     
-    model = torchvision.models.detection.maskrcnn_resnet50_fpn()
     
-    in_features = model.roi_heads.box_predictor.cls_score.in_features
-    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+def get_model():
+    # TEMP HARD CODE MASK RCNN
+    # load pretrained model
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    weights = MaskRCNN_ResNet50_FPN_Weights.DEFAULT
+    mrcnn_model = maskrcnn_resnet50_fpn(weights=weights, progress=False).to(device)
+    mrcnn_model = mrcnn_model.eval()
     
-    hidden_layer = 256
-    in_features_mask = model.roi_heads.mask_predictor.conv5_mask.in_channels
-    model.roi_heads.mask_predictor = MaskRCNNPredictor(in_features_mask, 
-                                                       hidden_layer, 
-                                                       num_classes)
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-    weights = torch.load(model_path, map_location=device)
-    model.load_state_dict(weights)
-    model.eval()
-    
-    return model
+    return mrcnn_model
 
 
-# filter overlapping predictions, lower threshold => more strict, less overlapping
-def nms(masks, scores, threshold=0.1):
-    masks = torch.as_tensor(masks, dtype=torch.uint8)
-    bboxes = torchvision.ops.masks_to_boxes(masks)
-    
-    keep = torchvision.ops.nms(bboxes, torch.as_tensor(scores, dtype=torch.float32), threshold)
-    keep = keep.numpy()
-        
-    return keep
-
-
-# get image masks, boxesm and instances predictions
-def get_prediction(model, image_path, threshold=0.5):
-
-    image = Image.open(image_path) 
-    image_w, image_h = image.size
+def transform_img(img_path):
+    img = Image.open(img_path)
     transform = T.Compose([T.ToTensor()]) 
-    image = transform(image)
+    img = transform(img)
     
-
-    pred = model([image]) 
-    pred_score = list(pred[0]['scores'].detach().cpu().numpy())
+    return img
     
-    try:
-        pred_t = [pred_score.index(x) for x in pred_score if x > threshold][-1]
-    except IndexError:
-        print("No predictions for threshold.")
-        empty_array = np.zeros((1, image_h, image_w), dtype=np.int32)
-        empty_dict = {}
-        empty_list = []
-        return empty_array, empty_list, empty_dict
     
-    pred_masks = (pred[0]['masks'] > 0.5).squeeze().detach().cpu().numpy()
-    pred_class = [coral_classes[i] for i in list(pred[0]['labels'].cpu().numpy())]
-    pred_boxes = [[(i[0], i[1]), (i[2], i[3])] for i in list(pred[0]['boxes'].detach().cpu().numpy())]
-
-    pred_masks = pred_masks[:pred_t+1]
-    pred_boxes = pred_boxes[:pred_t+1]
-    pred_class = pred_class[:pred_t+1]
-    pred_score = pred_score[:pred_t+1]
+def get_fm(img_path):   
+    mrcnn_model = get_model()
     
-    keep = nms(pred_masks, pred_score, 0.3)
+    # extract layer with forward hook
+    activation = {}
+    def get_activation(name):
+        def hook(model, input, output):
+            activation[name] = output
+        return hook 
     
-    ppred_masks, ppred_boxes, ppred_class = [], [], []
-    for idx in keep:
-        ppred_masks.append(pred_masks[idx])
-        ppred_boxes.append(pred_boxes[idx])
-        ppred_class.append(pred_class[idx])
-     
-    return np.array(ppred_masks), np.array(ppred_boxes), np.array(ppred_class)
-
-# combines masks multiple instances predctions into one numpy array of pixels
-# if prediction of one instance overlaps another
-# instance with higher confidences core takes the pixel
-def merge_masks(masks):
+    mrcnn_model.backbone.body.layer1.register_forward_hook(get_activation('backbone'))
     
-    merged = masks[0]
-    masks = masks[1:]
+    img = transform_img(img_path)
     
-    for mask in masks:
-        for i, j in np.ndindex(mask.shape):
-            cur_val = merged[i][j]
-            nxt_val = mask[i][j]
-
-            if cur_val == 0 and nxt_val > 0:
-                merged[i][j] = nxt_val
-            
-    return merged
+    preds = mrcnn_model([img])
+    
+    ext_fm = activation['backbone']
+    
+    m = nn.Upsample((img.shape[1], img.shape[2]), mode='bicubic')
+    ext_fm = m(ext_fm)
+    ext_fm = ext_fm.squeeze(0)
+    
+    ext_fm = ext_fm.data.cpu().numpy()
+    
+    return ext_fm
 
 
-# MACHINE MAGIC, 
-# return labels of the insances, a numpy array of pixels
-def machine_magic(model_path, image_path, threshold=0.2):
-    image_path = image_path[6:]
-    model = load_mrcnn_model(model_path)
-    masks, pred_boxes, pred_class = get_prediction(model, image_path, threshold)
+def process_fm(fm):
+    max_pool_chnls = np.max(fm, 0)
     
-    label_keys = {}
-    num_objs = len(pred_class)
-    for i in range(1, num_objs + 1):
-        label_keys[i] = pred_class[i-1]
+    return max_pool_chnls
+
+
+# WRITING POLY TO 
+# def write_shape(label_name, polygon, img_path, x_coord, y_coord, x_factor, y_factor):
+#     img_path = './labels/' + img_path.rsplit('/',1)[1] + '.csv'
+
+#     cur_content = []
+#     line_append = -1
+
+#     to_add = []
+#     for vert in polygon:
+#         vert_x = str(math.floor((vert[0] * x_factor) + x_coord))
+#         vert_y = str(math.floor((vert[1] * y_factor) + y_coord))
+#         to_add.append([vert_x, vert_y])
+    
+#     if os.path.exists(img_path):
+#         with open(img_path, 'r') as file_r:
+#             line_num = 0
+#             for line in file_r:
+#                 cur_content.append(line.strip().split(','))
+#                 if label_name in line.strip().split(','):
+#                     line_append = line_num
+#                 line_num +=1
         
-     
-    masks = masks.astype(np.int32)
-    rslt_masks = []
-    for index, mask in enumerate(masks):
-        mask = np.where(mask == 1, mask * (index + 1), mask)
-        rslt_masks.append(mask)
-    
-    mrg_mask = merge_masks(rslt_masks)
+#     with open(img_path, 'w') as file:
+#         writer = csv.writer(file, delimiter=',')     
         
-    return label_keys, mrg_mask
+#         if line_append != -1:
+#             to_add.insert(0, ['Shape'])
+#             for coords in reversed(to_add):
+#                 cur_content.insert(line_append + 1, coords)
+#         else:
+#             cur_content.append(['Label', label_name])
+#             cur_content.append(['Shape'])
+#             for coords in to_add:
+#                 cur_content.append(coords)
 
+#         for line in cur_content:
+#                 writer.writerow(line)
+    
 
-# TEST
-'''
-def display_array(array):
-    unique_values = np.unique(array)
-    num_colors = len(unique_values)
-    cmap = plt.cm.get_cmap('tab10', num_colors)
+def blob_ML(label_name, img_path, seed):
+    ext_fm = get_fm(img_path)
     
-    color_map = {}
-    for i, value in enumerate(unique_values):
-        if value == 0:
-            color_map[value] = (1, 1, 1, 0) 
-        else:
-            color_map[value] = cmap(i)[:3] + (0.5,)
+    pro_fm = process_fm(ext_fm)
     
-    colored_image = np.zeros((array.shape[0], array.shape[1], 4), dtype=np.float32)
+    blob = flood(pro_fm, seed, tolerance=0.05)
     
-    for i in range(array.shape[0]):
-        for j in range(array.shape[1]):
-            colored_image[i, j] = color_map[array[i, j]]
+    shape = find_boundaries(blob, mode='inner')
     
-    plt.imshow(colored_image)
-    plt.axis('off')  # Hide axis
-    plt.show()
-'''
-   
+    contours, hierarchy = cv2.findContours((shape * 255).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) > 0:
+        largest_contour = max(contours, key=cv2.contourArea)
+        polygon = largest_contour.reshape(-1, 2)
+        polygon = approximate_polygon(polygon, tolerance=1)
+    
+    return polygon
+  
