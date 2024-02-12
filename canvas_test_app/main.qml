@@ -14,6 +14,20 @@ ApplicationWindow {
 		id: actHandler
 	}
 
+	function drawToCanvas(curShape) {
+		//Takes in a Shape object containg a ShapePath with startX/Y and multiple PathLine s.
+		var ctx = rasterCanvas.getContext("2d")
+		var sp = curShape.data[0]; //Assuming Shape contains a ShapePath
+		ctx.fillStyle=  Qt.rgba(1,0,0,1)
+		ctx.beginPath()
+		ctx.moveTo(sp.startX, sp.startY)
+		for (var pathEle of sp.pathElements) {
+			ctx.lineTo(pathEle.x, pathEle.y)
+		}
+		ctx.closePath()
+		ctx.fill()
+	}
+
 	function addNewShapePath(x, y) {
 		var newShapePath = Qt.createQmlObject(`
 			import QtQuick
@@ -80,7 +94,8 @@ ApplicationWindow {
 		x: 330
 		text: qsTr("rasterize")
 		onPressed: {
-			
+			drawToCanvas(scaleshape)
+			console.log(rasterCanvas.toDataURL())
 		}
 	}
     Rectangle {
@@ -104,6 +119,8 @@ ApplicationWindow {
 			id: rasterCanvas
 			anchors.fill: parent
 			visible: false
+			width: myMouseArea.width
+			height: myMouseArea.height
 		}
 
 		Shape {
