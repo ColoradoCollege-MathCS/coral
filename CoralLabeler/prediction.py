@@ -16,6 +16,10 @@ import numpy as np
 
 import csv
 
+import os.path
+
+import math
+
     
     
 def get_model():
@@ -37,7 +41,7 @@ def transform_img(img_path):
     return img
     
     
-def get_fm(img_path):
+def get_fm(img_path):   
     mrcnn_model = get_model()
     
     # extract layer with forward hook
@@ -70,20 +74,45 @@ def process_fm(fm):
     return max_pool_chnls
 
 
-def write_shape(polygon):
-    with open('ShapeAI.csv', 'w') as file:
-        writer = csv.writer(file, delimiter=',')
+def write_shape(label_name, polygon, img_path, x_coord, y_coord, x_factor, y_factor):
+    img_path = './labels/' + img_path.rsplit('/',1)[1] + '.csv'
 
-        writer.writerow(['Label', 'unknownAI'])
-        writer.writerow(['Shape'])
+    cur_content = []
+    line_append = -1
 
-        for vert in polygon:
-            str_vert = [str(coord) for coord in vert]
-            writer.writerow(str_vert)
+    to_add = []
+    for vert in polygon:
+        vert_x = str(math.floor((vert[0] * x_factor) + x_coord))
+        vert_y = str(math.floor((vert[1] * y_factor) + y_coord))
+        to_add.append([vert_x, vert_y])
+    
+    if os.path.exists(img_path):
+        with open(img_path, 'r') as file_r:
+            line_num = 0
+            for line in file_r:
+                cur_content.append(line.strip().split(','))
+                if label_name in line.strip().split(','):
+                    line_append = line_num
+                line_num +=1
+        
+    with open(img_path, 'w') as file:
+        writer = csv.writer(file, delimiter=',')     
+        
+        if line_append != -1:
+            to_add.insert(0, ['Shape'])
+            for coords in reversed(to_add):
+                cur_content.insert(line_append + 1, coords)
+        else:
+            cur_content.append(['Label', label_name])
+            cur_content.append(['Shape'])
+            for coords in to_add:
+                cur_content.append(coords)
+
+        for line in cur_content:
+                writer.writerow(line)
     
 
-def blob_ML(img_path, seed):
-    
+def blob_ML(label_name, img_path, seed, x_coord, y_coord, x_factor, y_factor):
     ext_fm = get_fm(img_path)
     
     pro_fm = process_fm(ext_fm)
@@ -96,9 +125,9 @@ def blob_ML(img_path, seed):
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
         polygon = largest_contour.reshape(-1, 2)
-        polygon = approximate_polygon(polygon, tolerance=5)
+        polygon = approximate_polygon(polygon, tolerance=1)
     
-    write_shape(polygon)
+    write_shape(label_name, polygon, img_path, x_coord, y_coord, x_factor, y_factor)
     
     return polygon
   

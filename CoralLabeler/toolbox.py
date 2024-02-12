@@ -2,9 +2,12 @@ from PySide6 import QtCore
 from skimage.io import imread, imsave
 import numpy as np
 import random
+import csv
+import os
+
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
-from prediction import machine_magic
+from prediction import blob_ML
 
 def image_dims(filename):
     return imread(filename).shape
@@ -27,7 +30,7 @@ class Toolbox(QtCore.QObject):
 
     def updateMask(self):
         rgb = labeled2rgb(self.labels,color_map)
-        imsave("images/mask.png",rgb)
+        imsave("images/mask.png",rgb, check_contrast=False)
 
     @QtCore.Slot()
     def randomRectangle(self):
@@ -39,18 +42,9 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(result="QVariantList")
-    def getPrediction(self):
-        label_dict, pred_labels = machine_magic("mrcnn_model.pth", self.filename)
-        #Later, save label key to be displayed in the UI. Right now it will fail if any label is >4.
-        self.labels = pred_labels
-        self.updateMask()
-
-        label_list = []
-        for key, value in label_dict.items():
-            hex_color = '#%02x%02x%02x' % color_map[key]           
-            label_list.append([hex_color, value])
-        return  label_list
+    @QtCore.Slot(str, str, int, int, int, int, float, float)
+    def getPrediction(self, label_name, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
+        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY), x_coord, y_coord, x_factor, y_factor)
 
 
     @QtCore.Slot(str, int, int, float)
@@ -83,6 +77,64 @@ class Toolbox(QtCore.QObject):
         circle_select(self.labels, label, point1, size)
         self.updateMask()
 
+    @QtCore.Slot(str, result="QVariantList")
+    def readCSV(self, fileName):
+        labelsFile = open(fileName)
+        csvreader = csv.reader(labelsFile)
+
+        labels = []
+
+        for row in csvreader:
+            labels.append(row)
+
+        return labels
+    
+    @QtCore.Slot(dict, str, result="QVariantList")
+    def saveLabels(self, data, fileName):
+        
+        filename = 'labels/' + fileName + '.csv'
+        with open(filename, 'w') as file:
+            for keys in data.keys():
+                file.write('Label'+',' + keys)
+                file.write('\n')
+                for shapes in data[keys].keys():
+                        file.write('Shape')
+                        file.write('\n')
+                        for coord in range(len(data[keys][shapes])):
+                            if coord == 0:
+                                file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))
+                                file.write('\n')
+                                file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                            else:
+                                file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+
+                            file.write('\n')
+        
+        file.close()
+
+    
+    @QtCore.Slot(str, result = bool)
+    def fileExists(self, fileName):
+        return os.path.exists(fileName)
+    
+    @QtCore.Slot(str, result="QString")
+    def splited(self, fileName):
+        yuh = fileName.split('/')
+        return yuh[-1]
+
     @QtCore.Slot(str)
     def printString(self, s):
         print(s)
+
+    @QtCore.Slot(str, str, str, result="QVariantList")
+    def addToCSV(self, data, name, fileName):
+        with open(fileName, 'a') as file:
+
+            # write row
+            file.write("\n")
+            file.write(str(int(data) + 1) + "," + name)
+
+            # Close the file object
+            file.close()
+
+        return [str(int(data) + 1), name]

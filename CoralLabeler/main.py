@@ -9,6 +9,9 @@ from PySide6.QtWidgets import QApplication, QPushButton
 from PySide6.QtCore import Slot
 
 from toolbox import Toolbox
+import action
+
+
 
 
 if __name__ == "__main__":
@@ -17,9 +20,12 @@ if __name__ == "__main__":
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
     qml_file = Path(__file__).resolve().parent / "main.qml"
-    engine.load(qml_file)
+    
+
     context = engine.rootContext()
     context.setContextProperty("tbox",tbox)
+    engine.load(qml_file)
+
     if not engine.rootObjects():
         sys.exit(-1)
     sys.exit(app.exec())

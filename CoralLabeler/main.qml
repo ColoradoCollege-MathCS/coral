@@ -3,29 +3,152 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts 
+import QtQuick.Shapes 1.6
 import Qt.labs.folderlistmodel
 
 
 //import QtGraphicalEffects 1.15
 //import AppStyle 1.0
 
-
+import Actions
 
 ApplicationWindow {
+    id: window
+
     width: 800
     height: 600
     visible: true
 
     property var currentTool: ""
+    property var labelsAndCoords: {}
+    property var labelAndColor: ({})
+    property var labelNames: []
+
+    property var labelAndSize: {}
+
+    property var shapes: []
+
+    property var species: tbox.readCSV("SpeciesList.csv")
+    property var imageSpecies: []
+
+    //////////////////////////////////////////////////////////toolbox/////////////////////////////////////////////////////////
+    LoadFunctions{
+        id: lf
+
+        win: window
+    }
+
+    ToolFunctions{
+        id:tf
+    }
+
+
+    /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
         overlay.source = "images/mask2.png"
         overlay.source = "images/mask.png"
     }
 
-    
+    function changeImage(fileName){
+        image.source = fileName
+        image.width = sourceSize.width / parent.width * 4/8
+        image.height = sourceSize.height / (parent.height - 50)
+    }
 
-    ///Top menu
+
+    function populateLegend(labels) {
+        labels.forEach(label => {
+            labelLegendModel.append( {
+                    labelColor: label[0],
+                    labelName: label[1]
+                })
+        })
+        
+
+    }
+
+    function findLabel(sp){
+        var hold = ""
+        for(var i = 0; i < species.length; i++){
+            if(sp == species[i][1]){
+                hold = species[i][0]
+            }
+        }
+        return hold
+
+    }
+
+
+	function actionCreate(shape){
+		//actionStack.push(CreateAction{"target": shape});
+	}
+
+	function actionMove(shape, dx, dy){
+		//actionStack.push(MoveAction{"target": shape, "dX": dx, "dY": dy});
+	}
+
+    function labelToSpecies(yuh){
+        var hold = []
+        for(var i = 0; i < yuh.length; i++){
+            for(var g = 0; g < species.length; g++){
+                if(yuh[i] == species[g][0]){
+                    hold.push(species[g][1])
+                }
+            }
+        }
+        return hold
+    }
+
+    function getImageSpecies(labnames){
+        var hold = []
+        for(var i = 0; i < labnames.length; i++){
+            for(var g = 0; g < species.length; g++){
+                if(labnames[i] == species[g][0]){
+                    imageSpecies.push(species[g])
+                }
+            }
+        }
+    }
+
+    function rectangleComponent(){
+
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("rectangleSelect.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh1")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
+
+    function ellipseComponent(){
+
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("ellipseSelect.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh2")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
+
+
+    ///////////////////////////////////////////////////////////Top menu/////////////////////////////////////////////////////////
     menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
@@ -58,17 +181,17 @@ ApplicationWindow {
             Action {
                 text: qsTr("Get AI Predictions")
                 onTriggered: {
-                    var labels = tbox.getPrediction(); 
-                    refreshMask(); 
-                    saveIconButton.enabled = true
-                    populateLegend(labels)
+                    // var labels = tbox.getPrediction(filename, (30,30)); 
+                    refreshMask()
+                    // populateLegend(labels)
                     labelLegend.visible = true
+                    saveIconButton.enabled = true
                 }
             }
         }
     }
 
-    //row tool bar
+    /////////////////////////////////////////////////////////row tool bar////////////////////////////////////////////////////////
     header: ToolBar {
         
         RowLayout {
@@ -88,7 +211,7 @@ ApplicationWindow {
                 text: qsTr("Choose Folder")
 
                 onClicked: {
-                   folderDialog.open()
+                    folderDialog.open()
                 }
                 Layout.alignment: Qt.AlignLeft
             }
@@ -100,14 +223,17 @@ ApplicationWindow {
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
                 enabled: false
-                icon.source: "save.png"
+                icon.source: "icons/save.png"
                 
                 MouseArea {
                     anchors.fill: parent
                         
                     onClicked: {
                         enabled = false
-                        console.info("image clicked!")
+                        
+                        lf.updateLabelsAndCoords()
+                        tbox.saveLabels(labelsAndCoords, lf.split(image.source))
+
                     }
                     
                 }
@@ -172,16 +298,43 @@ ApplicationWindow {
             FileDialog {
                 id: fileDialog
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
-                onAccepted: image.source = selectedFile, tbox.initLabels(selectedFile), refreshMask()
+                onAccepted: {
+                    image.source = selectedFile
+                    tbox.initLabels(selectedFile)
+                    refreshMask()
+                    //console.log(lf.split(image.source))
+                    if(lf.hasLabels(lf.split(image.source))){
+                        lf.resetLabels()
+                        lf.resetShapes()
+                        imageSpecies = []
+                        
+                        lf.loadLabels(lf.split(image.source))
+
+                        lf.loadShapes()
+                        getImageSpecies(labelNames)
+                        comboyuh.model = labelToSpecies(labelNames)
+
+                    }
+                    else{
+                        lf.resetLabels()
+                        lf.resetShapes()
+                        imageSpecies = []
+                        comboyuh.model = []
+                    }
+                }
             }
 
 
             StackView {
                 id: stack
-                anchors.fill: parent
+                //anchors.fill: parent
             }
         }
     }
+
+
+    /////////////////////////////////////////////////////////image interface////////////////////////////////////////////////////////
+
 
     //random rectangle for now to push image away from tool bar, gives margin for image
     Rectangle{
@@ -197,7 +350,7 @@ ApplicationWindow {
         width: parent.height - parent.width/8
         height: parent.height - 50
     
-        fillMode: Image.PreserveAspectFit
+        fillMode: Image.PreserveAspectFit  
 
         //Overlay mask
         Image {
@@ -215,8 +368,8 @@ ApplicationWindow {
 
 
             //fix where mouse gets clicked
-            property var mouseFactorX: sourceSize.width / image.width
-            property var mouseFactorY: sourceSize.height / image.height
+            property var mouseFactorX: image.paintedWidth / image.sourceSize.width
+            property var mouseFactorY: image.paintedHeight / image.sourceSize.height
 
 
             //When mouse is clicked with a certain tool
@@ -239,15 +392,76 @@ ApplicationWindow {
                 //threshold of magicwand or size of brush
                 property var value: 1
 
+                property var comp: tf.createLassoComponent()
+
+                property var rectComponent: rectangleComponent()
+                property var ellipComponent: ellipseComponent()
+
+                property var g: undefined
+
+                property var ogx: 0
+                property var ogy: 0
+
+                property var dx: 0
+                property var dy: 0
+
+                property var shapeCurrent: undefined
+
+                //fix mouse coordinate
+                function getMouseX() {
+                    return (overlay.width - overlay.paintedWidth) * 0.5
+                }
+
+                function getMouseY() {
+                    return (overlay.height - overlay.paintedHeight) * 0.5
+                }
+
+                function fixMouse(image) {
+                    fixedMouseX = Math.floor((mouseX - getMouseX()) / overlay.mouseFactorX)
+                    fixedMouseY = Math.floor((mouseY - getMouseY()) / overlay.mouseFactorY)             
+                }
+
+
                 onPressed: { 
+                    //lasso tool
+                    if (currentTool == "lassotool"){
+                        if(comboyuh.currentText != undefined){
+                            g = comp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                            g.child.startX = mouseX
+                            g.child.startY = mouseY
+                            shapes.push(g)
+                        }
+                    }
+
+                    //move tool
+                    else if (currentTool == "movetool"){
+                        shapeCurrent = undefined
+                        for(var i = 0; i < shapes.length; i++){
+                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                shapeCurrent = shapes[i]
+                            }
+                            
+                        }
+                        dx = mouseX
+                        ogx = mouseX
+                        dy = mouseY
+                        ogy = mouseY
+                        
+                    }
+
                     //for magic wand
-                    if (currentTool == "magicwand"){
+                    else if (currentTool == "magicwand"){
+
                         //console.log(mouseX, mouseY)
                         
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
+                        lf.resetShapes()
+                        tbox.getPrediction(findLabel(comboyuh.currentText), image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
+                        lf.loadLabels(lf.split(image.source))
+                        lf.loadShapes()
+                        
 
-                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
+                        // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
 
                     //paintbrush if held down
@@ -257,20 +471,29 @@ ApplicationWindow {
 
                     //if circle is held down, record those coordinates
                     else if (currentTool == "circleselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
+
+
+                        for(var i = 0; i < 2; i++){
+                            console.log(labelAndColor[i])
+                        }
+
+
+                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
                     }
 
                     //if square is held down, record those coordinates
                     else if (currentTool == "squareselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
+
+                        
+                        shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
                     }
 
                     //means no tool was selected
@@ -279,45 +502,90 @@ ApplicationWindow {
                     }
                 }
 
+                
+                onPositionChanged: {
+                    if (currentTool == "lassotool"){
+                        if(comboyuh.currentText != undefined){
+                            tf.drawShape(g, mouseX, mouseY)
+                        }
+                    }
+                    else if (currentTool == "movetool"){
+                        if(shapeCurrent != undefined){
+                            for(var i = 0; i < shapeCurrent.child.pathElements.length; i++){
+                                shapeCurrent.child.pathElements[i].x += (mouseX - dx)
+                                shapeCurrent.child.pathElements[i].y += (mouseY - dy)
+                    
+                            }
+                            shapeCurrent.child.startX += (mouseX - dx)
+                            shapeCurrent.child.startY += (mouseY - dy)
+                            dx = mouseX
+                            dy = mouseY
+                        }
+                    }
+                }
+
 
                 //mouse released actions
                 onReleased: {
+                    //lasso tool
+                    if (currentTool == "lassotool"){
+                        if(comboyuh.currentText != undefined){
+                            tf.endShape(g, labelAndColor[g.label])
+                            actionCreate(g)
+                            if(comboyuh.currentText != undefined){
+                                tf.endShape(g, labelAndColor[g.label])
+                                actionCreate(g)
+                            }
+                            else{
+                                console.log("select a label")
+                            }
+                        }
+                    }
+
+                    //move tool
+                    else if (currentTool == "movetool"){
+                        if(shapeCurrent != undefined){
+                            dx = mouseX - ogx
+                            dy = mouseY - ogy
+
+                            actionMove(shapeCurrent, dx, dy)
+                        }
+                         saveIconButton.enabled = true
+                    }
 
                     //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
-                        saveIconButton.enabled
+                         saveIconButton.enabled = true
                     }
 
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
                         isPressed = false
-                        saveIconButton.enabled
+                         saveIconButton.enabled = true
                     }
 
                     //get last coordinate to make circle, save needs to happen now
                     else if (currentTool == "circleselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
-                        tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
-                        saveIconButton.enabled
+                        //tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+                        saveIconButton.enabled = true
                     }
 
                     //get last coordinate to make square, save needs to happen now
                     else if (currentTool == "squareselect"){
-                        fixedMouseX = mouseX * overlay.mouseFactorX
-                        fixedMouseY = mouseY * overlay.mouseFactorY
+                        fixMouse(image)
 
-                        tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
-                        saveIconButton.enabled
+                        //tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
+                        saveIconButton.enabled = true
                     }
                 }
             }
         }  
     }
-    
+
     //Timer to repeat the paintbrush action
     Timer {
         id: timer
@@ -328,7 +596,106 @@ ApplicationWindow {
         onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
     }
 
-    //Tool buttons
+
+    /////////////////////////////////////////////////////////labels//////////////////////////////////////////////////////////////
+            
+    ComboBox{
+            id: comboyuh
+
+            anchors.left: image.right
+
+            property var thisModel: labelToSpecies(labelNames)
+
+            model: thisModel
+
+            
+
+            // When a label is chosen, change the shapes for that label.
+            onActivated: {
+                for (var i = 0; i < shapes.length; i++){
+                    if (shapes[i].label == findLabel(currentText)){
+                        shapes[i].colorline = "yellow"
+                    }
+                    else {
+                        shapes[i].colorline = labelAndColor[shapes[i].label]
+                    }
+                }
+                
+            }
+
+    }
+
+    
+    //new label text field
+    TextField {
+        anchors.top: comboyuh.bottom
+        anchors.left: image.right
+        placeholderText: qsTr("Enter new label")
+
+        //went typed and pressed enter
+        onAccepted: {
+            var aSpecies = false
+            var alreadyInList = false
+
+            var curText = text
+
+
+            //find if species already has text
+            for (var i = 0; i < species.length; i++){
+                if(species[i][1] == curText){
+                    //check if the species is already in our combobox
+                    for(var g = 0; g < imageSpecies; g++){
+                        if(imageSpecies[i][1] == curText){
+                            alreadyInList = true
+                        }
+                    }
+
+                    //if it is, just ignore text
+                    if(alreadyInList == true){
+                        aSpecies = false
+                        comboyuh.currentText = curText
+                    }
+
+                    //else, add it to the combobox and our image labels
+                    else{
+                        aSpecies = true
+                        imageSpecies.push(species[i])
+                        labelNames.push(species[i][0])
+                        comboyuh.thisModel.push(species[i][1])
+                        comboyuh.model = comboyuh.thisModel
+
+                        var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+
+
+                        labelAndColor[species[i][0]] = color;
+                    }
+
+                }
+            }
+
+            //if it is a new label
+            if(aSpecies != true){
+                //add to combobox and species list and all other variables
+                species.push(lf.addToSpeciesList(species[species.length-1][0], curText))
+                imageSpecies.push([species[species.length-1]])
+                labelNames.push(species[species.length-1][0])
+                comboyuh.thisModel.push(species[species.length-1][1])
+                comboyuh.model = comboyuh.thisModel
+
+
+                var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+                labelAndColor[species[species.length-1][0]] = color;
+            }
+
+            //remove the text from box
+            remove(0, text.length)
+
+
+        }
+    }
+     
+
+    //////////////////////////////////////////////////////////side tool bar////////////////////////////////////////////////////////
     //diable when selected and enable everything else 
     ToolBar {
         ColumnLayout {
@@ -342,7 +709,7 @@ ApplicationWindow {
                 id:magicWandIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "magicwand.png"
+                icon.source: "icons/magicwand.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -356,6 +723,9 @@ ApplicationWindow {
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "magicwand"
                     }
 
@@ -366,7 +736,7 @@ ApplicationWindow {
                 id:paintbrushIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "paintbrush.png"
+                icon.source: "icons/paintbrush.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -380,6 +750,9 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         circleSelectIcon.enabled = true
                         squareSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "paintbrush"
                     }
 
@@ -389,7 +762,7 @@ ApplicationWindow {
                 id:circleSelectIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "circleselect.png"
+                icon.source: "icons/circleselect.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -401,6 +774,9 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
                         squareSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "circleselect"
                     }
 
@@ -410,7 +786,7 @@ ApplicationWindow {
                 id:squareSelectIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "squareselect.png"
+                icon.source: "icons/squareselect.png"
                 enabled: true
                 MouseArea {
                     anchors.fill: parent
@@ -422,10 +798,66 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+
                         currentTool = "squareselect"
                     }
 
                 }
+            }
+
+            Button {
+                id:moveSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                icon.source: "icons/move.png"
+                enabled: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
+                        moveSelectIcon.enabled = false
+                        lassoSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+
+                        currentTool = "movetool"
+                    }
+
+                }
+            }
+
+            Button {
+                id: lassoSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                icon.source: "icons/lasso.png"
+                enabled: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
+                        lassoSelectIcon.enabled = false
+                        moveSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+
+                        currentTool = "lassotool"
+                    }
+
+                }
+
             }
        
 
@@ -433,7 +865,7 @@ ApplicationWindow {
     }
 
 
-    //Gallery stuff
+    ////////////////////////////////////////////////////////////gallery///////////////////////////////////////////////////////////
     Rectangle{
         id:allGallery
         width: parent.width/8
@@ -487,7 +919,25 @@ ApplicationWindow {
                             }
                             else{
                                 tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                                
                                 changeImage(folderModel.folder + "/" + fileName)
+
+                                if(lf.hasLabels(folderModel.folder + "/" + fileName)){
+                                    lf.resetLabels()
+                                    lf.resetShapes()
+                                    imageSpecies = []
+
+
+                                    lf.loadLabels(fileName)
+                                    getImageSpecies(labelNames)
+                                    comboyuh.model = labelToSpecies(labelNames)
+                                }
+                                else{
+                                    lf.resetLabels()
+                                    lf.resetShapes()
+                                    imageSpecies = []
+                                    comboyuh.model = []
+                                }
                             }
                             
                         }
@@ -514,7 +964,7 @@ ApplicationWindow {
     }
 
     
-    //save dialog
+    //////////////////////////////////////////////////////////////save////////////////////////////////////////////////////////////
     Dialog{
         id: savemask
 
@@ -548,7 +998,10 @@ ApplicationWindow {
         }
     }
 
-    // Label Legend
+
+
+
+    /////////////////////////////////////////////////////////label legend////////////////////////////////////////////////////////
     Rectangle {
         id: labelLegend
         color: "white"
@@ -611,16 +1064,4 @@ ApplicationWindow {
         }
 
      }
-
-    function populateLegend(labels) {
-        labels.forEach(label => {
-            labelLegendModel.append( {
-                    labelColor: label[0],
-                    labelName: label[1]
-                })
-        })
-        
-
-     }
 }
-
