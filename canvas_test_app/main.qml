@@ -14,21 +14,6 @@ ApplicationWindow {
 		id: actHandler
 	}
 
-	function addNewPolyline(){
-		//var newPolyline = PathPolyline([Qt.point(myMouseArea.mouseX,myMouseArea.mouseY)]);
-		var newPolyline = Qt.createQmlObject(`
-			import QtQuick
-			PathPolyline {
-				path: [Qt.point(myMouseArea.mouseX,myMouseArea.mouseY)]
-			}`,
-			myfirstpath
-		);
-
-		//myfirstpath.addPathItem(newPolyline);
-
-		return newPolyline;
-	}
-
 	function addNewShapePath(x, y) {
 		var newShapePath = Qt.createQmlObject(`
 			import QtQuick
@@ -88,11 +73,22 @@ ApplicationWindow {
 			myMouseArea.doneStack.push(curAction)
 		}
 	}
+	Button {
+		id: rasterize
+		width: 100
+		height: 30
+		x: 330
+		text: qsTr("rasterize")
+		onPressed: {
+			
+		}
+	}
     Rectangle {
 	width: 640
 	height: 450
 	y: 30
     color: "lightblue"
+	Canvas {
 	MouseArea {
 		id: myMouseArea
 		width: 640
@@ -104,6 +100,12 @@ ApplicationWindow {
 			];
 		property list<Action> doneStack: []
 		property list<Action> undoneStack: []
+		Canvas {
+			id: rasterCanvas
+			anchors.fill: parent
+			visible: false
+		}
+
 		Shape {
 			id: labelshape
 			anchors.fill: parent
@@ -205,6 +207,7 @@ ApplicationWindow {
 		}
 
 
+	}
 	}
 
 	Image {
