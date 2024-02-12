@@ -4,6 +4,7 @@ import numpy as np
 import random
 import csv
 import os
+import math
 
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
@@ -42,9 +43,17 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(str, str, int, int, int, int, float, float)
+    @QtCore.Slot(str, str, int, int, int, int, float, float, result="QVariantList")
     def getPrediction(self, label_name, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
-        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY), x_coord, y_coord, x_factor, y_factor)
+        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY))
+
+        scaled_polygon = []
+        for vert in polygon:
+            vert_x = str(math.floor((vert[0] * x_factor) + x_coord))
+            vert_y = str(math.floor((vert[1] * y_factor) + y_coord))
+            scaled_polygon.append([vert_x, vert_y])
+
+        return scaled_polygon
 
 
     @QtCore.Slot(str, int, int, float)

@@ -57,15 +57,17 @@ ApplicationWindow {
     }
 
 
-    function populateLegend(labels) {
-        labels.forEach(label => {
+    function populateLegend() {
+        comboyuh.model.forEach(label => {
             labelLegendModel.append( {
-                    labelColor: label[0],
-                    labelName: label[1]
+                    labelColor: labelAndColor[findLabel(label)],
+                    labelName: label
                 })
-        })
-        
+        })   
+    }
 
+    function refreshLegend() {
+        labelLegendModel.clear()
     }
 
     function findLabel(sp){
@@ -147,6 +149,22 @@ ApplicationWindow {
     }
 
 
+    function aiComponent(){
+        //create a QML component from shapes.qml
+        const component = Qt.createComponent("shapes.qml");
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh3")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+
+
 
     ///////////////////////////////////////////////////////////Top menu/////////////////////////////////////////////////////////
     menuBar: MenuBar {
@@ -182,10 +200,10 @@ ApplicationWindow {
                 text: qsTr("Get AI Predictions")
                 onTriggered: {
                     // var labels = tbox.getPrediction(filename, (30,30)); 
-                    refreshMask()
+                    // refreshMask()
                     // populateLegend(labels)
-                    labelLegend.visible = true
-                    saveIconButton.enabled = true
+                    // labelLegend.visible = true
+                    // saveIconButton.enabled = true
                 }
             }
         }
@@ -313,7 +331,7 @@ ApplicationWindow {
                         lf.loadShapes()
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
-
+                        populateLegend()
                     }
                     else{
                         lf.resetLabels()
@@ -394,6 +412,9 @@ ApplicationWindow {
 
                 property var comp: tf.createLassoComponent()
 
+                property var magicWandComponent: aiComponent()
+                property var polygon: []
+
                 property var rectComponent: rectangleComponent()
                 property var ellipComponent: ellipseComponent()
 
@@ -451,15 +472,15 @@ ApplicationWindow {
 
                     //for magic wand
                     else if (currentTool == "magicwand"){
-
-                        //console.log(mouseX, mouseY)
-                        
+                        //scale mouse to image
                         fixMouse(image)
-                        lf.resetShapes()
-                        tbox.getPrediction(findLabel(comboyuh.currentText), image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
-                        lf.loadLabels(lf.split(image.source))
-                        lf.loadShapes()
                         
+                        //get AI polygon as shape object
+                        polygon = tbox.getPrediction(findLabel(comboyuh.currentText), image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
+                        shapes.push(magicWandComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "coords": polygon, "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+
+                        refreshLegend()
+                        populateLegend()
 
                         // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
                     }
@@ -481,8 +502,10 @@ ApplicationWindow {
                             console.log(labelAndColor[i])
                         }
 
+                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "coorline": labelAndColor[findLabel(comboyuh.currentText)]}))
 
-                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+                        refreshLegend()
+                        populateLegend()
                     }
 
                     //if square is held down, record those coordinates
@@ -492,8 +515,10 @@ ApplicationWindow {
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
 
-                        
                         shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+
+                        refreshLegend()
+                        populateLegend()
                     }
 
                     //means no tool was selected
@@ -540,6 +565,8 @@ ApplicationWindow {
                                 console.log("select a label")
                             }
                         }
+                        refreshLegend()
+                        populateLegend()
                     }
 
                     //move tool
@@ -931,6 +958,8 @@ ApplicationWindow {
                                     lf.loadLabels(fileName)
                                     getImageSpecies(labelNames)
                                     comboyuh.model = labelToSpecies(labelNames)
+                                    refreshLegend()
+                                    populateLegend()
                                 }
                                 else{
                                     lf.resetLabels()
@@ -1007,7 +1036,6 @@ ApplicationWindow {
         color: "white"
         width: (allGallery.x - (image.x + image.width) ) - 20
         height: image.height / 3
-        visible: false
 
         border.color: "black"
         anchors.verticalCenter: image.verticalCenter
@@ -1031,7 +1059,7 @@ ApplicationWindow {
             delegate: Rectangle {
                 id: labelRow
                 height: 25
-                width: parent.width
+                width: labelLegendList.width
                 color: "transparent"
 
                 Rectangle {
