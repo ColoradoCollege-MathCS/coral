@@ -67,7 +67,7 @@ function turnoffEllipse(){
 */
 
 
-
+//-----------------------------------------
 function rectangleComponent(){
 
 //create a QML component from shapes.qml
@@ -103,6 +103,26 @@ function ellipseComponent(){
         return
     }
 
+
+/*
+function paintbrushComponent(){
+
+//create a QML component from shapes.qml
+        const component = Qt.createComponent("paintbrush.qml");
+
+        //make sure component works properly
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh2")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+    }
+*/
+//-----------------------------------------
 
 
     ///Top menu
@@ -315,8 +335,13 @@ function ellipseComponent(){
 
                 anchors.fill: parent
 
+//--------------------------------------------------
                 property var rectComponent: rectangleComponent()
                 property var ellipComponent: ellipseComponent()
+                //property var paintComponent: paintbrushComponent()
+
+//--------------------------------------------------
+
 
 
                 property var fixedMouseX: 0
@@ -487,8 +512,7 @@ function ellipseComponent(){
                         squareSelectIcon.enabled = true
                         currentTool = "magicwand"
                         
-                       // turnoffRect()
-                       // turnoffEllipse()
+                       
 
                     }
 
@@ -515,8 +539,7 @@ function ellipseComponent(){
                         squareSelectIcon.enabled = true
                         currentTool = "paintbrush"
                         
-                       // turnoffRect()
-                       // turnoffEllipse()
+                       
                     }
 
                 }
@@ -538,8 +561,8 @@ function ellipseComponent(){
                         paintbrushIcon.enabled = true
                         squareSelectIcon.enabled = true
                         currentTool = "circleselect"
-                        //turnoffRect()
-                        //turnonEllipse()
+                       
+
                      
                     }
 
@@ -563,8 +586,7 @@ function ellipseComponent(){
                         circleSelectIcon.enabled = true
                         currentTool = "squareselect"
                         
-                       // turnonRect()
-                        //turnoffEllipse()
+                       
                         
                     }
 
@@ -989,6 +1011,12 @@ Rectangle {
 
 */
 //---------------------------------------------------------------------------------
+
+
+
+
+
+
 
 
 
