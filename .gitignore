@@ -7,10 +7,3 @@ test_images/
 CoralLabeler/images/mask.png
 *.pth
 *venv
-*.swp
-.ipynb_checkpoints/
-*.spec
-build/
-dist/
-ellipse-prof-result*
-profile-result-*

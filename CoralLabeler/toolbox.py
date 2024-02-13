@@ -4,6 +4,7 @@ import numpy as np
 import random
 import csv
 import os
+import math
 from rdp import rdp
 
 
@@ -43,9 +44,17 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(str, str, int, int, int, int, float, float)
+    @QtCore.Slot(str, str, int, int, int, int, float, float, result="QVariantList")
     def getPrediction(self, label_name, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
-        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY), x_coord, y_coord, x_factor, y_factor)
+        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY))
+
+        scaled_polygon = []
+        for vert in polygon:
+            vert_x = str(math.floor((vert[0] * x_factor) + x_coord))
+            vert_y = str(math.floor((vert[1] * y_factor) + y_coord))
+            scaled_polygon.append([vert_x, vert_y])
+
+        return scaled_polygon
 
 
     @QtCore.Slot(str, int, int, float)
@@ -55,21 +64,21 @@ class Toolbox(QtCore.QObject):
         magic_wand_select(image, self.labels, label, coor, threshold)
         self.updateMask()
 
-    @QtCore.Slot(int, int, int, int)
-    def selectCircle(self, point1x, point1y, point2x, point2y):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        point2 = (point2x, point2y)
-        ellipse_select(self.labels, label, point1, point2)
-        self.updateMask()
+    #@QtCore.Slot(int, int, int, int)
+    #def selectCircle(self, point1x, point1y, point2x, point2y):
+    #    label = random.randint(1, 4)
+    #    point1 = (point1x, point1y)
+    #    point2 = (point2x, point2y)
+    #    ellipse_select(self.labels, label, point1, point2)
+    #    self.updateMask()
 
-    @QtCore.Slot(int, int, int, int)
-    def selectRect(self, point1x, point1y, point2x, point2y):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        point2 = (point2x, point2y)
-        rectangle_select(self.labels, label, point1, point2)
-        self.updateMask()
+    #@QtCore.Slot(int, int, int, int)
+    #def selectRect(self, point1x, point1y, point2x, point2y):
+    #    label = random.randint(1, 4)
+    #    point1 = (point1x, point1y)
+    #    point2 = (point2x, point2y)
+    #    rectangle_select(self.labels, label, point1, point2)
+    #    self.updateMask()
 
     @QtCore.Slot(int, int, int)
     def paintBrush(self, point1x, point1y, size):
@@ -130,7 +139,7 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(str, str, str, result="QVariantList")
     def addToCSV(self, data, name, fileName):
         with open(fileName, 'a') as file:
-
+ 
             # write row
             file.write("\n")
             file.write(str(int(data) + 1) + "," + name)
