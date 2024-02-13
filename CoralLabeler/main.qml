@@ -793,7 +793,6 @@ ApplicationWindow {
                         if(comboyuh.currentText != undefined){
                             tf.endShape(g, labelAndColor[g.label])
                             tf.simplify(g,imageMouse.value,tbox)
-                            actionCreate(g)
                         }
 
 
