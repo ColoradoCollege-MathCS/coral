@@ -50,19 +50,23 @@ Rectangle{
         var points = []
         var sp = curShape.data[0]
         points.push([sp.startX, sp.startY])
-        for (var i = 0; i< sp.pathElements.length; i++) {
+        var listLen = sp.pathElements.length
+        for (var i = 0; i< listLen; i++) {
             var pathEle = sp.pathElements.pop()
             points.push([pathEle.x,pathEle.y])
         }
-        console.log("Before: "+points.length+" points")
         points = toolbox.simplifyLasso(points, .1)
-        console.log("After: "+points.length+" points "+"with eps "+.9)
         sp.startX = points[0][0]
         sp.startY = points[0][1]
         for (var i=1; i<points.length; i++) {
             var pl = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', sp)
             pl.x = points[i][0]
             pl.y = points[i][1]
+            sp.pathElements.push(pl)
         }
+        var pl = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', sp)
+        pl.x = points[0][0]
+        pl.y = points[0][1]
+        sp.pathElements.push(pl)
     }
 }
