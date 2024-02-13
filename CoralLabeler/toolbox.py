@@ -5,6 +5,7 @@ import random
 import csv
 import os
 import math
+from rdp import rdp
 
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
@@ -147,3 +148,8 @@ class Toolbox(QtCore.QObject):
             file.close()
 
         return [str(int(data) + 1), name]
+    
+    @QtCore.Slot(list,float, result="QVariantList")
+    def simplifyLasso(self, points, epsilon):
+        #epsilon functions like a tolerance I think
+        return rdp(points, epsilon=epsilon)
