@@ -47,6 +47,7 @@ Rectangle{
     }
 
     function simplify(curShape, toolbox) {
+        const epsilon = .1
         var points = []
         var sp = curShape.data[0]
         points.push([sp.startX, sp.startY])
@@ -55,7 +56,10 @@ Rectangle{
             var pathEle = sp.pathElements.pop()
             points.push([pathEle.x,pathEle.y])
         }
-        points = toolbox.simplifyLasso(points, .1)
+        console.log("Before: "+points.length+" points")
+        points = toolbox.simplifyLasso(points, epsilon)
+        console.log("After: "+points.length+" points with eps: "+epsilon)
+        console.log
         sp.startX = points[0][0]
         sp.startY = points[0][1]
         for (var i=1; i<points.length; i++) {
