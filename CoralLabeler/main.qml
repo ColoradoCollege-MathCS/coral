@@ -191,9 +191,26 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("&Edit")
-            Action { text: qsTr("Cu&t") }
-            Action { text: qsTr("&Copy") }
-            Action { text: qsTr("&Paste") }
+            Action { text: qsTr("&Undo")
+                id: undoAction
+                shortcut: StandardKey.Undo
+                onTriggered: {
+                    act.undo()
+                    enabled = act.actToUndo()
+                    redoAction.enabled = act.actToRedo()
+                }
+                enabled: false
+            }
+            Action { text: qsTr("&Redo")
+                id: redoAction
+                shortcut: StandardKey.Redo
+                onTriggered: {
+                    act.redo()
+                    enabled = act.actToRedo()
+                    undoAction.enabled = act.actToUndo()
+                }
+                enabled: false
+            }
         }
         Menu {
             title: qsTr("&Help")
