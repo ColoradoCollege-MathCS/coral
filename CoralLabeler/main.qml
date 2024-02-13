@@ -42,7 +42,7 @@ ApplicationWindow {
         id:tf
     }
 
-    ActionHandeler{
+    ActionHandler{
         id:act
     }
 
@@ -84,14 +84,6 @@ ApplicationWindow {
 
     }
 
-
-	function actionCreate(shape){
-		//actionStack.push(CreateAction{"target": shape});
-	}
-
-	function actionMove(shape, dx, dy){
-		//actionStack.push(MoveAction{"target": shape, "dX": dx, "dY": dy});
-	}
 
     //function to give all species names of an array of label numbers
     function labelToSpecies(labnames){
@@ -170,7 +162,10 @@ ApplicationWindow {
     }
 
     function noMoreVertices(){
-        currAction = CreateAction{shapeParent: overlay, target: imageMouse.shapeCurrent}
+        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+
+        currAction.shapeParent = overlay
+        currAction.target = imageMouse.shapeCurrent
 
         act.actionDone(currAction, false)
 
@@ -598,7 +593,10 @@ ApplicationWindow {
 
                         //make new shape if no shape was selected
                         if(yuh == false){
-                            currAction = CreateAction{shapeParent: overlay, target: shapeCurrent}
+                            var currAction = Qt.createQmlObject("import Actions;CreateAction{}", this)
+
+                            currAction.shapeParent = overlay
+                            currAction.target = shapeCurrent
 
                             act.actionDone(currAction, false)
 
@@ -807,7 +805,10 @@ ApplicationWindow {
 
                         saveIconButton.enabled = true
 
-                        currAction = CreateAction{shapeParent: overlay, target: g}
+                        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+                        
+                        currAction.shapeParent = overlay
+                        currAction.target = g
 
                         act.actionDone(currAction, false)
 
@@ -822,12 +823,19 @@ ApplicationWindow {
                             
                             saveIconButton.enabled = true
 
-                            currAction = MoveAction{shapeParent: overlay, target: shapeCurrent, dX: dx, dY: dy}
+                            var currAction = Qt.createQmlObject("import Actions; MoveAction{}", this)
+                            currAction.dX = dx
+                            currAction.dY = dy
+
+                            currAction.shapeParent = overlay
+                            currAction.target = shapeCurrent
 
                             act.actionDone(currAction, false)
                         }
 
                         shapeCurrent = undefined
+
+                        console.log(act.doneStack)
                     }
 
                     //just not that the save needs to happen now
@@ -1002,7 +1010,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = true
@@ -1033,7 +1041,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = true
@@ -1063,7 +1071,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = false
@@ -1091,7 +1099,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = false
@@ -1121,7 +1129,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = false
@@ -1151,7 +1159,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = true
@@ -1189,7 +1197,7 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if(imageMouse.currentShape != undefined){
+                        if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
                         valueSlider.visible = false
