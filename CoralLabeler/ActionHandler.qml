@@ -3,8 +3,8 @@ import QtQuick.Shapes
 import Actions
 
 QtObject {
-    property List<Actions> doneStack: []
-    property List<Actions> undoneStack: []
+    property list<Actions> doneStack: []
+    property list<Actions> undoneStack: []
 
     //Add curAction to doneStack and clear undoneStack
     //curAction - instantiated Action object
