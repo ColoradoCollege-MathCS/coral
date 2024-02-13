@@ -1,79 +1,31 @@
-import torch
-import torch.nn as nn
+import importlib
+import config
 
-import torchvision.transforms as T
-from torchvision.models.detection import maskrcnn_resnet50_fpn, MaskRCNN_ResNet50_FPN_Weights
-
-from skimage.morphology import flood
 from skimage.segmentation import find_boundaries
 from skimage.measure import approximate_polygon
 
 import cv2
 
-from PIL import Image
-
 import numpy as np
 
-    
-    
-def get_model():
-    # TEMP HARD CODE MASK RCNN
-    # load pretrained model
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    weights = MaskRCNN_ResNet50_FPN_Weights.DEFAULT
-    mrcnn_model = maskrcnn_resnet50_fpn(weights=weights, progress=False).to(device)
-    mrcnn_model = mrcnn_model.eval()
-    
-    return mrcnn_model
+
+global g_img_path
 
 
-def transform_img(img_path):
-    img = Image.open(img_path)
-    transform = T.Compose([T.ToTensor()]) 
-    img = transform(img)
-    
-    return img
-    
-    
-def get_fm(img_path):   
-    mrcnn_model = get_model()
-    
-    # extract layer with forward hook
-    activation = {}
-    def get_activation(name):
-        def hook(model, input, output):
-            activation[name] = output
-        return hook 
-    
-    mrcnn_model.backbone.body.layer1.register_forward_hook(get_activation('backbone'))
-    
-    img = transform_img(img_path)
-    
-    preds = mrcnn_model([img])
-    
-    ext_fm = activation['backbone']
-    
-    m = nn.Upsample((img.shape[1], img.shape[2]), mode='bicubic')
-    ext_fm = m(ext_fm)
-    ext_fm = ext_fm.squeeze(0)
-    
-    ext_fm = ext_fm.data.cpu().numpy()
-    
-    return ext_fm
+def blob_ML(img_path, seed):
+    module = importlib.import_module(config.module_name)
 
+    transform_img = getattr(module, config.pipeline[0])
+    get_fm = getattr(module, config.pipeline[1])
+    process_output = getattr(module, config.pipeline[2])
 
-def process_fm(fm):
-    max_pool_chnls = np.max(fm, 0)
-    
-    return max_pool_chnls
-    
+    global g_img_path
+    g_img_path = img_path
+    g_img_path = transform_img(g_img_path)
 
-def blob_ML(label_name, img_path, seed):
-    ext_fm = get_fm(img_path)
+    ext_fm = get_fm(g_img_path)
     
-    pro_fm = process_fm(ext_fm)
-    
-    blob = flood(pro_fm, seed, tolerance=0.05)
+    blob = process_output(ext_fm, seed)
     
     shape = find_boundaries(blob, mode='inner')
     
