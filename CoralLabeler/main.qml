@@ -42,6 +42,10 @@ ApplicationWindow {
         id:tf
     }
 
+    ActionHandeler{
+        id:act
+    }
+
 
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
@@ -163,6 +167,15 @@ ApplicationWindow {
             console.log(component.errorString())
         }
         return
+    }
+
+    function noMoreVertices(){
+        currAction = CreateAction{shapeParent: overlay, target: imageMouse.shapeCurrent}
+
+        act.actionDone(currAction, false)
+
+        imageMouse.previousShape = imageMouse.shapeCurrent
+        tf.removeVertices(imageMouse.previousShape)
     }
 
 
@@ -449,6 +462,8 @@ ApplicationWindow {
                 property var shapeCurrent: undefined
                 property var previousShape: undefined
 
+                property var selected: false
+
                 //fix mouse coordinate
                 function getMouseX() {
                     return (overlay.width - overlay.paintedWidth) * 0.5
@@ -583,6 +598,13 @@ ApplicationWindow {
 
                         //make new shape if no shape was selected
                         if(yuh == false){
+                            currAction = CreateAction{shapeParent: overlay, target: shapeCurrent}
+
+                            act.actionDone(currAction, false)
+
+                            previousShape = shapeCurrent
+                            tf.removeVertices(previousShape)
+
                             shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
                         "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
                         }
@@ -607,26 +629,36 @@ ApplicationWindow {
                         dy = mouseY
                         ogy = mouseY
 
-                        tf.removeVertices(shapeCurrent)
-
                         
                     }
 
+                    //actions for vertex tool
                     else if(currentTool == "vertextool"){
-                        var yuh = false
+                        //check if shape has already been selected
+                        var no = false
+                        
 
                         for(var i = 0; i < shapes.length; i++){
                             if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
-                                if(shapeCurrent != shapes[i]){
-                                    yuh = false
-                                }
-                                else{
-                                    yuh = true
+                                if(shapeCurrent == shapes[i]){
+                                    no = true
                                 }
                             }
                         }
 
-                        if(yuh == true) {
+                        //if shape has not been selected go make vertices
+                        if(no != true){
+                            for(var i = 0; i < shapes.length; i++){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    if(shapeCurrent != shapes[i]){
+                                        selected = false
+                                    }
+                                }
+                            }
+                        }
+
+                        //if shape has already been selected, choose vertex
+                        if(selected == true) {
                             console.log("slay")
                             for(var h = 0; h < shapeCurrent.controls.length; h++){
 
@@ -641,15 +673,18 @@ ApplicationWindow {
                             }
                         }
 
+                        //make vertices
                         else{
                             for(var i = 0; i < shapes.length; i++){
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                     if(shapeCurrent != shapes[i]){
+                                        //make previous shape since we clicked on a new shape
                                         previousShape = shapeCurrent
                                         shapeCurrent = shapes[i]
+                                        //make vertices function
                                         tf.makeVertices(shapeCurrent)
 
-                                        yuh = true
+                                        selected = true
                                         break
                                     }
                                     
@@ -658,7 +693,7 @@ ApplicationWindow {
                             }
                         }
 
-
+                        //remove all vertices of previous shape
                         tf.removeVertices(previousShape)
 
 
@@ -720,10 +755,11 @@ ApplicationWindow {
                         
                     }
 
+                    //move the selected vertice if there is one
                     else if(currentTool == "vertextool"){
                         //move pathlines based on circle movement
-                        if(currentVertex != 0){
-                            if(currentVertex == shapeCurrent.controls[0]){
+                        if(currentVertex != undefined){
+                            if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1]){
                                 
                                 //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
                                 currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
@@ -771,6 +807,10 @@ ApplicationWindow {
 
                         saveIconButton.enabled = true
 
+                        currAction = CreateAction{shapeParent: overlay, target: g}
+
+                        act.actionDone(currAction, false)
+
                     }
 
                     //move tool
@@ -779,11 +819,15 @@ ApplicationWindow {
                             dx = mouseX - ogx
                             dy = mouseY - ogy
 
-                            actionMove(shapeCurrent, dx, dy)
+                            
+                            saveIconButton.enabled = true
+
+                            currAction = MoveAction{shapeParent: overlay, target: shapeCurrent, dX: dx, dY: dy}
+
+                            act.actionDone(currAction, false)
                         }
 
-                        saveIconButton.enabled = true
-
+                        shapeCurrent = undefined
                     }
 
                     //just not that the save needs to happen now
@@ -958,6 +1002,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = true
 
                         sliderTitle.text = "Threshold"
@@ -986,6 +1033,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = true
 
                         sliderTitle.text = "Size"
@@ -1013,6 +1063,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
@@ -1038,6 +1091,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
@@ -1065,6 +1121,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
@@ -1092,6 +1151,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = true
                         valueSlider.from = 7
                         valueSlider.to = 0
@@ -1127,6 +1189,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.currentShape != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
