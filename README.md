@@ -7,6 +7,7 @@ This repo tracks the Coral Labeler application, which is in development by Dylan
 - numpy - Working with the data structure that holds the labels for each pixel
 - Scikit Image - Provides flood fill functionality, as well as image dims
 - torch and torchvision - Used to train and run the machine learning model that provides predicted labels
+- rdp - Implementation of the Ramer–Douglas–Peucker algorithm to reduce the number of points in a line
 
 ### Running the application
 These instructions are to run the application while it is in develoment, and will be different when distributed to end users.
@@ -21,7 +22,7 @@ These instructions are to run the application while it is in develoment, and wil
 
     - `venv/bin/activate.bat` on Windows
 
-4. Install the dependencies: `pip install PySide6 scikit-image numpy torch torchvision matplotlib`
+4. Install the dependencies: `pip install PySide6 scikit-image numpy torch torchvision rdp`
 
 5. Run the program: `python3 main.py`
 
