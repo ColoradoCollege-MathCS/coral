@@ -140,7 +140,7 @@ class Toolbox(QtCore.QObject):
 
         return [str(int(data) + 1), name]
     
-    @QtCore.Slot(list, result="QVariantList")
-    def simplifyLasso(self, points):
-        epsi = .3 #functions like a tolerance I think
-        return rdp(points, epsilon=epsi)
+    @QtCore.Slot(list,float, result="QVariantList")
+    def simplifyLasso(self, points, epsilon):
+        #epsilon functions like a tolerance I think
+        return rdp(points, epsilon=epsilon)

@@ -531,6 +531,7 @@ ApplicationWindow {
                     if (currentTool == "lassotool"){
                         if(comboyuh.currentText != undefined){
                             tf.endShape(g, labelAndColor[g.label])
+                            tf.simplify(g,tbox)
                             actionCreate(g)
                             if(comboyuh.currentText != undefined){
                                 tf.endShape(g, labelAndColor[g.label])
