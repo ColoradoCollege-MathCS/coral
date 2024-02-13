@@ -37,12 +37,36 @@ Rectangle{
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh1")
             return component
         }
         else if (component.status === Component.Error){
             console.log(component.errorString())
         }
         return
+    }
+
+    function makeVertices(shape){
+        var vertices = []
+
+        const component = Qt.createComponent("vertex.qml");
+
+        for(var i = 0; i < shape.child.pathElements.length; i++){
+            var pathy = shape.child.pathElements[i]
+
+            vertices.push(component.createObject(shape, {"x": pathy.x - 10, "y": pathy.y - 10, "papa": pathy}))
+        }
+
+        shape.controls = vertices
+    }
+
+    function removeVertices(shape){
+        if(shape != undefined){
+            for(var t = 0; t < shape.controls.length; t++){
+                shape.controls[t].destroy()
+            }
+
+            shape.controls = []
+            shape = undefined
+        }
     }
 }

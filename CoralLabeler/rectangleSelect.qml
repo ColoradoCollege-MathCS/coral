@@ -9,17 +9,11 @@ import QtQuick.Shapes
 
 
 // rectangle select ------------------------------------- 
-Item{ 
+Shape{
     id: mainRect
+    containsMode: Shape.FillContains
 
     visible: true
-
-         
-    width: 100
-    height: 100
-
-    x: parent.width/2 - (width/2)
-    y: parent.height/2 - (height/2)
 
 
     property var label: ""
@@ -29,38 +23,35 @@ Item{
     property var colorline: ""
 
 	property var child: thePath
+
+    property var dx: 0
+    property var dy: 0
+
+    property var mX: 0
+    property var mY: 0
+
+    property var halfy: (bottomRect.y - topRect.y)/2 + topRect.y
+    property var halfx: (rightRect.x - leftRect.x)/2 + leftRect.x
+
+    property var controls: [circleleft, circletop, circleright, circlebottom]
     
-    Shape{
-        containsMode: Shape.FillContains
                 
-            ShapePath{
-                id:thePath
+    ShapePath{
+        id:thePath
 
-                strokeColor: mainRect.colorline
-                strokeWidth: 1
-                fillColor: mainRect.color
+        strokeColor: mainRect.colorline
+        strokeWidth: 1
+        fillColor: mainRect.color
 
-                startX: mainRect.width / 2
-                startY: 0
+        startX: mX
+        startY: mY
 
-                PathLine{ x: mainRect.width; y: 0}
-                PathLine{ x: mainRect.width; y: mainRect.height }
-                PathLine{ x: 0; y: mainRect.height }
-                PathLine{ x: 0; y: 0}
+        PathLine{ id: topRect; x: mX + 100; y: mY}
+        PathLine{ id: rightRect; x: mX + 100; y: mY + 100}
+        PathLine{ id: bottomRect; x: mX; y: mY + 100}
+        PathLine{ id: leftRect; x: mX; y: mY}
 
-        }
     }
-
-    Drag.active: mouseArea.drag.active
-
-    MouseArea{
-        id: mouseArea
-
-        anchors.fill: parent
-        drag.target: mainRect
-    }
-
-    
 
     Rectangle {
 
@@ -71,23 +62,13 @@ Item{
         height: radius
         visible: true
 
-        anchors {
-            horizontalCenter: mainRect.left
-            verticalCenter: mainRect.verticalCenter
-        }
-        MouseArea {
 
-            anchors.fill: parent
 
-            onMouseXChanged: {
-                mainRect.x = mainRect.x + mouseX
-                mainRect.width = mainRect.width - mouseX
+        x: leftRect.x
+        y: leftRect.y
 
-                if(mainRect.width < 5){
-                    mainRect.width = 5
-                }
-            }
-        }
+        property var papa: leftRect
+        
     }
 
 
@@ -99,49 +80,15 @@ Item{
         height: radius
         visible: true
 
-        anchors {
-            horizontalCenter: mainRect.right
-            verticalCenter: mainRect.verticalCenter
-        }
+        x: rightRect.x - radius
+        y: rightRect.y - radius
 
-        MouseArea {
-            anchors.fill: parent
-            onMouseXChanged: {
-                mainRect.width = mainRect.width + mouseX
-                if(mainRect.width < 5)
-                {
-                    mainRect.width = 5
-                }
-            }
-        }
+        property var papa: rightRect
+
     }
 
 
-    Rectangle {
-        id:circletop
-        color: "black"
-        radius: 20
-        width: radius
-        height: radius
-        visible: true
-
-        anchors {
-            horizontalCenter: mainRect.horizontalCenter
-            verticalCenter: mainRect.top
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onMouseYChanged: {
-                mainRect.y = mainRect.y + mouseY
-                mainRect.height = mainRect.height - mouseY
-                if(mainRect.height < 5)
-                {
-                    mainRect.height = 5
-                }
-            }
-        }
-    }
+    
 
     Rectangle {
 
@@ -152,25 +99,29 @@ Item{
         height: radius
         visible: true
 
-        anchors
-        {
+        x: bottomRect.x
+        y: bottomRect.y - radius
 
-            horizontalCenter: mainRect.horizontalCenter
-            verticalCenter: mainRect.bottom
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onMouseYChanged: {
-                mainRect.height = mainRect.height + mouseY
-                if(mainRect.height < 5)
-                {
-                    mainRect.height = 5
-                }
-            }
-        }
-
+        property var papa: bottomRect
 
 
     }
+
+
+    Rectangle {
+
+        id:circletop
+        color: "black"
+        radius: 20
+        width: radius
+        height: radius
+        visible: true
+
+        x: topRect.x - radius
+        y: topRect.y
+
+        property var papa: topRect
+
+    }
 }
+

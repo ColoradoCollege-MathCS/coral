@@ -55,8 +55,6 @@ Item {
                        
                         sweepAngle: 360
    
-               
-
             }
         }
 
