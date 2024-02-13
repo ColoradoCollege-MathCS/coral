@@ -47,6 +47,11 @@ ApplicationWindow {
     }
 
 
+    ActionHandler{
+        id:act
+    }
+
+
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
@@ -174,6 +179,19 @@ ApplicationWindow {
     }
 
 
+    function noMoreVertices(){
+        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+
+        currAction.shapeParent = overlay
+        currAction.target = imageMouse.shapeCurrent
+
+        act.actionDone(currAction, false)
+
+        imageMouse.previousShape = imageMouse.shapeCurrent
+        tf.removeVertices(imageMouse.previousShape)
+    }
+
+
 
 
     ///////////////////////////////////////////////////////////Top menu/////////////////////////////////////////////////////////
@@ -189,9 +207,26 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("&Edit")
-            Action { text: qsTr("Cu&t") }
-            Action { text: qsTr("&Copy") }
-            Action { text: qsTr("&Paste") }
+            Action { text: qsTr("&Undo")
+                id: undoAction
+                shortcut: StandardKey.Undo
+                onTriggered: {
+                    act.undo()
+                    enabled = act.actToUndo()
+                    redoAction.enabled = act.actToRedo()
+                }
+                enabled: false
+            }
+            Action { text: qsTr("&Redo")
+                id: redoAction
+                shortcut: StandardKey.Redo
+                onTriggered: {
+                    act.redo()
+                    enabled = act.actToRedo()
+                    undoAction.enabled = act.actToUndo()
+                }
+                enabled: false
+            }
         }
         Menu {
             title: qsTr("&Help")
@@ -593,6 +628,10 @@ ApplicationWindow {
 
                         //make new shape if no shape was selected
                         if(yuh == false){
+<<<<<<< HEAD
+=======
+
+>>>>>>> integration
                             var currAction = Qt.createQmlObject("import Actions;CreateAction{}", this)
 
                             currAction.shapeParent = overlay
@@ -810,7 +849,6 @@ ApplicationWindow {
                         currAction.target = g
 
                         act.actionDone(currAction, false)
-
                     }
 
                     //move tool
@@ -818,7 +856,6 @@ ApplicationWindow {
                         if(shapeCurrent != undefined){
                             dx = mouseX - ogx
                             dy = mouseY - ogy
-
                             
                             saveIconButton.enabled = true
 
@@ -1009,9 +1046,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+
                         if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
+
                         valueSlider.visible = true
 
                         sliderTitle.text = "Threshold"
@@ -1040,9 +1079,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+
                         if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
+
                         valueSlider.visible = true
 
                         sliderTitle.text = "Size"
@@ -1070,9 +1111,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+
                         if(imageMouse.shapeCurrent != undefined){
                             noMoreVertices()
                         }
+
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
