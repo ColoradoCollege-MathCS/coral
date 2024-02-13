@@ -11,7 +11,6 @@ Rectangle{
     height: 0
     visible: false
 
-
     function drawShape(yuh, x, y){
         var path = Qt.createQmlObject('import QtQuick; PathLine {}', yuh.child);
 
@@ -46,8 +45,7 @@ Rectangle{
         return
     }
 
-    function simplify(curShape, toolbox) {
-        const epsilon = .1
+    function simplify(curShape,epsilon, toolbox) {
         var points = []
         var sp = curShape.data[0]
         points.push([sp.startX, sp.startY])
@@ -56,9 +54,9 @@ Rectangle{
             var pathEle = sp.pathElements.pop()
             points.push([pathEle.x,pathEle.y])
         }
-        console.log("Before: "+points.length+" points")
+        //console.log("Before: "+points.length+" points")
         points = toolbox.simplifyLasso(points, epsilon)
-        console.log("After: "+points.length+" points with eps: "+epsilon)
+        //console.log("After: "+points.length+" points with eps: "+epsilon)
         console.log
         sp.startX = points[0][0]
         sp.startY = points[0][1]

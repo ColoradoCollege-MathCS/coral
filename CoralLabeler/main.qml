@@ -258,7 +258,7 @@ ApplicationWindow {
                 width: 100
             }
 
-            //slider value for either the magic wand or paintbrush
+            //slider value for either the magic wand, paintbrush, or lasso
             Label {
                 id: sliderTitle
                 text: "value"
@@ -283,6 +283,10 @@ ApplicationWindow {
                     else if (currentTool == "paintbrush"){
                         from = 0
                         to = 255
+                        imageMouse.value = value
+                    }
+
+                    else if (currentTool == "lassotool") {
                         imageMouse.value = value
                     }
 
@@ -531,7 +535,7 @@ ApplicationWindow {
                     if (currentTool == "lassotool"){
                         if(comboyuh.currentText != undefined){
                             tf.endShape(g, labelAndColor[g.label])
-                            tf.simplify(g,tbox)
+                            tf.simplify(g,imageMouse.value,tbox)
                             actionCreate(g)
                             if(comboyuh.currentText != undefined){
                                 tf.endShape(g, labelAndColor[g.label])
@@ -844,8 +848,13 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        valueSlider.visible = false
-                        sliderTitle.visible = false
+                        valueSlider.visible = true
+                        valueSlider.from = 7
+                        valueSlider.to = 0
+                        valueSlider.value = 1
+                        sliderTitle.visible = true
+                        sliderTitle.text = "Quality"
+                        
 
                         lassoSelectIcon.enabled = false
                         moveSelectIcon.enabled = true
