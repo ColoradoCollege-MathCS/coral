@@ -52,8 +52,6 @@ ApplicationWindow {
 
     function changeImage(fileName){
         image.source = fileName
-        image.width = sourceSize.width / parent.width * 4/8
-        image.height = sourceSize.height / (parent.height - 50)
     }
 
 
@@ -70,6 +68,7 @@ ApplicationWindow {
         labelLegendModel.clear()
     }
 
+    //function to find label number from name
     function findLabel(sp){
         var hold = ""
         for(var i = 0; i < species.length; i++){
@@ -90,11 +89,12 @@ ApplicationWindow {
 		//actionStack.push(MoveAction{"target": shape, "dX": dx, "dY": dy});
 	}
 
-    function labelToSpecies(yuh){
+    //function to give all species names of an array of label numbers
+    function labelToSpecies(labnames){
         var hold = []
-        for(var i = 0; i < yuh.length; i++){
+        for(var i = 0; i < labnames.length; i++){
             for(var g = 0; g < species.length; g++){
-                if(yuh[i] == species[g][0]){
+                if(labnames[i] == species[g][0]){
                     hold.push(species[g][1])
                 }
             }
@@ -102,6 +102,7 @@ ApplicationWindow {
         return hold
     }
 
+    //function to give all species and labels of an image
     function getImageSpecies(labnames){
         var hold = []
         for(var i = 0; i < labnames.length; i++){
@@ -121,7 +122,7 @@ ApplicationWindow {
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh1")
+
             return component
         }
         else if (component.status === Component.Error){
@@ -139,7 +140,7 @@ ApplicationWindow {
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh2")
+
             return component
         }
         else if (component.status === Component.Error){
@@ -163,6 +164,7 @@ ApplicationWindow {
         }
         return
     }
+
 
 
 
@@ -247,7 +249,7 @@ ApplicationWindow {
                     anchors.fill: parent
                         
                     onClicked: {
-                        enabled = false
+                        saveIconButton.enabled = false
                         
                         lf.updateLabelsAndCoords()
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source))
@@ -320,7 +322,11 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
-                    //console.log(lf.split(image.source))
+
+                    if(saveIconButton.enabled == true){
+                        savemask.title = selectedFile
+                        savemask.open()
+                    }
                     if(lf.hasLabels(lf.split(image.source))){
                         lf.resetLabels()
                         lf.resetShapes()
@@ -331,7 +337,11 @@ ApplicationWindow {
                         lf.loadShapes()
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
+
                         populateLegend()
+
+
+
                     }
                     else{
                         lf.resetLabels()
@@ -412,8 +422,11 @@ ApplicationWindow {
 
                 property var comp: tf.createLassoComponent()
 
+
                 property var magicWandComponent: aiComponent()
                 property var polygon: []
+
+
 
                 property var rectComponent: rectangleComponent()
                 property var ellipComponent: ellipseComponent()
@@ -426,7 +439,11 @@ ApplicationWindow {
                 property var dx: 0
                 property var dy: 0
 
+                property var controlNum: undefined
+                property var currentVertex: undefined
+
                 property var shapeCurrent: undefined
+                property var previousShape: undefined
 
                 //fix mouse coordinate
                 function getMouseX() {
@@ -452,6 +469,9 @@ ApplicationWindow {
                             g.child.startY = mouseY
                             shapes.push(g)
                         }
+
+
+                        tf.removeVertices(shapeCurrent)
                     }
 
                     //move tool
@@ -467,6 +487,8 @@ ApplicationWindow {
                         ogx = mouseX
                         dy = mouseY
                         ogy = mouseY
+
+                        tf.removeVertices(shapeCurrent)
                         
                     }
 
@@ -483,11 +505,17 @@ ApplicationWindow {
                         populateLegend()
 
                         // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
+
+                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
+
+                        tf.removeVertices(shapeCurrent)
                     }
 
                     //paintbrush if held down
                     else if (currentTool == "paintbrush"){
                         isPressed = true
+
+                        tf.removeVertices(shapeCurrent)
                     }
 
                     //if circle is held down, record those coordinates
@@ -498,6 +526,7 @@ ApplicationWindow {
                         holdedy = fixedMouseY
 
 
+
                         for(var i = 0; i < 2; i++){
                             console.log(labelAndColor[i])
                         }
@@ -506,11 +535,23 @@ ApplicationWindow {
 
                         refreshLegend()
                         populateLegend()
+
+                        for(var i = 0; i < 2; i++){
+                            console.log(labelAndColor[i])
+                        }
+                        
+
+                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                        "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
+
+                        tf.removeVertices(shapeCurrent)
+
                     }
 
                     //if square is held down, record those coordinates
                     else if (currentTool == "squareselect"){
                         fixMouse(image)
+
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
@@ -519,6 +560,110 @@ ApplicationWindow {
 
                         refreshLegend()
                         populateLegend()
+                        //variable to determine whether the mouse selected a shape
+                        var yuh = false
+
+                        //variable to solve shape + radius
+                        var sizex = 0
+                        var sizey = 0
+
+                        //get current shape
+                        for(var i = 0; i < shapes.length; i++){
+                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                shapeCurrent = shapes[i]
+                                yuh = true
+                            }
+                            
+                        }
+
+
+                        //make new shape if no shape was selected
+                        if(yuh == false){
+                            shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                        "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
+                        }
+
+                        //get what circle was selected
+                        else{
+                            for(var h = 0; h < shapeCurrent.controls.length; h++){
+
+                                sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
+                                sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
+                                
+                                if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
+                                && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
+                                    controlNum = shapeCurrent.controls[h]
+
+                                }
+                            }
+                        }
+
+                        dx = mouseX
+                        ogx = mouseX
+                        dy = mouseY
+                        ogy = mouseY
+
+                        tf.removeVertices(shapeCurrent)
+
+                        
+                    }
+
+                    else if(currentTool == "vertextool"){
+                        var yuh = false
+
+                        for(var i = 0; i < shapes.length; i++){
+                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                if(shapeCurrent != shapes[i]){
+                                    yuh = false
+                                }
+                                else{
+                                    yuh = true
+                                }
+                            }
+                        }
+
+                        if(yuh == true) {
+                            console.log("slay")
+                            for(var h = 0; h < shapeCurrent.controls.length; h++){
+
+                                sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
+                                sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
+                                            
+                                if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
+                                && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
+                                    currentVertex = shapeCurrent.controls[h]
+
+                                }
+                            }
+                        }
+
+                        else{
+                            for(var i = 0; i < shapes.length; i++){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    if(shapeCurrent != shapes[i]){
+                                        previousShape = shapeCurrent
+                                        shapeCurrent = shapes[i]
+                                        tf.makeVertices(shapeCurrent)
+
+                                        yuh = true
+                                        break
+                                    }
+                                    
+                                }
+                                    
+                            }
+                        }
+
+
+                        tf.removeVertices(previousShape)
+
+
+
+                        dx = mouseX
+                        ogx = mouseX
+                        dy = mouseY
+                        ogy = mouseY
+
                     }
 
                     //means no tool was selected
@@ -547,6 +692,59 @@ ApplicationWindow {
                             dy = mouseY
                         }
                     }
+
+                    else if(currentTool == "squareselect"){
+                        //move pathlines based on circle movement
+                        if(controlNum != undefined){
+                            if(controlNum == shapeCurrent.controls[0]){
+                                
+                                //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
+                                controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+
+                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+                            }
+                            else{
+                                controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
+                                controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+                            }
+                        }
+
+                        dx = mouseX
+                        dy = mouseY
+                        
+                    }
+
+                    else if(currentTool == "vertextool"){
+                        //move pathlines based on circle movement
+                        if(currentVertex != 0){
+                            if(currentVertex == shapeCurrent.controls[0]){
+                                
+                                //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
+                                currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
+
+                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+
+                                currentVertex.x = currentVertex.x + (mouseX - dx)
+                                currentVertex.y = currentVertex.y + (mouseY - dy)
+                            }
+                            else{
+                                currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
+                                currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
+
+                                currentVertex.x = currentVertex.x + (mouseX - dx)
+                                currentVertex.y = currentVertex.y + (mouseY - dy)
+                            }
+                        }
+
+                        dx = mouseX
+                        dy = mouseY
+                    }
+
+
                 }
 
 
@@ -557,16 +755,17 @@ ApplicationWindow {
                         if(comboyuh.currentText != undefined){
                             tf.endShape(g, labelAndColor[g.label])
                             actionCreate(g)
-                            if(comboyuh.currentText != undefined){
-                                tf.endShape(g, labelAndColor[g.label])
-                                actionCreate(g)
-                            }
-                            else{
-                                console.log("select a label")
-                            }
+                        }
+
+
+                        else{
+                            console.log("select a label")
                         }
                         refreshLegend()
                         populateLegend()
+
+                        saveIconButton.enabled = true
+
                     }
 
                     //move tool
@@ -577,20 +776,24 @@ ApplicationWindow {
 
                             actionMove(shapeCurrent, dx, dy)
                         }
-                         saveIconButton.enabled = true
+
+                        saveIconButton.enabled = true
+
                     }
 
                     //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
-                         saveIconButton.enabled = true
+                        saveIconButton.enabled = true
                     }
 
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
                         isPressed = false
-                         saveIconButton.enabled = true
+
+                        saveIconButton.enabled = true
+
                     }
 
                     //get last coordinate to make circle, save needs to happen now
@@ -625,12 +828,15 @@ ApplicationWindow {
 
 
     /////////////////////////////////////////////////////////labels//////////////////////////////////////////////////////////////
-            
+
+    //Labels select box
     ComboBox{
             id: comboyuh
 
             anchors.left: image.right
 
+
+            //create an editable model to work with new labels added
             property var thisModel: labelToSpecies(labelNames)
 
             model: thisModel
@@ -639,11 +845,16 @@ ApplicationWindow {
 
             // When a label is chosen, change the shapes for that label.
             onActivated: {
+                //if the shape is in the text box, highlight it yellow, if not, get rid of highlight
                 for (var i = 0; i < shapes.length; i++){
                     if (shapes[i].label == findLabel(currentText)){
+                        //console.log(shapes[i].colorline)
                         shapes[i].colorline = "yellow"
                     }
+
                     else {
+                        //console.log(shapes[i].label)
+                        //console.log(labelAndColor[shapes[i].label])
                         shapes[i].colorline = labelAndColor[shapes[i].label]
                     }
                 }
@@ -651,6 +862,7 @@ ApplicationWindow {
             }
 
     }
+
 
     
     //new label text field
@@ -752,6 +964,7 @@ ApplicationWindow {
                         squareSelectIcon.enabled = true
                         lassoSelectIcon.enabled = true
                         moveSelectIcon.enabled = true
+                        vertexSelectIcon.enabled = true
 
                         currentTool = "magicwand"
                     }
@@ -779,6 +992,7 @@ ApplicationWindow {
                         squareSelectIcon.enabled = true
                         lassoSelectIcon.enabled = true
                         moveSelectIcon.enabled = true
+                        vertexSelectIcon.enabled = true
 
                         currentTool = "paintbrush"
                     }
@@ -803,6 +1017,7 @@ ApplicationWindow {
                         squareSelectIcon.enabled = true
                         lassoSelectIcon.enabled = true
                         moveSelectIcon.enabled = true
+                        vertexSelectIcon.enabled = true
 
                         currentTool = "circleselect"
                     }
@@ -827,6 +1042,7 @@ ApplicationWindow {
                         circleSelectIcon.enabled = true
                         lassoSelectIcon.enabled = true
                         moveSelectIcon.enabled = true
+                        vertexSelectIcon.enabled = true
 
                         currentTool = "squareselect"
                     }
@@ -853,6 +1069,7 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
+                        vertexSelectIcon.enabled = true
 
                         currentTool = "movetool"
                     }
@@ -879,6 +1096,7 @@ ApplicationWindow {
                         magicWandIcon.enabled = true
                         paintbrushIcon.enabled = true
                         circleSelectIcon.enabled = true
+                        vertexSelectIcon.enabled = true
 
                         currentTool = "lassotool"
                     }
@@ -886,7 +1104,36 @@ ApplicationWindow {
                 }
 
             }
-       
+
+            //icon author
+            //"https://iconscout.com/icons/selection" class="text-underline font-size-sm" target="_blank">Selection</a> by <a href="https://iconscout.com/contributors/petras-nargela" class="text-underline font-size-sm" target="_blank">Petras Nargėla</a>
+            Button {
+                id: vertexSelectIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                icon.source: "icons/selection.png"
+                enabled: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
+                        vertexSelectIcon.enabled = false
+                        lassoSelectIcon.enabled = true
+                        moveSelectIcon.enabled = true
+                        squareSelectIcon.enabled = true
+                        magicWandIcon.enabled = true
+                        paintbrushIcon.enabled = true
+                        circleSelectIcon.enabled = true
+
+                        currentTool = "vertextool"
+                    }
+
+                }
+
+            }
 
         }
     }
@@ -944,30 +1191,29 @@ ApplicationWindow {
                                 savemask.title = fileName
                                 savemask.open()
                             }
-                            else{
-                                tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                            
+                            tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
                                 
-                                changeImage(folderModel.folder + "/" + fileName)
+                            changeImage(folderModel.folder + "/" + fileName)
 
-                                if(lf.hasLabels(folderModel.folder + "/" + fileName)){
-                                    lf.resetLabels()
-                                    lf.resetShapes()
-                                    imageSpecies = []
+                            if(lf.hasLabels(fileName)){
+                                lf.resetLabels()
+                                lf.resetShapes()
+                                imageSpecies = []
+                                    
+                                lf.loadLabels(lf.split(image.source))
 
-
-                                    lf.loadLabels(fileName)
-                                    getImageSpecies(labelNames)
-                                    comboyuh.model = labelToSpecies(labelNames)
-                                    refreshLegend()
-                                    populateLegend()
-                                }
-                                else{
-                                    lf.resetLabels()
-                                    lf.resetShapes()
-                                    imageSpecies = []
-                                    comboyuh.model = []
-                                }
+                                lf.loadShapes()
+                                getImageSpecies(labelNames)
+                                comboyuh.model = labelToSpecies(labelNames)
                             }
+                            else{
+                                lf.resetLabels()
+                                lf.resetShapes()
+                                imageSpecies = []
+                                comboyuh.model = []
+                            }
+                            
                             
                         }
 
@@ -1015,15 +1261,10 @@ ApplicationWindow {
         }
 
         onAccepted: {
-            console.log("save when we know how to save")
-            saveIconButton.enabled = false
-            changeImage(folderModel.folder + "/" + savemask.title)
-            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
-        }
-
-        onRejected: {
-            changeImage(folderModel.folder + "/" + savemask.title)
-            tbox.initLabels(folderModel.folder + "/" + savemask.title), refreshMask()
+             saveIconButton.enabled = false
+                        
+            lf.updateLabelsAndCoords()
+            tbox.saveLabels(labelsAndCoords, lf.split(image.source))
         }
     }
 
