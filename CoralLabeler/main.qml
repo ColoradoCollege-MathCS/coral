@@ -43,6 +43,11 @@ ApplicationWindow {
     }
 
 
+    ActionHandler{
+        id:act
+    }
+
+
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
@@ -80,14 +85,6 @@ ApplicationWindow {
 
     }
 
-
-	function actionCreate(shape){
-		//actionStack.push(CreateAction{"target": shape});
-	}
-
-	function actionMove(shape, dx, dy){
-		//actionStack.push(MoveAction{"target": shape, "dX": dx, "dY": dy});
-	}
 
     //function to give all species names of an array of label numbers
     function labelToSpecies(labnames){
@@ -163,6 +160,19 @@ ApplicationWindow {
             console.log(component.errorString())
         }
         return
+    }
+
+
+    function noMoreVertices(){
+        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+
+        currAction.shapeParent = overlay
+        currAction.target = imageMouse.shapeCurrent
+
+        act.actionDone(currAction, false)
+
+        imageMouse.previousShape = imageMouse.shapeCurrent
+        tf.removeVertices(imageMouse.previousShape)
     }
 
 
@@ -583,6 +593,17 @@ ApplicationWindow {
 
                         //make new shape if no shape was selected
                         if(yuh == false){
+
+                            var currAction = Qt.createQmlObject("import Actions;CreateAction{}", this)
+
+                            currAction.shapeParent = overlay
+                            currAction.target = shapeCurrent
+
+                            act.actionDone(currAction, false)
+
+                            previousShape = shapeCurrent
+                            tf.removeVertices(previousShape)
+
                             shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
                         "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
                         }
@@ -771,6 +792,12 @@ ApplicationWindow {
 
                         saveIconButton.enabled = true
 
+                        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+                        
+                        currAction.shapeParent = overlay
+                        currAction.target = g
+
+                        act.actionDone(currAction, false)
                     }
 
                     //move tool
@@ -778,12 +805,22 @@ ApplicationWindow {
                         if(shapeCurrent != undefined){
                             dx = mouseX - ogx
                             dy = mouseY - ogy
+                            
+                            saveIconButton.enabled = true
 
-                            actionMove(shapeCurrent, dx, dy)
+                            var currAction = Qt.createQmlObject("import Actions; MoveAction{}", this)
+                            currAction.dX = dx
+                            currAction.dY = dy
+
+                            currAction.shapeParent = overlay
+                            currAction.target = shapeCurrent
+
+                            act.actionDone(currAction, false)
                         }
 
-                        saveIconButton.enabled = true
+                        shapeCurrent = undefined
 
+                        console.log(act.doneStack)
                     }
 
                     //just not that the save needs to happen now
@@ -958,6 +995,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
+
                         valueSlider.visible = true
 
                         sliderTitle.text = "Threshold"
@@ -986,6 +1028,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
+
                         valueSlider.visible = true
 
                         sliderTitle.text = "Size"
@@ -1013,6 +1060,11 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
+
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
@@ -1038,6 +1090,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
@@ -1065,6 +1120,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
@@ -1092,6 +1150,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = true
                         valueSlider.from = 7
                         valueSlider.to = 0
@@ -1127,6 +1188,9 @@ ApplicationWindow {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
