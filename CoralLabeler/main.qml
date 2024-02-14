@@ -197,13 +197,9 @@ ApplicationWindow {
                 }
             }
             Action {
-                text: qsTr("Get AI Predictions")
+                text: qsTr("Statistics")
                 onTriggered: {
-                    // var labels = tbox.getPrediction(filename, (30,30)); 
-                    // refreshMask()
-                    // populateLegend(labels)
-                    // labelLegend.visible = true
-                    // saveIconButton.enabled = true
+                    statsPopUp.open()
                 }
             }
         }
@@ -251,7 +247,7 @@ ApplicationWindow {
                         
                         lf.updateLabelsAndCoords()
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source))
-                        tbox.toPixels(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
+                        tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                     }
                     
                 }
@@ -1093,4 +1089,53 @@ ApplicationWindow {
         }
 
      }
+
+
+
+
+
+    /////////////////////////////////////////////////////////statistics pop up////////////////////////////////////////////////////////
+
+      Popup {
+        id: statsPopUp
+        x: (parent.width - width) / 2  
+        y: (parent.height - height) / 2 
+        width: 200
+        height: 150
+        modal: true
+        focus: true
+
+         Rectangle {
+            color: "white"
+            anchors.fill: parent
+
+            Column {
+                spacing: 10
+                anchors.centerIn: parent
+
+                TextField {
+                    id: imgWS
+                    color: "black"
+                    placeholderText: "Width Scale (cm)"
+                    placeholderTextColor: "black"
+                }
+
+                TextField {
+                    id: imgHS
+                    color: "black"
+                    placeholderText: "Height Scale (cm)"
+                    placeholderTextColor: "black"
+                }
+
+                Button {
+                    text: "Enter"
+                    palette.buttonText: "black"
+                    onClicked: {
+                        tbox.saveStats(labelsAndCoords, species, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), imgWS.text, imgHS.text)
+                        statsPopUp.close()
+                    }
+                }
+            }
+         }
+    }
 }

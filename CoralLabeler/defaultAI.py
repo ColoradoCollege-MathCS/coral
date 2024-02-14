@@ -31,7 +31,8 @@ def transform_img(img_path):
     return img
     
     
-def get_fm(img):   
+def get_fm(img):  
+    # get Mask RCNN model 
     mrcnn_model = get_model()
     
     # extract layer with forward hook
@@ -42,9 +43,9 @@ def get_fm(img):
         return hook 
     
     mrcnn_model.backbone.body.layer1.register_forward_hook(get_activation('backbone'))
-    
     preds = mrcnn_model([img])
     
+    # get extracted layer output
     ext_fm = activation['backbone']
     
     m = nn.Upsample((img.shape[1], img.shape[2]), mode='bicubic')
