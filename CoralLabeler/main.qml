@@ -42,6 +42,16 @@ ApplicationWindow {
         id:tf
     }
 
+    /* 
+    Loader{
+        id:loadpaint
+        source: "paintbrush.qml"
+
+        anchors.fill: parent
+
+    }
+    */
+
 
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
@@ -146,6 +156,22 @@ ApplicationWindow {
             console.log(component.errorString())
         }
         return
+    }
+
+    function paintComponent(){
+
+        const component = Qt.createComponent("paintbrush.qml");
+
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh3")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+
     }
 
 
@@ -297,12 +323,14 @@ ApplicationWindow {
                         to = 1
                         imageMouse.value = value
                     }
-
+                    
+                
                     else if (currentTool == "paintbrush"){
                         from = 0
-                        to = 255
+                        to = 50
                         imageMouse.value = value
                     }
+                
 
                     else{
                         visible = false
@@ -411,6 +439,11 @@ ApplicationWindow {
                 property var value: 1
 
                 property var comp: tf.createLassoComponent()
+//-------       
+                
+                property var paintComp: paintComponent()  
+
+
 
                 property var magicWandComponent: aiComponent()
                 property var polygon: []
@@ -487,7 +520,19 @@ ApplicationWindow {
 
                     //paintbrush if held down
                     else if (currentTool == "paintbrush"){
-                        isPressed = true
+                        
+                         if(comboyuh.currentText != undefined){
+                                g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                                //var paintbrush = component.createObject(overlay);
+                                g.child.strokeWidth = value
+
+                                g.child.startX = mouseX
+                                g.child.startY = mouseY
+
+                                shapes.push(g)
+
+                    }
+
                     }
 
                     //if circle is held down, record those coordinates
@@ -534,6 +579,15 @@ ApplicationWindow {
                             tf.drawShape(g, mouseX, mouseY)
                         }
                     }
+
+                    else if (currentTool == "paintbrush"){
+                        if(comboyuh.currentText != undefined) {
+                            tf.drawShape(g, mouseX, mouseY)
+                        }
+                        
+
+                    }
+
                     else if (currentTool == "movetool"){
                         if(shapeCurrent != undefined){
                             for(var i = 0; i < shapeCurrent.child.pathElements.length; i++){
@@ -547,6 +601,8 @@ ApplicationWindow {
                             dy = mouseY
                         }
                     }
+                    
+                    
                 }
 
 
@@ -581,7 +637,7 @@ ApplicationWindow {
                     }
 
                     //just not that the save needs to happen now
-                    if (currentTool == "magicwand"){
+                    else if (currentTool == "magicwand"){
                         //console.log(mouseX, mouseY)
                         //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
                          saveIconButton.enabled = true
@@ -589,8 +645,26 @@ ApplicationWindow {
 
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
-                        isPressed = false
-                         saveIconButton.enabled = true
+                        
+                        if (currentTool == "lassotool"){
+                        if(comboyuh.currentText != undefined){
+                            tf.endShape(g, labelAndColor[g.label])
+                            actionCreate(g)
+                            if(comboyuh.currentText != undefined){
+                                tf.endShape(g, labelAndColor[g.label])
+                                actionCreate(g)
+                            }
+                            else{
+                                console.log("select a label")
+                            }
+                        }
+                        refreshLegend()
+                        populateLegend()
+
+                        //saveIconButton.enabled = true
+
+                    }
+
                     }
 
                     //get last coordinate to make circle, save needs to happen now
@@ -614,6 +688,8 @@ ApplicationWindow {
     }
 
     //Timer to repeat the paintbrush action
+
+    /*
     Timer {
         id: timer
         interval: 50
@@ -622,7 +698,7 @@ ApplicationWindow {
         running: imageMouse.isPressed
         onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
     }
-
+*/
 
     /////////////////////////////////////////////////////////labels//////////////////////////////////////////////////////////////
             
@@ -779,8 +855,10 @@ ApplicationWindow {
                         squareSelectIcon.enabled = true
                         lassoSelectIcon.enabled = true
                         moveSelectIcon.enabled = true
-
                         currentTool = "paintbrush"
+
+                        
+
                     }
 
                 }
@@ -1093,4 +1171,4 @@ ApplicationWindow {
 
      }
 }
->>>>>>> integration
+
