@@ -152,7 +152,6 @@ ApplicationWindow {
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh3")
             return component
         }
         else if (component.status === Component.Error){
@@ -363,9 +362,8 @@ ApplicationWindow {
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
 
+                        refreshLegend()
                         populateLegend()
-
-
 
                     }
                     else{
@@ -373,6 +371,9 @@ ApplicationWindow {
                         lf.resetShapes()
                         imageSpecies = []
                         comboyuh.model = []
+
+                        refreshLegend()
+                        populateLegend()
                     }
                 }
             }
@@ -531,10 +532,6 @@ ApplicationWindow {
                         refreshLegend()
                         populateLegend()
 
-                        // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
-
-                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
-
                         tf.removeVertices(shapeCurrent)
                     }
 
@@ -551,8 +548,6 @@ ApplicationWindow {
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
-
-
 
                         for(var i = 0; i < 2; i++){
                             console.log(labelAndColor[i])
@@ -646,15 +641,15 @@ ApplicationWindow {
                         for(var i = 0; i < shapes.length; i++){
                             if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                 if(shapeCurrent != shapes[i]){
-                                    yuh = false
+                                    selected = false
                                 }
                                 else{
-                                    yuh = true
+                                    selected = true
                                 }
                             }
                         }
 
-                        if(yuh == true) {
+                        if(selected == true) {
                             console.log("slay")
                             for(var h = 0; h < shapeCurrent.controls.length; h++){
 
