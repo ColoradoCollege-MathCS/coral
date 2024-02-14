@@ -346,6 +346,8 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
+                    refreshLegend()
+                    populateLegend()
 
                     if(saveIconButton.enabled == true){
                         savemask.title = selectedFile
@@ -362,18 +364,12 @@ ApplicationWindow {
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
 
-                        refreshLegend()
-                        populateLegend()
-
                     }
                     else{
                         lf.resetLabels()
                         lf.resetShapes()
                         imageSpecies = []
                         comboyuh.model = []
-
-                        refreshLegend()
-                        populateLegend()
                     }
                 }
             }
@@ -1271,6 +1267,9 @@ ApplicationWindow {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
+                            refreshLegend()
+                            populateLegend()
+
                             if (saveIconButton.enabled == true){
                                 savemask.title = fileName
                                 savemask.open()
@@ -1445,14 +1444,14 @@ ApplicationWindow {
                     id: imgWS
                     color: "black"
                     placeholderText: "Width Scale (cm)"
-                    placeholderTextColor: "black"
+                    placeholderTextColor: "lightgrey"
                 }
 
                 TextField {
                     id: imgHS
                     color: "black"
                     placeholderText: "Height Scale (cm)"
-                    placeholderTextColor: "black"
+                    placeholderTextColor: "lightgrey"
                 }
 
                 Button {
