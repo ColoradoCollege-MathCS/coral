@@ -10,26 +10,38 @@ import QtQuick.Shapes
 
 // ellipse select-----------------------------------------
 
-
-
 Item {
 
     id: mainEllipse
 
-            width: 100
-            height: 100
+        width: 100
+        height: 100
 
         visible: true
 
         x: parent.width/2 - (width/2)
         y: parent.height/2 - (height/2)
 
+        property var label: ""
+
+        property var coords: []
+        property var color: ""
+        property var colorline: ""
+
+        property var child: thePath
+
 
         Shape{
-            
+            containsMode: Shape.FillContains
 
-    
             ShapePath{
+
+                id:thePath
+
+                strokeColor: mainEllipse.colorline
+                strokeWidth: 1
+                fillColor: mainEllipse.color
+
                 startX: mainEllipse.width / 2
                 startY: 0
 
@@ -39,37 +51,34 @@ Item {
                         centerY: mainEllipse.height/2
                         radiusX: mainEllipse.width/2
                         radiusY: mainEllipse.height/2
-                     
-                       
+                    
                         sweepAngle: 360
    
-               
 
             }
         }
 
     }    
 
-        Drag.active: mouseArea2.drag.active
+    Drag.active: mouseArea2.drag.active
 
-        MouseArea
-        {
-            id: mouseArea2
+    MouseArea{
+        id: mouseArea2
 
-            anchors.fill: parent
-            drag.target: mainEllipse
-        }
+        anchors.fill: parent
+        drag.target: mainEllipse
+    }
     
 
-Rectangle {
+    Rectangle {
 
-    id: circleleft2
-    color: "black"
-    radius: 20
-    width: radius
-    height: radius
+        id: circleleft2
+        color: "black"
+        radius: 20
+        width: radius
+        height: radius
 
-    visible: true
+        visible: true
 
         anchors {
             horizontalCenter: mainEllipse.left
@@ -91,17 +100,15 @@ Rectangle {
     }
 
 
-Rectangle {
+    Rectangle {
 
-    id:circleright2
-    color: "black"
-    radius: 20
-    width: radius
-    height: radius
+        id:circleright2
+        color: "black"
+        radius: 20
+        width: radius
+        height: radius
 
-    visible: true
-
-
+        visible: true
 
         anchors {
             horizontalCenter: mainEllipse.right
@@ -121,14 +128,14 @@ Rectangle {
     }
 
 
-  Rectangle {
-    id:circletop2
-    color: "black"
-    radius: 20
-    width: radius
-    height: radius
+    Rectangle {
+        id:circletop2
+        color: "black"
+        radius: 20
+        width: radius
+        height: radius
 
-    visible: true
+        visible: true
 
         anchors {
             horizontalCenter: mainEllipse.horizontalCenter
@@ -148,15 +155,15 @@ Rectangle {
         }
     }
 
-   Rectangle {
+    Rectangle {
 
-    id:circlebottom2
-    color: "black"
-    radius: 20
-    width: radius
-    height: radius
+        id:circlebottom2
+        color: "black"
+        radius: 20
+        width: radius
+        height: radius
 
-    visible: true
+        visible: true
 
         anchors
         {
@@ -178,3 +185,4 @@ Rectangle {
     }
 
 }
+

@@ -23,6 +23,8 @@ Shape {
 
 	property var child: thePath
 
+    property var controls: []
+
 	//create its path
     ShapePath{
         id: thePath

@@ -3,6 +3,50 @@ import QtQuick.Shapes
 import Actions
 
 QtObject {
+    property list<Actions> doneStack: []
+    property list<Actions> undoneStack: []
+
+    //Add curAction to doneStack and clear undoneStack
+    //curAction - instantiated Action object
+    //ahPerform - Boolean. If true, the ActionHandler performs the action.
+    //                     If false, the AH just adds action to stack, assumes it has been done already
+    function actionDone(curAction, ahPerform) {
+        doneStack.push(curAction)
+        if (ahPerform) {
+            parseActionDo(curAction)
+        }
+        while (undoneStack.length > 0) {
+            undoneStack.pop() //If another tool has been used, paths have
+            //diverged and it does not make sense to redo.
+        }
+    }
+    //Pop from done stack, undo that action, push to undoneStack
+    //If there is nothing to undo, do nothing
+    function undo() {
+        if (doneStack.length>0) {
+            var curAction = doneStack.pop()
+            parseActionUndo(curAction)
+            undoneStack.push(curAction)
+        }
+    }
+    //Pop from undoneStack, do that action, push to done stack
+    //if there is nothing to redo, do nothing
+    function redo() {
+        if (undoneStack.length>0) {
+            var curAction = undoneStack.pop()
+            parseActionDo(curAction)
+            doneStack.push(curAction)
+        }
+    }
+    //Returns true if there are Actions available to undo
+    function actToUndo() {
+        return doneStack.length>0
+    }
+    //Returns tru if there are Actions available to redo
+    function actToRedo() {
+        return undoneStack.length>0
+    }
+
     function parseActionDo(curAction) {
         switch (curAction.typeString) {
             case "CreateAction"://insert into parent data at end

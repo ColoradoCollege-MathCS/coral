@@ -183,5 +183,5 @@ Rectangle{
     function addToSpeciesList(labelNumber, name){
         return tbox.addToCSV(labelNumber, name, "SpeciesList.csv")
     }
-    
+
 }
