@@ -47,7 +47,6 @@ ApplicationWindow {
         id:act
     }
 
-
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
@@ -161,7 +160,6 @@ ApplicationWindow {
         }
         return
     }
-
 
     function noMoreVertices(){
         var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
@@ -476,6 +474,8 @@ ApplicationWindow {
                 property var shapeCurrent: undefined
                 property var previousShape: undefined
 
+                property var selected: false
+
                 //fix mouse coordinate
                 function getMouseX() {
                     return (overlay.width - overlay.paintedWidth) * 0.5
@@ -583,50 +583,23 @@ ApplicationWindow {
                     else if (currentTool == "squareselect"){
                         fixMouse(image)
 
-
-                        holdedx = fixedMouseX
-                        holdedy = fixedMouseY
-
-                        shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
-
-                        refreshLegend()
-                        populateLegend()
-                        //variable to determine whether the mouse selected a shape
-                        var yuh = false
-
                         //variable to solve shape + radius
                         var sizex = 0
                         var sizey = 0
+                        
 
-                        //get current shape
                         for(var i = 0; i < shapes.length; i++){
                             if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
-                                shapeCurrent = shapes[i]
-                                yuh = true
+                                if(shapeCurrent == shapes[i]){
+                                    selected = true
+                                }
+                                
                             }
-                            
                         }
 
-
-                        //make new shape if no shape was selected
-                        if(yuh == false){
-
-                            var currAction = Qt.createQmlObject("import Actions;CreateAction{}", this)
-
-                            currAction.shapeParent = overlay
-                            currAction.target = shapeCurrent
-
-                            act.actionDone(currAction, false)
-
-                            previousShape = shapeCurrent
-                            tf.removeVertices(previousShape)
-
-                            shapes.push(rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
-                        "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
-                        }
 
                         //get what circle was selected
-                        else{
+                        if(selected == true){
                             for(var h = 0; h < shapeCurrent.controls.length; h++){
 
                                 sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
@@ -640,19 +613,40 @@ ApplicationWindow {
                             }
                         }
 
+                        //make new shape if no shape was selected
+                        else{
+                            if (shapeCurrent != undefined){
+                                previousShape = shapeCurrent
+                                noMoreVertices(previousShape)
+                            }
+                            var newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                        "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
+                            shapes.push(newShape)
+
+                            shapeCurrent = newShape
+
+
+                            selected = true
+                        }
+
+
                         dx = mouseX
                         ogx = mouseX
                         dy = mouseY
                         ogy = mouseY
 
-                        tf.removeVertices(shapeCurrent)
+                        refreshLegend()
+                        populateLegend()
+
+                        selected = false
 
                         
                     }
 
                     else if(currentTool == "vertextool"){
-                        var yuh = false
-
+                        //check if shape has already been selected
+                        var no = false
+                    
                         for(var i = 0; i < shapes.length; i++){
                             if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                 if(shapeCurrent != shapes[i]){
@@ -814,6 +808,7 @@ ApplicationWindow {
                         currAction.target = g
 
                         act.actionDone(currAction, false)
+
                     }
 
                     //move tool
@@ -831,18 +826,18 @@ ApplicationWindow {
                             currAction.shapeParent = overlay
                             currAction.target = shapeCurrent
 
+
                             act.actionDone(currAction, false)
                         }
 
                         shapeCurrent = undefined
 
                         console.log(act.doneStack)
+                        
                     }
 
                     //just not that the save needs to happen now
                     if (currentTool == "magicwand"){
-                        //console.log(mouseX, mouseY)
-                        //tbox.magicWand(image.source, mouseX * mouseFactorX, mouseY * mouseFactorY, value), refreshMask()
                         saveIconButton.enabled = true
                     }
 
@@ -858,7 +853,6 @@ ApplicationWindow {
                     else if (currentTool == "circleselect"){
                         fixMouse(image)
 
-                        //tbox.selectCircle(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
                         saveIconButton.enabled = true
                     }
 
@@ -866,8 +860,17 @@ ApplicationWindow {
                     else if (currentTool == "squareselect"){
                         fixMouse(image)
 
-                        //tbox.selectRect(holdedx, holdedy, fixedMouseX, fixedMouseY), refreshMask()
                         saveIconButton.enabled = true
+                    }
+
+                    else if (currentTool == "vertextool"){
+                        saveIconButton.enabled = true
+                    }
+
+
+                    if (currentTool != "vertextool" && currentTool != ""){
+                        redoAction.enabled = act.actToRedo()
+                        undoAction.enabled = true
                     }
                 }
             }
