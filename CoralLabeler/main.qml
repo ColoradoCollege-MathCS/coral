@@ -646,15 +646,15 @@ ApplicationWindow {
                         for(var i = 0; i < shapes.length; i++){
                             if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                 if(shapeCurrent != shapes[i]){
-                                    yuh = false
+                                    selected = false
                                 }
                                 else{
-                                    yuh = true
+                                    selected = true
                                 }
                             }
                         }
 
-                        if(yuh == true) {
+                        if(selected == true) {
                             console.log("slay")
                             for(var h = 0; h < shapeCurrent.controls.length; h++){
 
@@ -677,7 +677,7 @@ ApplicationWindow {
                                         shapeCurrent = shapes[i]
                                         tf.makeVertices(shapeCurrent)
 
-                                        yuh = true
+                                        selected = true
                                         break
                                     }
                                     
