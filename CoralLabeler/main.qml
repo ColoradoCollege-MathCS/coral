@@ -167,7 +167,6 @@ ApplicationWindow {
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh3")
             return component
         }
         else if (component.status === Component.Error){
@@ -362,6 +361,8 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
+                    refreshLegend()
+                    populateLegend()
 
                     if(saveIconButton.enabled == true){
                         savemask.title = selectedFile
@@ -377,10 +378,6 @@ ApplicationWindow {
                         lf.loadShapes()
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
-
-                        populateLegend()
-
-
 
                     }
                     else{
@@ -548,10 +545,6 @@ ApplicationWindow {
                         refreshLegend()
                         populateLegend()
 
-                        // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
-
-                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
-
                         tf.removeVertices(shapeCurrent)
                     }
 
@@ -578,8 +571,6 @@ ApplicationWindow {
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
-
-
 
                         for(var i = 0; i < 2; i++){
                             console.log(labelAndColor[i])
@@ -1314,6 +1305,9 @@ ApplicationWindow {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
+                            refreshLegend()
+                            populateLegend()
+
                             if (saveIconButton.enabled == true){
                                 savemask.title = fileName
                                 savemask.open()
@@ -1488,14 +1482,14 @@ ApplicationWindow {
                     id: imgWS
                     color: "black"
                     placeholderText: "Width Scale (cm)"
-                    placeholderTextColor: "black"
+                    placeholderTextColor: "lightgrey"
                 }
 
                 TextField {
                     id: imgHS
                     color: "black"
                     placeholderText: "Height Scale (cm)"
-                    placeholderTextColor: "black"
+                    placeholderTextColor: "lightgrey"
                 }
 
                 Button {
