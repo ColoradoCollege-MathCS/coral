@@ -646,24 +646,11 @@ ApplicationWindow {
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
                         
-                        if (currentTool == "lassotool"){
-                        if(comboyuh.currentText != undefined){
-                            tf.endShape(g, labelAndColor[g.label])
-                            actionCreate(g)
-                            if(comboyuh.currentText != undefined){
-                                tf.endShape(g, labelAndColor[g.label])
-                                actionCreate(g)
-                            }
-                            else{
-                                console.log("select a label")
-                            }
-                        }
-                        refreshLegend()
-                        populateLegend()
+                        
 
-                        //saveIconButton.enabled = true
-
-                    }
+                            saveIconButton.enabled = true
+                            refreshLegend()
+                            populateLegend()
 
                     }
 
@@ -687,18 +674,7 @@ ApplicationWindow {
         }  
     }
 
-    //Timer to repeat the paintbrush action
-
-    /*
-    Timer {
-        id: timer
-        interval: 50
-        repeat: true
-        triggeredOnStart: true
-        running: imageMouse.isPressed
-        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
-    }
-*/
+    
 
     /////////////////////////////////////////////////////////labels//////////////////////////////////////////////////////////////
             
