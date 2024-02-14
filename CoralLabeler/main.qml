@@ -144,6 +144,21 @@ ApplicationWindow {
         }
         return
     }
+    function paintComponent(){
+
+        const component = Qt.createComponent("paintbrush.qml");
+
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh3")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+
+    }
 
 
     function aiComponent(){
@@ -322,7 +337,7 @@ ApplicationWindow {
 
                     else if (currentTool == "paintbrush"){
                         from = 0
-                        to = 255
+                        to = 50
                         imageMouse.value = value
                     }
 
@@ -444,6 +459,8 @@ ApplicationWindow {
 
                 property var comp: tf.createLassoComponent()
 
+                property var paintComp: paintComponent()
+
 
                 property var magicWandComponent: aiComponent()
                 property var polygon: []
@@ -533,9 +550,19 @@ ApplicationWindow {
 
                     //paintbrush if held down
                     else if (currentTool == "paintbrush"){
-                        isPressed = true
+                        
+                         if(comboyuh.currentText != undefined){
+                                g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                                
+                                g.child.strokeWidth = value
 
-                        tf.removeVertices(shapeCurrent)
+                                g.child.startX = mouseX
+                                g.child.startY = mouseY
+
+                                shapes.push(g)
+
+                    }
+
                     }
 
                     //if circle is held down, record those coordinates
@@ -668,7 +695,7 @@ ApplicationWindow {
                                         shapeCurrent = shapes[i]
                                         tf.makeVertices(shapeCurrent)
 
-                                        yuh = true
+                                        selected = true
                                         break
                                     }
                                     
@@ -714,6 +741,14 @@ ApplicationWindow {
                             dx = mouseX
                             dy = mouseY
                         }
+                    }
+
+                    else if (currentTool == "paintbrush"){
+                        if(comboyuh.currentText != undefined) {
+                            tf.drawShape(g, mouseX, mouseY)
+                        }
+                        
+
                     }
 
                     else if(currentTool == "squareselect"){
@@ -829,10 +864,13 @@ ApplicationWindow {
                     }
 
                     //tell timer to stop and save needs to happen now
-                    else if (currentTool == "paintbrush"){
-                        isPressed = false
+                   else if (currentTool == "paintbrush"){
+                        
+                        
 
-                        saveIconButton.enabled = true
+                            saveIconButton.enabled = true
+                            refreshLegend()
+                            populateLegend()
 
                     }
 
