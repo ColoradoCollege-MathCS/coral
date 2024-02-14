@@ -51,7 +51,7 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(str, int, int, int, int, float, float, result="QVariantList")
     def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
         
-        if sys.platform == 'darwin' or platform == "linux" or platform == "linux2":
+        if sys.platform == 'darwin' or sys.platform == "linux" or sys.platform == "linux2":
             img_path = img_path[6:]
         elif sys.platform == 'win32':
             img_path = img_path[8:]
