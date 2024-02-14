@@ -51,11 +51,9 @@ Item {
                         centerY: mainEllipse.height/2
                         radiusX: mainEllipse.width/2
                         radiusY: mainEllipse.height/2
-
-
+                    
                         sweepAngle: 360
-
-
+   
 
             }
         }
@@ -70,7 +68,7 @@ Item {
         anchors.fill: parent
         drag.target: mainEllipse
     }
-
+    
 
     Rectangle {
 
@@ -187,3 +185,4 @@ Item {
     }
 
 }
+

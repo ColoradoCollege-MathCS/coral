@@ -10,6 +10,7 @@ import random
 import csv
 import os
 import math
+from rdp import rdp
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import blob_ML
@@ -73,21 +74,21 @@ class Toolbox(QtCore.QObject):
         magic_wand_select(image, self.labels, label, coor, threshold)
         self.updateMask()
 
-    @QtCore.Slot(int, int, int, int)
-    def selectCircle(self, point1x, point1y, point2x, point2y):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        point2 = (point2x, point2y)
-        ellipse_select(self.labels, label, point1, point2)
-        self.updateMask()
+    #@QtCore.Slot(int, int, int, int)
+    #def selectCircle(self, point1x, point1y, point2x, point2y):
+    #    label = random.randint(1, 4)
+    #    point1 = (point1x, point1y)
+    #    point2 = (point2x, point2y)
+    #    ellipse_select(self.labels, label, point1, point2)
+    #    self.updateMask()
 
-    @QtCore.Slot(int, int, int, int)
-    def selectRect(self, point1x, point1y, point2x, point2y):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        point2 = (point2x, point2y)
-        rectangle_select(self.labels, label, point1, point2)
-        self.updateMask()
+    #@QtCore.Slot(int, int, int, int)
+    #def selectRect(self, point1x, point1y, point2x, point2y):
+    #    label = random.randint(1, 4)
+    #    point1 = (point1x, point1y)
+    #    point2 = (point2x, point2y)
+    #    rectangle_select(self.labels, label, point1, point2)
+    #    self.updateMask()
 
     @QtCore.Slot(int, int, int)
     def paintBrush(self, point1x, point1y, size):
@@ -148,7 +149,7 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(str, str, str, result="QVariantList")
     def addToCSV(self, data, name, fileName):
         with open(fileName, 'a') as file:
-
+ 
             # write row
             file.write("\n")
             file.write(str(int(data) + 1) + "," + name)
@@ -159,6 +160,12 @@ class Toolbox(QtCore.QObject):
         return [str(int(data) + 1), name]
     
 
+    @QtCore.Slot(list,float, result="QVariantList")
+    def simplifyLasso(self, points, epsilon):
+        #epsilon functions like a tolerance I think
+        return rdp(points, epsilon=epsilon)
+
+      
     def toPixels(self, coords, x_coord, y_coord, x_factor, y_factor):
         numpy_shapes = {}
         for label_num, coords_dict in coords.items():
@@ -230,7 +237,3 @@ class Toolbox(QtCore.QObject):
             writer.writeheader()
             writer.writerows(stats_list)
 
-            
-
-    
-        
