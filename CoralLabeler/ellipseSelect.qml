@@ -33,7 +33,7 @@ Item {
 
         Shape{
             containsMode: Shape.FillContains
-    
+
             ShapePath{
 
                 id:thePath
@@ -51,10 +51,10 @@ Item {
                         centerY: mainEllipse.height/2
                         radiusX: mainEllipse.width/2
                         radiusY: mainEllipse.height/2
-                     
-                       
+                    
                         sweepAngle: 360
    
+
             }
         }
 
@@ -185,3 +185,4 @@ Item {
     }
 
 }
+

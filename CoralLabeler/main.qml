@@ -46,9 +46,6 @@ ApplicationWindow {
         id:act
     }
 
-
-
-
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
     function refreshMask() {
@@ -146,7 +143,21 @@ ApplicationWindow {
         }
         return
     }
+    function paintComponent(){
 
+        const component = Qt.createComponent("paintbrush.qml");
+
+        if (component.status === Component.Ready) {
+            //make shapes
+            console.log("yuh3")
+            return component
+        }
+        else if (component.status === Component.Error){
+            console.log(component.errorString())
+        }
+        return
+
+    }
 
     function aiComponent(){
         //create a QML component from shapes.qml
@@ -154,7 +165,6 @@ ApplicationWindow {
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh3")
             return component
         }
         else if (component.status === Component.Error){
@@ -226,13 +236,9 @@ ApplicationWindow {
                 }
             }
             Action {
-                text: qsTr("Get AI Predictions")
+                text: qsTr("Statistics")
                 onTriggered: {
-                    // var labels = tbox.getPrediction(filename, (30,30)); 
-                    // refreshMask()
-                    // populateLegend(labels)
-                    // labelLegend.visible = true
-                    // saveIconButton.enabled = true
+                    statsPopUp.open()
                 }
             }
         }
@@ -280,7 +286,7 @@ ApplicationWindow {
                         
                         lf.updateLabelsAndCoords()
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source))
-
+                        //tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                     }
                     
                 }
@@ -329,7 +335,7 @@ ApplicationWindow {
 
                     else if (currentTool == "paintbrush"){
                         from = 0
-                        to = 255
+                        to = 50
                         imageMouse.value = value
                     }
 
@@ -353,6 +359,8 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
+                    refreshLegend()
+                    populateLegend()
 
                     if(saveIconButton.enabled == true){
                         savemask.title = selectedFile
@@ -368,10 +376,6 @@ ApplicationWindow {
                         lf.loadShapes()
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
-
-                        populateLegend()
-
-
 
                     }
                     else{
@@ -453,6 +457,8 @@ ApplicationWindow {
 
                 property var comp: tf.createLassoComponent()
 
+                property var paintComp: paintComponent()
+
 
                 property var magicWandComponent: aiComponent()
                 property var polygon: []
@@ -531,24 +537,30 @@ ApplicationWindow {
                         fixMouse(image)
                         
                         //get AI polygon as shape object
-                        polygon = tbox.getPrediction(findLabel(comboyuh.currentText), image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
+                        polygon = tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
                         shapes.push(magicWandComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "coords": polygon, "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
 
                         refreshLegend()
                         populateLegend()
-
-                        // tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
-
-                        tbox.magicWand(image.source, fixedMouseX, fixedMouseY, value), refreshMask()
 
                         tf.removeVertices(shapeCurrent)
                     }
 
                     //paintbrush if held down
                     else if (currentTool == "paintbrush"){
-                        isPressed = true
+                        
+                         if(comboyuh.currentText != undefined){
+                                g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                                
+                                g.child.strokeWidth = value
 
-                        tf.removeVertices(shapeCurrent)
+                                g.child.startX = mouseX
+                                g.child.startY = mouseY
+
+                                shapes.push(g)
+
+                    }
+
                     }
 
                     //if circle is held down, record those coordinates
@@ -557,8 +569,6 @@ ApplicationWindow {
 
                         holdedx = fixedMouseX
                         holdedy = fixedMouseY
-
-
 
                         for(var i = 0; i < 2; i++){
                             console.log(labelAndColor[i])
@@ -654,6 +664,7 @@ ApplicationWindow {
                             if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                 if(shapeCurrent == shapes[i]){
                                     no = true
+
                                 }
                             }
                         }
@@ -670,6 +681,7 @@ ApplicationWindow {
                         }
 
                         //if shape has already been selected, choose vertex
+
                         if(selected == true) {
                             console.log("slay")
                             for(var h = 0; h < shapeCurrent.controls.length; h++){
@@ -742,6 +754,14 @@ ApplicationWindow {
                             dx = mouseX
                             dy = mouseY
                         }
+                    }
+
+                    else if (currentTool == "paintbrush"){
+                        if(comboyuh.currentText != undefined) {
+                            tf.drawShape(g, mouseX, mouseY)
+                        }
+                        
+
                     }
 
                     else if(currentTool == "squareselect"){
@@ -858,10 +878,13 @@ ApplicationWindow {
                     }
 
                     //tell timer to stop and save needs to happen now
-                    else if (currentTool == "paintbrush"){
-                        isPressed = false
+                   else if (currentTool == "paintbrush"){
+                        
+                        
 
-                        saveIconButton.enabled = true
+                            saveIconButton.enabled = true
+                            refreshLegend()
+                            populateLegend()
 
                     }
 
@@ -1296,6 +1319,9 @@ ApplicationWindow {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
+                            refreshLegend()
+                            populateLegend()
+
                             if (saveIconButton.enabled == true){
                                 savemask.title = fileName
                                 savemask.open()
@@ -1442,4 +1468,53 @@ ApplicationWindow {
         }
 
      }
+
+
+
+
+
+    /////////////////////////////////////////////////////////statistics pop up////////////////////////////////////////////////////////
+
+      Popup {
+        id: statsPopUp
+        x: (parent.width - width) / 2  
+        y: (parent.height - height) / 2 
+        width: 200
+        height: 150
+        modal: true
+        focus: true
+
+         Rectangle {
+            color: "white"
+            anchors.fill: parent
+
+            Column {
+                spacing: 10
+                anchors.centerIn: parent
+
+                TextField {
+                    id: imgWS
+                    color: "black"
+                    placeholderText: "Width Scale (cm)"
+                    placeholderTextColor: "lightgrey"
+                }
+
+                TextField {
+                    id: imgHS
+                    color: "black"
+                    placeholderText: "Height Scale (cm)"
+                    placeholderTextColor: "lightgrey"
+                }
+
+                Button {
+                    text: "Enter"
+                    palette.buttonText: "black"
+                    onClicked: {
+                        tbox.saveStats(labelsAndCoords, species, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), imgWS.text, imgHS.text)
+                        statsPopUp.close()
+                    }
+                }
+            }
+         }
+    }
 }

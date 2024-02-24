@@ -1,12 +1,16 @@
 from PySide6 import QtCore
+
 from skimage.io import imread, imsave
+from skimage.draw import polygon
+from skimage.measure import label, regionprops
+
+import sys
 import numpy as np
 import random
 import csv
 import os
 import math
 from rdp import rdp
-
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import blob_ML
@@ -44,9 +48,15 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
-    @QtCore.Slot(str, str, int, int, int, int, float, float, result="QVariantList")
-    def getPrediction(self, label_name, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
-        polygon = blob_ML(label_name, img_path[6:], (seedX, seedY))
+    @QtCore.Slot(str, int, int, int, int, float, float, result="QVariantList")
+    def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
+        
+        if sys.platform == 'darwin' or sys.platform == "linux" or sys.platform == "linux2":
+            img_path = img_path[6:]
+        elif sys.platform == 'win32':
+            img_path = img_path[8:]
+        
+        polygon = blob_ML(img_path, (seedX, seedY))
 
         scaled_polygon = []
         for vert in polygon:
@@ -150,7 +160,81 @@ class Toolbox(QtCore.QObject):
 
         return [str(int(data) + 1), name]
     
+
     @QtCore.Slot(list,float, result="QVariantList")
     def simplifyLasso(self, points, epsilon):
         #epsilon functions like a tolerance I think
         return rdp(points, epsilon=epsilon)
+
+      
+    def toPixels(self, coords, x_coord, y_coord, x_factor, y_factor):
+        numpy_shapes = {}
+        for label_num, coords_dict in coords.items():
+            numpy_shapes[label_num] = {}
+            for shape_num, shape_coords in coords_dict.items():
+                numpy_shapes[label_num][shape_num] = []
+                for coord in shape_coords:
+                    x = math.floor((coord[0] - x_coord) / x_factor)
+                    y  = math.floor((coord[1] - y_coord) / y_factor) 
+
+                    numpy_coord = [x, y]
+                    numpy_shapes[label_num][shape_num].append(numpy_coord)
+                
+                numpy_shapes[label_num][shape_num] = np.array(numpy_shapes[label_num][shape_num])
+
+        return numpy_shapes
+    
+
+    @QtCore.Slot(dict, int, int, float, float, int, int, str)
+    def saveRasters(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename):
+        numpy_shapes = self.toPixels(coords, x_coord, y_coord, x_factor, y_factor)
+
+        final_array = np.zeros((img_height, img_width))
+        
+        for n_label_num, n_coords_dict in numpy_shapes.items():
+            for n_shape_num, n_shape_coords in n_coords_dict.items():
+                r = n_shape_coords[:, 0]
+                c = n_shape_coords[:, 1]
+                rr, cc = polygon(c, r)
+                final_array[rr, cc] = n_label_num
+ 
+        np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
+
+
+    @QtCore.Slot(dict, list, int, int, float, float, int, int, str, str, str)
+    def saveStats(self, coords, specs_list, x_coord, y_coord, x_factor, y_factor, img_p_width, img_p_height, filename, imgWS, imgHS):
+        numpy_shapes = self.toPixels(coords, x_coord, y_coord, x_factor, y_factor)
+        img_pix_area = img_p_width * img_p_height
+        area_per_pix = (int(imgWS) * int(imgHS)) / img_pix_area
+
+        headers = ['species id', 'species', 'pixel %', 'area (cm2)']
+
+        stats_list = []
+        for n_label_num, n_coords_dict in numpy_shapes.items():
+                for n_shape_num, n_shape_coords in n_coords_dict.items():
+                    shape = np.zeros((img_p_height, img_p_width))
+                    r = n_shape_coords[:, 0]
+                    c = n_shape_coords[:, 1]
+                    rr, cc = polygon(c, r)
+                    shape[rr, cc] = n_label_num
+
+                    binary_label = label(shape)
+                    measurements = regionprops(binary_label)
+                    pixel_area =  int(measurements[0]['area'])
+                    pixel_prop = pixel_area / img_pix_area
+                    img_area = pixel_area * area_per_pix
+                    spec_id = n_label_num
+                    spec_name = specs_list[int(n_label_num)][1]
+
+                    shape_stats = {'species id': spec_id, 
+                             'species': spec_name, 
+                             'pixel %': pixel_prop * 100, 
+                             'area (cm2)': img_area}
+                    
+                    stats_list.append(shape_stats)
+
+        with open('./statistics/' + filename + '.csv', 'w') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(stats_list)
+
