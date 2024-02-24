@@ -1370,7 +1370,7 @@ ApplicationWindow {
         }
 
         onAccepted: {
-             saveIconButton.enabled = false
+            saveIconButton.enabled = false
                         
             lf.updateLabelsAndCoords()
             tbox.saveLabels(labelsAndCoords, lf.split(image.source))
