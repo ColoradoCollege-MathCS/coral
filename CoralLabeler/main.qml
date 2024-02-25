@@ -58,7 +58,7 @@ ApplicationWindow {
         image.source = fileName
     }
 
-
+    //funcion to populate color and label name in the legend
     function populateLegend() {
         comboyuh.model.forEach(label => {
             labelLegendModel.append( {
@@ -68,6 +68,7 @@ ApplicationWindow {
         })   
     }
 
+    // function to clear legend when new img is selected
     function refreshLegend() {
         labelLegendModel.clear()
     }
@@ -150,7 +151,7 @@ ApplicationWindow {
 
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh3")
+            // console.log("yuh3")
             return component
         }
         else if (component.status === Component.Error){
@@ -361,8 +362,6 @@ ApplicationWindow {
                     image.source = selectedFile
                     tbox.initLabels(selectedFile)
                     refreshMask()
-                    refreshLegend()
-                    populateLegend()
 
                     if(saveIconButton.enabled == true){
                         savemask.title = selectedFile
@@ -379,12 +378,17 @@ ApplicationWindow {
                         getImageSpecies(labelNames)
                         comboyuh.model = labelToSpecies(labelNames)
 
+                        refreshLegend()
+                        populateLegend()
+
                     }
                     else{
                         lf.resetLabels()
                         lf.resetShapes()
                         imageSpecies = []
                         comboyuh.model = []
+                        refreshLegend()
+                        populateLegend()
                     }
                 }
             }
@@ -582,7 +586,7 @@ ApplicationWindow {
                         populateLegend()
 
                         for(var i = 0; i < 2; i++){
-                            console.log(labelAndColor[i])
+log(labelAndColor[i])
                         }
                         
 
@@ -963,7 +967,7 @@ ApplicationWindow {
             var alreadyInList = false
 
             var curText = text
-
+            var idx = 0
 
             //find if species already has text
             for (var i = 0; i < species.length; i++){
@@ -1015,6 +1019,9 @@ ApplicationWindow {
             //remove the text from box
             remove(0, text.length)
 
+            //make current selection the entered text
+            idx = comboyuh.find(curText)
+            comboyuh.currentIndex = idx
 
         }
     }
@@ -1305,8 +1312,6 @@ ApplicationWindow {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
-                            refreshLegend()
-                            populateLegend()
 
                             if (saveIconButton.enabled == true){
                                 savemask.title = fileName
@@ -1327,12 +1332,17 @@ ApplicationWindow {
                                 lf.loadShapes()
                                 getImageSpecies(labelNames)
                                 comboyuh.model = labelToSpecies(labelNames)
+
+                                refreshLegend()
+                                populateLegend()
                             }
                             else{
                                 lf.resetLabels()
                                 lf.resetShapes()
                                 imageSpecies = []
                                 comboyuh.model = []
+                                refreshLegend()
+                                populateLegend()
                             }
                             
                             
