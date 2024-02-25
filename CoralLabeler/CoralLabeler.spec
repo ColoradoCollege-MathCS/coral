@@ -5,7 +5,19 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('icons','icons'), ('ActionHandler.qml','.'), ('ellipseSelect.qml','.'), ('lassoShapes.qml','.'), ('LoadFunctions.qml','.'), ('main.qml','.'), ('paintbrush.qml','.'), ('rectangleSelect.qml','.'), ('shapes.qml','.'), ('ToolFunctions.qml','.'), ('vertex.qml','.')]
+    datas=[
+        ('icons','icons'), 
+        ('ActionHandler.qml','.'), 
+        ('ellipseSelect.qml','.'), 
+        ('lassoShapes.qml','.'), 
+        ('LoadFunctions.qml','.'), 
+        ('main.qml','.'), 
+        ('paintbrush.qml','.'), 
+        ('rectangleSelect.qml','.'), 
+        ('shapes.qml','.'), 
+        ('ToolFunctions.qml','.'), 
+        ('vertex.qml','.')
+        ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -44,4 +56,5 @@ coll = COLLECT(
 app = BUNDLE(coll,
 	name="CoralLabeler.app",
 	icon=None,
-	bundle_identifier=None)
+	bundle_identifier=None
+)
