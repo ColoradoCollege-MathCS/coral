@@ -198,16 +198,17 @@ class Toolbox(QtCore.QObject):
                 ordered_shape[order_num] = {label_id: shape_coords}
         ordered_shape = dict(sorted(ordered_shape.items()))
 
+        # make polygons out of coordinates,
+        # rasterize shapes into numpy in order
         final_array = np.zeros((img_height, img_width))
-        
         for n_shape_order, n_coords_dict in ordered_shape.items():
             for n_label_id, n_shape_coords in n_coords_dict.items():
-                print(n_label_id)
                 r = n_shape_coords[:, 0]
                 c = n_shape_coords[:, 1]
                 rr, cc = polygon(c, r)
                 final_array[rr, cc] = n_label_id
- 
+
+        # save to csv file
         np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
 
 
@@ -227,7 +228,6 @@ class Toolbox(QtCore.QObject):
                     c = n_shape_coords[:, 1]
                     rr, cc = polygon(c, r)
                     shape[rr, cc] = n_label_num
-
                     binary_label = label(shape)
                     measurements = regionprops(binary_label)
                     pixel_area =  int(measurements[0]['area'])
