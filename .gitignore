@@ -7,3 +7,5 @@ test_images/
 CoralLabeler/images/mask.png
 *.pth
 *venv
+build/
+dist/
