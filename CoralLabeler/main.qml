@@ -385,10 +385,10 @@ ApplicationWindow {
                     else{
                         lf.resetLabels()
                         lf.resetShapes()
-                        refreshLegend()
-                        populateLegend()
                         imageSpecies = []
                         comboyuh.model = []
+                        refreshLegend()
+                        populateLegend()
                     }
                 }
             }
@@ -1339,9 +1339,10 @@ ApplicationWindow {
                             else{
                                 lf.resetLabels()
                                 lf.resetShapes()
-                                refreshLegend()
                                 imageSpecies = []
                                 comboyuh.model = []
+                                refreshLegend()
+                                populateLegend()
                             }
                             
                             
