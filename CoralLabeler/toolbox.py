@@ -111,14 +111,15 @@ class Toolbox(QtCore.QObject):
     
     @QtCore.Slot(dict, str, result="QVariantList")
     def saveLabels(self, data, fileName):
-        
+        name = ""
+
         filename = 'labels/' + fileName + '.csv'
         with open(filename, 'w') as file:
             for keys in data.keys():
                 file.write('Label'+',' + keys)
                 file.write('\n')
                 for shapes in data[keys].keys():
-                        file.write('Shape')
+                        file.write('Shape' + ',' + shapes)
                         file.write('\n')
                         for coord in range(len(data[keys][shapes])):
                             if coord == 0:
@@ -186,16 +187,26 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(dict, int, int, float, float, int, int, str)
     def saveRasters(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename):
+
+        # get the shape and vertices coords as numpy coords
         numpy_shapes = self.toPixels(coords, x_coord, y_coord, x_factor, y_factor)
+
+        # make order of shape as key, value: [label id, [shape coords]], sort it in asc order
+        ordered_shape = {}
+        for label_id, order_dict in numpy_shapes.items():
+            for order_num, shape_coords in order_dict.items():
+                ordered_shape[order_num] = {label_id: shape_coords}
+        ordered_shape = dict(sorted(ordered_shape.items()))
 
         final_array = np.zeros((img_height, img_width))
         
-        for n_label_num, n_coords_dict in numpy_shapes.items():
-            for n_shape_num, n_shape_coords in n_coords_dict.items():
+        for n_shape_order, n_coords_dict in ordered_shape.items():
+            for n_label_id, n_shape_coords in n_coords_dict.items():
+                print(n_label_id)
                 r = n_shape_coords[:, 0]
                 c = n_shape_coords[:, 1]
                 rr, cc = polygon(c, r)
-                final_array[rr, cc] = n_label_num
+                final_array[rr, cc] = n_label_id
  
         np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
 

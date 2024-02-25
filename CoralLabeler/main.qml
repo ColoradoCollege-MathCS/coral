@@ -151,7 +151,7 @@ ApplicationWindow {
 
         if (component.status === Component.Ready) {
             //make shapes
-            console.log("yuh3")
+            // console.log("yuh3")
             return component
         }
         else if (component.status === Component.Error){
@@ -586,7 +586,7 @@ ApplicationWindow {
                         populateLegend()
 
                         for(var i = 0; i < 2; i++){
-                            console.log(labelAndColor[i])
+log(labelAndColor[i])
                         }
                         
 
