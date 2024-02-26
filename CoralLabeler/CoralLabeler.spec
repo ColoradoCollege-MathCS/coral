@@ -6,7 +6,9 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
+        ('defaultAI.py', '.'),
         ('icons','icons'), 
+	    ('images','images'),
         ('ActionHandler.qml','.'), 
         ('ellipseSelect.qml','.'), 
         ('lassoShapes.qml','.'), 
@@ -16,7 +18,8 @@ a = Analysis(
         ('rectangleSelect.qml','.'), 
         ('shapes.qml','.'), 
         ('ToolFunctions.qml','.'), 
-        ('vertex.qml','.')
+        ('vertex.qml','.'),
+        ('SpeciesList.csv','.')
         ],
     hiddenimports=[],
     hookspath=[],
