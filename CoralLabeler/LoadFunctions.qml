@@ -19,17 +19,13 @@ Rectangle{
         win.labelsAndCoords = {}
         win.labelNames = []
     }
-
     function split(filePath){
         return tbox.splited(filePath)
     }
-
-
     //function to parse a big array and load all labels if an image has a set of labels
     function loadLabels(imgLoad){
         //load in csv from python function
         var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
-
         //holding dictionaries, arrays, and variables
         var labelsAndCoordinates = {};
         var labelNames1 = new Array(0);
@@ -37,7 +33,6 @@ Rectangle{
         var labelAndCol = {};
         var labelAndS = {};
         var coordinates = new Array(0);
-
         var hold = ""
         var shape = 0
 
@@ -46,7 +41,6 @@ Rectangle{
 
         //loop through the whole array per line
         for (var i = 0; i < everything.length; i++){
-
             //if we have a label line, make a new label
             if (everything[i][0] == "Label"){
                 if (coordinates.length == 0){
@@ -72,7 +66,6 @@ Rectangle{
                 labelAndCol[everything[i][1]] = ""
                 
             }
-
             //if we have a shape line, make a new shape for the label
             else if (everything[i][0] == "Shape"){
                 if (coordinates.length == 0){
@@ -85,12 +78,11 @@ Rectangle{
                     getOrderLocation(preShapeName, [hold, coordinates])
 
                     preShapeName = everything[i][1]
-                    
+
                     coordinates = new Array(0);
                     shape += 1;
                 }
             }
-
             //if we have a coordinate line, make a new coordinate for the line
             else{
                 coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
@@ -101,6 +93,7 @@ Rectangle{
 
         //reached end, place all items in correct locations
         shapeAndCoordinates[preShapeName] = coordinates;
+
         getOrderLocation(preShapeName, [hold, coordinates])
         labelsAndCoordinates[hold] = shapeAndCoordinates;
         labelAndS[hold] = shape
@@ -132,7 +125,7 @@ Rectangle{
         }
 
         all.push([number, shape])
-    
+
 
         for(var i = 0; i < end.length; i++){
             all.push(end[i])
@@ -166,11 +159,9 @@ Rectangle{
     function loadShapes(){
         //create a QML component from shapes.qml
         const component = Qt.createComponent("shapes.qml");
-
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            print(shapesInOrder)
             for(var i = 0; i < shapesInOrder.length; i++){
                 loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0])
             }
@@ -179,7 +170,6 @@ Rectangle{
             console.log(component.errorString())
         }
     }
-
     //a function to destroy all shapes
     function resetShapes(){
         for(var i = 0; i < win.shapes.length; i++){
@@ -215,7 +205,7 @@ Rectangle{
 
                 }
             }
-            
+
             //place all shapes in label dict
             win.labelsAndCoords[win.labelNames[f]] = holdDict
             holdDict = {};
@@ -226,5 +216,4 @@ Rectangle{
     function addToSpeciesList(labelNumber, name){
         return tbox.addToCSV(labelNumber, name, "SpeciesList.csv")
     }
-
 }
