@@ -12,13 +12,15 @@ import Actions
 Shape {
 	id: labelshape
 	anchors.fill: parent
-	//containsMode: Shape.FillContains
+	containsMode: Shape.FillContains
 
     property var label: ""
 
     property var coords: []
     property var color: ""
     property var colorline: "black"
+
+    property var controls: []
 
 	property list<ShapePath> all_paths: []
 
