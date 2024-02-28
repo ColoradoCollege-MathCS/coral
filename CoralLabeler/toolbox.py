@@ -109,17 +109,34 @@ class Toolbox(QtCore.QObject):
 
         return labels
     
-    @QtCore.Slot(dict, str, result="QVariantList")
-    def saveLabels(self, data, fileName):
+    @QtCore.Slot(dict, str, list, result="QVariantList")
+    def saveLabels(self, data, fileName, paintshapes):
         name = ""
         filename = 'labels/' + fileName + '.csv'
+        check = false
+        paintSize = ''
         with open(filename, 'w') as file:
+            #get all labels
             for keys in data.keys():
                 file.write('Label'+',' + keys)
                 file.write('\n')
+
+                #get all shapes
                 for shapes in data[keys].keys():
                         file.write('Shape' + ',' + shapes)
+                        
+                        #check for paint shapes
+                        for paints in paintshapes:
+                            if shapes == paints[0]:
+                                paintSize = paints[1]
+                                check = True
+                        if check == True:
+                            file.write(',' + paintSize)
+                        else:
+                            file.write(',n')
                         file.write('\n')
+
+                        #write all coords of a shape
                         for coord in range(len(data[keys][shapes])):
                             if coord == 0:
                                 file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))

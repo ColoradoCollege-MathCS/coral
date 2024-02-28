@@ -22,6 +22,8 @@ Shape{
     property var color: ""
     property var colorline: ""
 
+    property var shapeType: "rect"
+
 	property var child: thePath
 
     property var dx: 0

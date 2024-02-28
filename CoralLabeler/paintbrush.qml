@@ -22,7 +22,10 @@ Shape {
 
 	property list<ShapePath> all_paths: []
 
+    property var shapeType: "paint"
+
 	property var child: thePath
+
 
 	//create its path
     ShapePath{

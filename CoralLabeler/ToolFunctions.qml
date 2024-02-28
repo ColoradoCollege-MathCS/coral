@@ -29,6 +29,11 @@ Rectangle{
         yuh.child.strokeColor = color;
     }
 
+    function endPaint(yuh, color){
+        yuh.child.strokeColor = color;
+
+    }
+
     function createLassoComponent(){
         //create a QML component from shapes.qml
         const component = Qt.createComponent("lassoShapes.qml");

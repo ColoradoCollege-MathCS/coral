@@ -18,6 +18,8 @@ Shape{
     property var color: ""
     property var colorline: ""
 
+    property var shapeType: "normal"
+
     property var child: thePath
 
     property var controls: []

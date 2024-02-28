@@ -286,7 +286,7 @@ ApplicationWindow {
                         saveIconButton.enabled = false
                         
                         lf.updateLabelsAndCoords()
-                        tbox.saveLabels(labelsAndCoords, lf.split(image.source))
+                        tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
                         //tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                     }
                     
@@ -553,17 +553,17 @@ ApplicationWindow {
                     //paintbrush if held down
                     else if (currentTool == "paintbrush"){
                         
-                         if(comboyuh.currentText != undefined){
-                                g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                        if(comboyuh.currentText != undefined){
+                            g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
                                 
-                                g.child.strokeWidth = value
+                            g.child.strokeWidth = value
 
-                                g.child.startX = mouseX
-                                g.child.startY = mouseY
+                            g.child.startX = mouseX
+                            g.child.startY = mouseY
 
-                                shapes.push(g)
+                            shapes.push(g)
 
-                    }
+                        }
 
                     }
 
@@ -871,24 +871,28 @@ log(labelAndColor[i])
                         }
 
                         shapeCurrent = undefined
-
-                        console.log(act.doneStack)
                         
                     }
 
                     //just not that the save needs to happen now
-                    if (currentTool == "magicwand"){
+                    else if (currentTool == "magicwand"){
                         saveIconButton.enabled = true
                     }
 
                     //tell timer to stop and save needs to happen now
-                   else if (currentTool == "paintbrush"){
-                        
-                        
+                    else if (currentTool == "paintbrush"){
+                        tf.endPaint(g, labelAndColor[g.label])
 
-                            saveIconButton.enabled = true
-                            refreshLegend()
-                            populateLegend()
+                        saveIconButton.enabled = true
+                        refreshLegend()
+                        populateLegend()
+
+                        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+                        
+                        currAction.shapeParent = overlay
+                        currAction.target = g
+
+                        act.actionDone(currAction, false)
 
                     }
 

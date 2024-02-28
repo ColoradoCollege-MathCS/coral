@@ -15,6 +15,9 @@ Rectangle{
     property var win: null
     property var shapesInOrder: []
 
+    //which shapes are paintshapes
+    property var paintshapes: []
+
     function resetLabels(){
         win.labelsAndCoords = {}
         win.labelNames = []
@@ -27,16 +30,26 @@ Rectangle{
         //load in csv from python function
         var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
         //holding dictionaries, arrays, and variables
+
+        //holds everything
         var labelsAndCoordinates = {};
+        //label names
         var labelNames1 = new Array(0);
+
+        //all shapes of a label and coordinates, resets after seeing a new label
         var shapeAndCoordinates = {};
+        //self explanatory
         var labelAndCol = {};
         var labelAndS = {};
         var coordinates = new Array(0);
+
+        //holds label
         var hold = ""
+        //holds size of each label
         var shape = 0
 
-        var preShapeName = ""
+        //shape order number
+        var preShapeName = new Array(0);
 
 
         //loop through the whole array per line
@@ -81,6 +94,11 @@ Rectangle{
 
                     coordinates = new Array(0);
                     shape += 1;
+                }
+
+                //if paintbrush shape
+                if (everything[i][2] != 'n'){
+                    paintshapes.push([preShapeName, everything[i][2]])
                 }
             }
             //if we have a coordinate line, make a new coordinate for the line
@@ -142,17 +160,24 @@ Rectangle{
     }
 
     //a function to loop through the current label's shapes and create shapes from coordinates
-    function loopy(comp, label, shapeNum){
+    function loopy(comp, label, shapeNum, brushSize){
+        var thisShape = comp.createObject(overlay, {"coords": win.labelsAndCoords[label][shapeNum], "label": label});
+
         if(win.labelAndColor[label] != ""){
-            win.shapes.push(comp.createObject(overlay, {"coords": win.labelsAndCoords[label][shapeNum], "label": label, 
-            "color": win.labelAndColor[label], "colorline": win.labelAndColor[label]}));
+            thisShape.color = win.labelAndColor[label]
+            thisShape.colorline = win.labelAndColor[label]
         }
         else{
             var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
             win.labelAndColor[label] = color
-            win.shapes.push(comp.createObject(overlay, {"coords": win.labelsAndCoords[label][shapeNum], "label": label, 
-            "color": color, "colorline": color}));
+            thisShape.color = color
+            thisShape.colorline = color
         }
+
+        if (brushSize != -1){
+            thisShape.child.strokeWidth = brushSize
+        }
+
     }
 
     //a function to display shapes
@@ -163,7 +188,14 @@ Rectangle{
         if (component.status === Component.Ready) {
             //make shapes
             for(var i = 0; i < shapesInOrder.length; i++){
-                loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0])
+                for(var f = 0; f < paintshapes.length; f++){
+                    if(i == paintshapes[f][0]){
+                        loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], paintshapes[f][1])
+                    }
+                    else{
+                        loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], -1)
+                    }
+                }
             }
         }
         else if (component.status === Component.Error){
@@ -177,6 +209,7 @@ Rectangle{
         }
         win.shapes = []
         shapesInOrder = []
+        paintshapes = []
     }
 
 
@@ -187,6 +220,7 @@ Rectangle{
         var hold = [];
 
         var count = 0
+        var check = true
 
         //dictionary stuff
         for(var f = 0; f < win.labelNames.length; f++){
@@ -202,6 +236,19 @@ Rectangle{
                     holdDict[i] = hold;
 
                     hold = []
+
+                    //check whether the paintshape is already in the list
+                    for(var r = 0; r < paintshapes.length; r++){
+                        if(paintshapes[r][0] == i){
+                            check == false
+                        }
+                    }
+
+                    if(win.shapes[i].shapeType == "paint" && check != false){
+                        paintshapes.push([i, win.shapes[i].child.strokeWidth])
+                    }
+
+                    check = true
 
                 }
             }
