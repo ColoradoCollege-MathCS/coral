@@ -15,6 +15,8 @@ from rdp import rdp
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import blob_ML
 
+dirname = os.path.dirname(__file__)
+
 def image_dims(filename):
     return imread(filename).shape
 
@@ -36,6 +38,7 @@ class Toolbox(QtCore.QObject):
 
     def updateMask(self):
         rgb = labeled2rgb(self.labels,color_map)
+        mask_file = os.path.join(dirname, "images", "mask.png")
         imsave("images/mask.png",rgb, check_contrast=False)
 
     @QtCore.Slot()
@@ -99,7 +102,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(str, result="QVariantList")
     def readCSV(self, fileName):
-        labelsFile = open(fileName)
+        labelsFile = open(os.path.join(dirname,fileName))
         csvreader = csv.reader(labelsFile)
 
         labels = []
@@ -109,10 +112,11 @@ class Toolbox(QtCore.QObject):
 
         return labels
     
+
     @QtCore.Slot(dict, str, list, result="QVariantList")
     def saveLabels(self, data, fileName, paintshapes):
         name = ""
-        filename = 'labels/' + fileName + '.csv'
+        filename = os.path.join(dirname, 'labels', fileName+'.csv')
         check = False
         paintSize = ''
         paintFirstCoords = []
@@ -166,7 +170,7 @@ class Toolbox(QtCore.QObject):
     
     @QtCore.Slot(str, result = bool)
     def fileExists(self, fileName):
-        return os.path.exists(fileName)
+        return os.path.exists(os.path.join(dirname,fileName))
     
     @QtCore.Slot(str, result="QString")
     def splited(self, fileName):
@@ -179,6 +183,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(str, str, str, result="QVariantList")
     def addToCSV(self, data, name, fileName):
+        fileName = os.path.join(dirname,fileName)
         with open(fileName, 'a') as file:
  
             # write row

@@ -232,7 +232,7 @@ ApplicationWindow {
             Action {
                 text: qsTr("Random Rectangle")
                 onTriggered: {
-                    tbox.randomRectangle(), refreshMask()
+                    tbox.randomRectangle()//, refreshMask()
                     saveIconButton.enabled = true
                 }
             }
@@ -358,8 +358,10 @@ ApplicationWindow {
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
                 onAccepted: {
                     image.source = selectedFile
-                    tbox.initLabels(selectedFile)
-                    refreshMask()
+                    //tbox.initLabels(selectedFile)
+                    //refreshMask()
+                    refreshLegend()
+                    populateLegend()
 
                     if(saveIconButton.enabled == true){
                         savemask.title = selectedFile
@@ -947,7 +949,7 @@ ApplicationWindow {
         repeat: true
         triggeredOnStart: true
         running: imageMouse.isPressed
-        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
+        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value)//, refreshMask()
     }
 
 
@@ -1352,7 +1354,7 @@ ApplicationWindow {
                                 savemask.open()
                             }
                             
-                            tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                            //tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
                                 
                             changeImage(folderModel.folder + "/" + fileName)
 
