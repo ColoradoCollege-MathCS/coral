@@ -225,7 +225,12 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("&Help")
-            Action { text: qsTr("&About") }
+            Action { 
+                text: qsTr("&About")
+                onTriggered: {
+                    aboutPopUp.open()
+                }
+            }
         }
         Menu {
             title: qsTr("&Tools")
@@ -1588,5 +1593,7 @@ ApplicationWindow {
                 }
             }
          }
+    AboutPopup {
+        id: aboutPopUp
     }
 }
