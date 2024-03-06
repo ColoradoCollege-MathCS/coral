@@ -51,9 +51,6 @@ Rectangle{
         //shape order number
         var preShapeName = new Array(0);
 
-        //check if we have a paintshape
-        var check = false
-
 
         //loop through the whole array per line
         for (var i = 0; i < everything.length; i++){
@@ -102,16 +99,10 @@ Rectangle{
                 //if paintbrush shape
                 if (everything[i][2] != 'n'){
                     paintshapes.push([preShapeName, everything[i][2]])
-                    check = true
                 }
             }
             //if we have a coordinate line, make a new coordinate for the line
             else{
-                if(check == true){
-                    paintshapes[paintshapes.length-1].push([everything[i][0], everything[i][1]])
-                    console.log(paintshapes[paintshapes.length-1])
-                    check = false
-                }
                 coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
             }
             
@@ -185,42 +176,26 @@ Rectangle{
 
         if (brushSize != -1){
             thisShape.child.strokeWidth = brushSize
-            thisShape.child.fillColor = "transparent"
-            thisShape.shapeType = "paint"
         }
-
-        win.shapes.push(thisShape)
 
     }
 
     //a function to display shapes
     function loadShapes(){
-        var check = false
-        var index = -1
         //create a QML component from shapes.qml
         const component = Qt.createComponent("shapes.qml");
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
             for(var i = 0; i < shapesInOrder.length; i++){
-                //check if it is a painted shape
                 for(var f = 0; f < paintshapes.length; f++){
                     if(i == paintshapes[f][0]){
-                        index = f
-                        check = true
+                        loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], paintshapes[f][1])
+                    }
+                    else{
+                        loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], -1)
                     }
                 }
-
-                //draw painted shape
-                if(check == true){
-                    loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], paintshapes[index][1])
-                }
-                else{
-                    loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], -1)
-                }
-
-                //reset check
-                check = false
             }
         }
         else if (component.status === Component.Error){
@@ -247,7 +222,6 @@ Rectangle{
         var count = 0
         var check = true
 
-
         //dictionary stuff
         for(var f = 0; f < win.labelNames.length; f++){
             for(var i = 0; i < win.shapes.length; i++){
@@ -266,17 +240,12 @@ Rectangle{
                     //check whether the paintshape is already in the list
                     for(var r = 0; r < paintshapes.length; r++){
                         if(paintshapes[r][0] == i){
-                            check = false
+                            check == false
                         }
                     }
 
-                    console.log(paintshapes)
-                    console.log(i)
-                    console.log(check)
-                    console.log(win.shapes[i].shapeType)
-
                     if(win.shapes[i].shapeType == "paint" && check != false){
-                        paintshapes.push([i, win.shapes[i].child.strokeWidth, [win.shapes[i].child.startX, win.shapes[i].child.startY]])
+                        paintshapes.push([i, win.shapes[i].child.strokeWidth])
                     }
 
                     check = true
