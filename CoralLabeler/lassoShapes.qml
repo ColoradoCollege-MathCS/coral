@@ -21,6 +21,8 @@ Shape {
 
 	property list<ShapePath> all_paths: []
 
+    property var shapeType: "lasso"
+
 	property var child: thePath
 
     property var controls: []

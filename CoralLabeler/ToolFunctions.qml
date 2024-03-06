@@ -29,6 +29,11 @@ Rectangle{
         yuh.child.strokeColor = color;
     }
 
+    function endPaint(yuh, color){
+        yuh.child.strokeColor = color;
+
+    }
+
     function createLassoComponent(){
         //create a QML component from shapes.qml
         const component = Qt.createComponent("lassoShapes.qml");
@@ -44,16 +49,23 @@ Rectangle{
         return
     }
 
+    //make vertices for vertex tool
     function makeVertices(shape){
         var vertices = []
 
         const component = Qt.createComponent("vertex.qml");
+
+        //check if theres a paint element to put vertice at the start
+        if(shape.shapeType == "paint"){
+            vertices.push(component.createObject(shape, {"x": shape.child.startX - 10, "y": shape.child.startY - 10, "papa": shape.child.pathElements[0]}))
+        }
 
         for(var i = 0; i < shape.child.pathElements.length; i++){
             var pathy = shape.child.pathElements[i]
 
             vertices.push(component.createObject(shape, {"x": pathy.x - 10, "y": pathy.y - 10, "papa": pathy}))
         }
+
 
         shape.controls = vertices
     }
@@ -82,17 +94,24 @@ Rectangle{
         points = toolbox.simplifyLasso(points, epsilon)
         //console.log("After: "+points.length+" points with eps: "+epsilon)
         console.log
-        sp.startX = points[0][0]
-        sp.startY = points[0][1]
-        for (var i=1; i<points.length; i++) {
+        sp.startX = points[points.length-1][0]
+        sp.startY = points[points.length-1][1]
+        for (var i = points.length-2; i >= 0; i--) {
             var pl = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', sp)
             pl.x = points[i][0]
             pl.y = points[i][1]
             sp.pathElements.push(pl)
         }
-        var pl = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', sp)
-        pl.x = points[0][0]
-        pl.y = points[0][1]
-        sp.pathElements.push(pl)
+        if (curShape.shapeType != "paint") {
+            //console.log("yuh")
+            var pl = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', sp)
+            pl.x = points[points.length-1][0]
+            pl.y = points[points.length-1][1]
+            sp.pathElements.push(pl)
+        }
+        else{
+            sp.pathElements.pop()
+        }
+
     }
 }

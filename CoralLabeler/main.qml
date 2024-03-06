@@ -42,7 +42,6 @@ ApplicationWindow {
         id:tf
     }
 
-
     ActionHandler{
         id:act
     }
@@ -160,7 +159,6 @@ ApplicationWindow {
         return
 
     }
-
 
     function aiComponent(){
         //create a QML component from shapes.qml
@@ -288,8 +286,8 @@ ApplicationWindow {
                         saveIconButton.enabled = false
                         
                         lf.updateLabelsAndCoords()
-                        tbox.saveLabels(labelsAndCoords, lf.split(image.source))
-                        tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
+                        tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
+                        //tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                     }
                     
                 }
@@ -552,28 +550,20 @@ ApplicationWindow {
                             
                         }
 
-                        //for magic wand
-                        else if (currentTool == "magicwand"){
-                            //scale mouse to image
-                            fixMouse(image)
-                            
-                            //get AI polygon as shape object
-                            polygon = tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
-                            shapes.push(magicWandComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "coords": polygon, "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+                      //paintbrush if held down
+                      else if (currentTool == "paintbrush"){
 
-                            refreshLegend()
-                            populateLegend()
+                          if(comboyuh.currentText != undefined){
+                              g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
 
-                            tf.removeVertices(shapeCurrent)
-                        }
+                              g.child.strokeWidth = value
 
-                        //paintbrush if held down
-                        else if (currentTool == "paintbrush"){
-                            
-                            if(comboyuh.currentText != undefined){
-                                    g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
-                                    
-                                    g.child.strokeWidth = value
+                              g.child.startX = mouseX
+                              g.child.startY = mouseY
+
+                              shapes.push(g)
+
+                          }
 
                                     g.child.startX = mouseX
                                     g.child.startY = mouseY
@@ -676,24 +666,42 @@ ApplicationWindow {
                         
                         }
 
-                        else if(currentTool == "vertextool"){
-                            //check if shape has already been selected
-                            var no = false
-                        
+                      //actions for vertex tool
+                      else if(currentTool == "vertextool"){
+                          //check if shape has already been selected
+                          var no = false
+
+                          for(var i = 0; i < shapes.length; i++){
+                              if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                  if(shapeCurrent == shapes[i]){
+                                      no = true
+
+                                  }
+                              }
+                          }
+
+                          //if shape has not been selected go make vertices
+                          if(no != true){
+
                             for(var i = 0; i < shapes.length; i++){
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                     if(shapeCurrent != shapes[i]){
                                         selected = false
                                     }
+
                                     else{
                                         selected = true
                                     }
                                 }
                             }
 
-                            if(selected == true) {
-                                console.log("slay")
-                                for(var h = 0; h < shapeCurrent.controls.length; h++){
+
+                        //if shape has already been selected, choose vertex
+
+                          if(selected == true) {
+                              console.log("slay")
+                              for(var h = 0; h < shapeCurrent.controls.length; h++){
+
 
                                     sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
                                     sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
@@ -705,6 +713,20 @@ ApplicationWindow {
                                     }
                                 }
                             }
+
+                        }
+
+                        //make vertices
+                        else{
+                            for(var i = 0; i < shapes.length; i++){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    if(shapeCurrent != shapes[i]){
+                                        //make previous shape since we clicked on a new shape
+                                        previousShape = shapeCurrent
+                                        shapeCurrent = shapes[i]
+                                        //make vertices function
+                                        tf.makeVertices(shapeCurrent)
+
 
                             else{
                                 for(var i = 0; i < shapes.length; i++){
@@ -724,7 +746,12 @@ ApplicationWindow {
                             }
 
 
+                            //remove all vertices of previous shape
                             tf.removeVertices(previousShape)
+
+
+                            tf.removeVertices(previousShape)
+
 
 
 
@@ -783,6 +810,7 @@ ApplicationWindow {
                                 shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
                                 shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
                             }
+                            
                             else{
                                 controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
                                 controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
@@ -794,10 +822,11 @@ ApplicationWindow {
                         
                     }
 
+                    //move the selected vertice if there is one
                     else if(currentTool == "vertextool"){
                         //move pathlines based on circle movement
-                        if(currentVertex != 0){
-                            if(currentVertex == shapeCurrent.controls[0]){
+                        if(currentVertex != undefined){
+                            if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1] && shapeCurrent.shapeType != "paint"){
                                 
                                 //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
                                 currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
@@ -809,6 +838,15 @@ ApplicationWindow {
                                 currentVertex.x = currentVertex.x + (mouseX - dx)
                                 currentVertex.y = currentVertex.y + (mouseY - dy)
                             }
+
+                            else if(currentVertex == shapeCurrent.controls[0] && shapeCurrent.shapeType == "paint"){
+                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+
+                                currentVertex.x = currentVertex.x + (mouseX - dx)
+                                currentVertex.y = currentVertex.y + (mouseY - dy)
+                            }
+
                             else{
                                 currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
                                 currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
@@ -873,24 +911,29 @@ ApplicationWindow {
                         }
 
                         shapeCurrent = undefined
-
-                        console.log(act.doneStack)
                         
                     }
 
                     //just not that the save needs to happen now
-                    if (currentTool == "magicwand"){
+                    else if (currentTool == "magicwand"){
                         saveIconButton.enabled = true
                     }
 
-                    //tell timer to stop and save needs to happen now
-                   else if (currentTool == "paintbrush"){
-                        
-                        
+                    //end paint and add to stack
+                    else if (currentTool == "paintbrush"){
+                        tf.endPaint(g, labelAndColor[g.label])
+                        tf.simplify(g,imageMouse.value,tbox)
 
-                            saveIconButton.enabled = true
-                            refreshLegend()
-                            populateLegend()
+                        saveIconButton.enabled = true
+                        refreshLegend()
+                        populateLegend()
+
+                        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+                        
+                        currAction.shapeParent = overlay
+                        currAction.target = g
+
+                        act.actionDone(currAction, false)
 
                     }
 
@@ -1408,7 +1451,7 @@ ApplicationWindow {
         }
 
         onAccepted: {
-             saveIconButton.enabled = false
+            saveIconButton.enabled = false
                         
             lf.updateLabelsAndCoords()
             tbox.saveLabels(labelsAndCoords, lf.split(image.source))
