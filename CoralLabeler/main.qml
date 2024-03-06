@@ -810,7 +810,6 @@ ApplicationWindow {
                                 shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
                                 shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
                             }
-                            
                             else{
                                 controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
                                 controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
@@ -826,7 +825,7 @@ ApplicationWindow {
                     else if(currentTool == "vertextool"){
                         //move pathlines based on circle movement
                         if(currentVertex != undefined){
-                            if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1] && shapeCurrent.shapeType != "paint"){
+                            if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1]){
                                 
                                 //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
                                 currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
@@ -838,15 +837,6 @@ ApplicationWindow {
                                 currentVertex.x = currentVertex.x + (mouseX - dx)
                                 currentVertex.y = currentVertex.y + (mouseY - dy)
                             }
-
-                            else if(currentVertex == shapeCurrent.controls[0] && shapeCurrent.shapeType == "paint"){
-                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
-                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
-
-                                currentVertex.x = currentVertex.x + (mouseX - dx)
-                                currentVertex.y = currentVertex.y + (mouseY - dy)
-                            }
-
                             else{
                                 currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
                                 currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
@@ -919,10 +909,9 @@ ApplicationWindow {
                         saveIconButton.enabled = true
                     }
 
-                    //end paint and add to stack
+                    //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
                         tf.endPaint(g, labelAndColor[g.label])
-                        tf.simplify(g,imageMouse.value,tbox)
 
                         saveIconButton.enabled = true
                         refreshLegend()
