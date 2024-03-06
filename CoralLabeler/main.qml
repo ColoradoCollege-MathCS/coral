@@ -504,201 +504,216 @@ ApplicationWindow {
 
 
                 onPressed: { 
-                    //lasso tool
-                    if (currentTool == "lassotool"){
-                        if(comboyuh.currentText != undefined){
-                            g = comp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
-                            g.child.startX = mouseX
-                            g.child.startY = mouseY
-                            shapes.push(g)
-                        }
 
-
-                        tf.removeVertices(shapeCurrent)
+                    //make sure a label and image is selected
+                    if (image.source.toString() === "") {
+                        errorMsg.text = "Please select an image"
+                        errorPopUp.open()
                     }
 
-                    //move tool
-                    else if (currentTool == "movetool"){
-                        shapeCurrent = undefined
-                        for(var i = 0; i < shapes.length; i++){
-                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
-                                shapeCurrent = shapes[i]
+                    else if (comboyuh.currentText === "") {
+                        errorMsg.text = "Please select a label"
+                        errorPopUp.open()
+                    }
+
+                    else {
+
+                        //lasso tool
+                        if (currentTool == "lassotool"){
+                            
+                            if(comboyuh.currentText != undefined){
+                                g = comp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                                g.child.startX = mouseX
+                                g.child.startY = mouseY
+                                shapes.push(g)
                             }
+
+
+                            tf.removeVertices(shapeCurrent)
+                        }
+
+                        //move tool
+                        else if (currentTool == "movetool"){
+                            shapeCurrent = undefined
+                            for(var i = 0; i < shapes.length; i++){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    shapeCurrent = shapes[i]
+                                }
+                                
+                            }
+                            dx = mouseX
+                            ogx = mouseX
+                            dy = mouseY
+                            ogy = mouseY
+
+                            tf.removeVertices(shapeCurrent)
                             
                         }
-                        dx = mouseX
-                        ogx = mouseX
-                        dy = mouseY
-                        ogy = mouseY
 
-                        tf.removeVertices(shapeCurrent)
-                        
-                    }
+                      //paintbrush if held down
+                      else if (currentTool == "paintbrush"){
 
-                    //for magic wand
-                    else if (currentTool == "magicwand"){
-                        //scale mouse to image
-                        fixMouse(image)
-                        
-                        //get AI polygon as shape object
-                        polygon = tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
-                        shapes.push(magicWandComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "coords": polygon, "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+                          if(comboyuh.currentText != undefined){
+                              g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
 
-                        refreshLegend()
-                        populateLegend()
+                              g.child.strokeWidth = value
 
-                        tf.removeVertices(shapeCurrent)
-                    }
+                              g.child.startX = mouseX
+                              g.child.startY = mouseY
 
-                    //paintbrush if held down
-                    else if (currentTool == "paintbrush"){
-                        
-                        if(comboyuh.currentText != undefined){
-                            g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
-                                
-                            g.child.strokeWidth = value
+                              shapes.push(g)
 
-                            g.child.startX = mouseX
-                            g.child.startY = mouseY
+                          }
 
-                            shapes.push(g)
+                                    g.child.startX = mouseX
+                                    g.child.startY = mouseY
+
+                                    shapes.push(g)
 
                         }
 
-                    }
-
-                    //if circle is held down, record those coordinates
-                    else if (currentTool == "circleselect"){
-                        fixMouse(image)
-
-                        holdedx = fixedMouseX
-                        holdedy = fixedMouseY
-
-                        for(var i = 0; i < 2; i++){
-                            console.log(labelAndColor[i])
                         }
 
-                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "coorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+                        //if circle is held down, record those coordinates
+                        else if (currentTool == "circleselect"){
+                            fixMouse(image)
 
-                        refreshLegend()
-                        populateLegend()
+                            holdedx = fixedMouseX
+                            holdedy = fixedMouseY
 
-                        for(var i = 0; i < 2; i++){
-log(labelAndColor[i])
-                        }
-                        
-
-                        shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
-                        "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
-
-                        tf.removeVertices(shapeCurrent)
-
-                    }
-
-                    //if square is held down, record those coordinates
-                    else if (currentTool == "squareselect"){
-                        fixMouse(image)
-
-                        //variable to solve shape + radius
-                        var sizex = 0
-                        var sizey = 0
-                        
-
-                        for(var i = 0; i < shapes.length; i++){
-                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
-                                if(shapeCurrent == shapes[i]){
-                                    selected = true
-                                }
-                                
+                            for(var i = 0; i < 2; i++){
+                                console.log(labelAndColor[i])
                             }
+
+                            shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "coorline": labelAndColor[findLabel(comboyuh.currentText)]}))
+
+                            refreshLegend()
+                            populateLegend()
+
+                            for(var i = 0; i < 2; i++){
+    log(labelAndColor[i])
+                            }
+                            
+
+                            shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
+
+                            tf.removeVertices(shapeCurrent)
+
                         }
 
+                        //if square is held down, record those coordinates
+                        else if (currentTool == "squareselect"){
+                            fixMouse(image)
 
-                        //get what circle was selected
-                        if(selected == true){
-                            for(var h = 0; h < shapeCurrent.controls.length; h++){
+                            //variable to solve shape + radius
+                            var sizex = 0
+                            var sizey = 0
+                            
 
-                                sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
-                                sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
-                                
-                                if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
-                                && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
-                                    controlNum = shapeCurrent.controls[h]
-
+                            for(var i = 0; i < shapes.length; i++){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    if(shapeCurrent == shapes[i]){
+                                        selected = true
+                                    }
+                                    
                                 }
                             }
-                        }
-
-                        //make new shape if no shape was selected
-                        else{
-                            if (shapeCurrent != undefined){
-                                previousShape = shapeCurrent
-                                noMoreVertices(previousShape)
-                            }
-                            var newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
-                        "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
-                            shapes.push(newShape)
-
-                            shapeCurrent = newShape
 
 
-                            selected = true
-                        }
+                            //get what circle was selected
+                            if(selected == true){
+                                for(var h = 0; h < shapeCurrent.controls.length; h++){
 
+                                    sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
+                                    sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
+                                    
+                                    if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
+                                    && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
+                                        controlNum = shapeCurrent.controls[h]
 
-                        dx = mouseX
-                        ogx = mouseX
-                        dy = mouseY
-                        ogy = mouseY
-
-                        refreshLegend()
-                        populateLegend()
-
-                        selected = false
-
-                        
-                    }
-
-                    //actions for vertex tool
-                    else if(currentTool == "vertextool"){
-                        //check if shape has already been selected
-                        var no = false
-                    
-                        for(var i = 0; i < shapes.length; i++){
-                            if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
-                                if(shapeCurrent == shapes[i]){
-                                    no = true
-
+                                    }
                                 }
                             }
+
+                            //make new shape if no shape was selected
+                            else{
+                                if (shapeCurrent != undefined){
+                                    previousShape = shapeCurrent
+                                    noMoreVertices(previousShape)
+                                }
+                                var newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
+                                shapes.push(newShape)
+
+                                shapeCurrent = newShape
+
+
+                                selected = true
+                            }
+
+
+                            dx = mouseX
+                            ogx = mouseX
+                            dy = mouseY
+                            ogy = mouseY
+
+                            refreshLegend()
+                            populateLegend()
+
+                            selected = false
+
+                        
                         }
 
-                        //if shape has not been selected go make vertices
-                        if(no != true){
+                      //actions for vertex tool
+                      else if(currentTool == "vertextool"){
+                          //check if shape has already been selected
+                          var no = false
+
+                          for(var i = 0; i < shapes.length; i++){
+                              if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                  if(shapeCurrent == shapes[i]){
+                                      no = true
+
+                                  }
+                              }
+                          }
+
+                          //if shape has not been selected go make vertices
+                          if(no != true){
+
                             for(var i = 0; i < shapes.length; i++){
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
                                     if(shapeCurrent != shapes[i]){
                                         selected = false
                                     }
+
+                                    else{
+                                        selected = true
+                                    }
                                 }
                             }
-                        }
+
 
                         //if shape has already been selected, choose vertex
 
-                        if(selected == true) {
-                            console.log("slay")
-                            for(var h = 0; h < shapeCurrent.controls.length; h++){
+                          if(selected == true) {
+                              console.log("slay")
+                              for(var h = 0; h < shapeCurrent.controls.length; h++){
 
-                                sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
-                                sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
-                                            
-                                if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
-                                && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
-                                    currentVertex = shapeCurrent.controls[h]
 
+                                    sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
+                                    sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
+                                                
+                                    if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
+                                    && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
+                                        currentVertex = shapeCurrent.controls[h]
+
+                                    }
                                 }
                             }
+
                         }
 
                         //make vertices
@@ -712,30 +727,45 @@ log(labelAndColor[i])
                                         //make vertices function
                                         tf.makeVertices(shapeCurrent)
 
-                                        selected = true
-                                        break
+
+                            else{
+                                for(var i = 0; i < shapes.length; i++){
+                                    if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                        if(shapeCurrent != shapes[i]){
+                                            previousShape = shapeCurrent
+                                            shapeCurrent = shapes[i]
+                                            tf.makeVertices(shapeCurrent)
+
+                                            selected = true
+                                            break
+                                        }
+                                        
                                     }
-                                    
+                                        
                                 }
-                                    
                             }
+
+
+                            //remove all vertices of previous shape
+                            tf.removeVertices(previousShape)
+
+
+                            tf.removeVertices(previousShape)
+
+
+
+
+                            dx = mouseX
+                            ogx = mouseX
+                            dy = mouseY
+                            ogy = mouseY
+
                         }
 
-                        //remove all vertices of previous shape
-                        tf.removeVertices(previousShape)
-
-
-
-                        dx = mouseX
-                        ogx = mouseX
-                        dy = mouseY
-                        ogy = mouseY
-
-                    }
-
-                    //means no tool was selected
-                    else{
-                        console.log("Please choose a tool")
+                        //means no tool was selected
+                        else{
+                            console.log("Please choose a tool")
+                        }
                     }
                 }
 
@@ -1519,6 +1549,7 @@ log(labelAndColor[i])
 
                 TextField {
                     id: imgWS
+                    anchors.horizontalCenter: parent.horizontalCenter
                     color: "black"
                     placeholderText: "Width Scale (cm)"
                     placeholderTextColor: "lightgrey"
@@ -1526,6 +1557,7 @@ log(labelAndColor[i])
 
                 TextField {
                     id: imgHS
+                    anchors.horizontalCenter: parent.horizontalCenter
                     color: "black"
                     placeholderText: "Height Scale (cm)"
                     placeholderTextColor: "lightgrey"
@@ -1534,9 +1566,47 @@ log(labelAndColor[i])
                 Button {
                     text: "Enter"
                     palette.buttonText: "black"
+                    anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
                         tbox.saveStats(labelsAndCoords, species, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), imgWS.text, imgHS.text)
                         statsPopUp.close()
+                    }
+                }
+            }
+         }
+    }
+
+
+    Popup {
+        id: errorPopUp
+        x: (parent.width - width) / 2  
+        y: (parent.height - height) / 2 
+        width: 200
+        height: 150
+        modal: true
+        focus: true
+
+         Rectangle {
+            color: "white"
+            anchors.fill: parent
+
+            Column {
+                spacing: 10
+                anchors.centerIn: parent
+
+                Text {
+                    id: errorMsg
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "black"
+                    text: ""
+                }
+
+                Button {
+                    text: "OK"
+                    palette.buttonText: "black"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    onClicked: {
+                        errorPopUp.close()
                     }
                 }
             }
