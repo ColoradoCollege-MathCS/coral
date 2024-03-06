@@ -507,9 +507,15 @@ ApplicationWindow {
 
                 onPressed: { 
 
-                    //make sure a label is selected
-                    if (comboyuh.currentText === "") {
-                        emptyLabelPopUp.open()
+                    //make sure a label and image is selected
+                    if (image.source.toString() === "") {
+                        errorMsg.text = "Please select an image"
+                        errorPopUp.open()
+                    }
+
+                    else if (comboyuh.currentText === "") {
+                        errorMsg.text = "Please select a label"
+                        errorPopUp.open()
                     }
 
                     else {
@@ -1529,7 +1535,7 @@ ApplicationWindow {
 
 
     Popup {
-        id: emptyLabelPopUp
+        id: errorPopUp
         x: (parent.width - width) / 2  
         y: (parent.height - height) / 2 
         width: 200
@@ -1546,10 +1552,10 @@ ApplicationWindow {
                 anchors.centerIn: parent
 
                 Text {
-                    id: emptLabelError
+                    id: errorMsg
                     anchors.horizontalCenter: parent.horizontalCenter
                     color: "black"
-                    text: "Please Enter Label Name"
+                    text: ""
                 }
 
                 Button {
@@ -1557,7 +1563,7 @@ ApplicationWindow {
                     palette.buttonText: "black"
                     anchors.horizontalCenter: parent.horizontalCenter
                     onClicked: {
-                        emptyLabelPopUp.close()
+                        errorPopUp.close()
                     }
                 }
             }
