@@ -51,6 +51,24 @@ class Toolbox(QtCore.QObject):
         rectangle_select(self.labels, label, point1, point2)
         self.updateMask()
 
+    @QtCore.Slot(str, result=str)
+    def trimFileUrl(self, file_url):
+        if sys.platform == 'win32':
+            return file_url[8:]
+        elif sys.platform == 'darwin' or sys.platform == "linux" or sys.platform == "linux2":
+            return file_url[7:]
+        else:
+            return file_url[7:] #default to some unix-like
+    
+    @QtCore.Slot(str,result=str)
+    def reFileUrl(self, file_path):
+        if sys.platform == 'win32':
+            return "file:///"+file_path
+        elif sys.platform == 'darwin' or sys.platform == "linux" or sys.platform == "linux2":
+            return "file://"+file_path # file path starts with slash to represent root
+        else:
+            return "file://"+file_path
+
     @QtCore.Slot(str, int, int, int, int, float, float, result="QVariantList")
     def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):
         

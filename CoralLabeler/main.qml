@@ -247,6 +247,12 @@ ApplicationWindow {
                     statsPopUp.open()
                 }
             }
+            Action {
+                text: qsTr("File Locations")
+                onTriggered: {
+                    saveLocationsPopup.open()
+                }
+            }
         }
     }
 
@@ -1595,5 +1601,9 @@ ApplicationWindow {
          }
     AboutPopup {
         id: aboutPopUp
+    }
+    SaveLocationsPopup {
+        id: saveLocationsPopup
+        //the_tbox: tbox
     }
 }
