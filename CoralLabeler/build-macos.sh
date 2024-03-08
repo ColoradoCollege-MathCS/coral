@@ -8,35 +8,45 @@ read -ra vers_arr <<< "$pyt3_out"
 py3_minor_vers=${vers_arr[1]}
 
 
-if [ ! type "$python3.11" > /dev/null ]; then
+if  command -v "python3.11"; then
     python_command="python3.11"
-elif [ py3_minor_vers < 12 ]; then
+elif [ $py3_minor_vers -lt 12 ]; then
     python_command="python3"
 else
     echo "python3.11 is not installed and the default python3 is 3.12 or greater, which is incompatible with torch. The application cannot be built."
     exit 1
 fi
 
+echo $python_command
+
 #This script should be run from inside the CoralLabeler directory
-if [ ! -d "$venv" ]; then
+if [ ! -d "venv" ]; then
     #Create the venv
-    eval "$python_command -v venv venv"
+    #echo "venv dir does not exist"
+    eval "$python_command -m venv venv"
 fi
 
 source venv/bin/activate
+
+
+if [ $? != 0 ]; then
+	echo "venv could not be created or activated. exiting."
+	exit 4
+fi
+
 echo "Installing dependencies"
 pip install PySide6 scikit-image numpy torch torchvision rdp pyinstaller opencv-python
 
 echo
 echo "Building Application"
-pyinstaller CoralLabeler.spec
-
-if [ ? != 0 ]; then
+pyinstaller --noconfirm CoralLabeler.spec
+true
+if [ $? != 0 ]; then
     echo "Something went wrong with pyinstaller. Cancelling build"
     exit 2
 fi
 
-if [ ! type "create-dmg" > /dev/null ]; then
+if ! command -v "create-dmg"; then
     echo
     echo "create-dmg command not available. The .app package has been created in dist/"
     echo "If you would like the dmg also, please install create-dmg (easiest through homebrew)"
@@ -55,7 +65,10 @@ create-dmg \
     --window-pos 200 120 \
     --window-size 800 400 \
     --icon-size 100 \
-    --icon "CoralLabeler.app" \
+    --icon "CoralLabeler.app" 200 190 \
+    --hide-extension "CoralLabeler.app" \
     --app-drop-link 600 185 \
-    "dist/CoralLabeler.dmg" \
+    "CoralLabeler.dmg" \
     "build/dmg/"
+
+mv CoralLabeler.dmg dist/
