@@ -70,7 +70,7 @@ def magic_wand_select(image, labels, labelNum, pointClicked, threshold):
     #Load image
     image_arr = io.imread(image)
     if image_arr.shape[2]==4:
-        image_arr = color.rgba2rgb(image_arr) #strip alpha chan with alpha blending if necc.
+        image_arr = color.rgba2rgb(image_arr)# #strip alpha chan with alpha blending if necc.
     #convert to Hue Saturation Value space
     image_arr = color.rgb2hsv(image_arr)
     #flood according to hue, returning boolean mask of pixels that should be selected
