@@ -1006,38 +1006,20 @@ ApplicationWindow {
             //find if species already has text
             for (var i = 0; i < species.length; i++){
                 if(species[i][1] == curText){
+                    alreadyInList = false
                     //check if the species is already in our combobox
-                    for(var g = 0; g < imageSpecies; g++){
-                        if(imageSpecies[i][1] == curText){
+                    for(var g = 0; g < imageSpecies.length; g++){
+                        if(imageSpecies[g][0][1] == curText){
                             alreadyInList = true
                         }
                     }
-
-                    //if it is, just ignore text
-                    if(alreadyInList == true){
-                        aSpecies = false
-                        comboyuh.currentText = curText
-                    }
-
-                    //else, add it to the combobox and our image labels
-                    else{
-                        aSpecies = true
-                        imageSpecies.push(species[i])
-                        labelNames.push(species[i][0])
-                        comboyuh.thisModel.push(species[i][1])
-                        comboyuh.model = comboyuh.thisModel
-
-                        var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
-
-
-                        labelAndColor[species[i][0]] = color;
-                    }
-
+                    aSpecies = true
                 }
             }
 
+
             //if it is a new label
-            if(aSpecies != true){
+            if(aSpecies != true && alreadyInList != true){
                 //add to combobox and species list and all other variables
                 species.push(lf.addToSpeciesList(species[species.length-1][0], curText))
                 imageSpecies.push([species[species.length-1]])
