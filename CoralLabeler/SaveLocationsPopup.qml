@@ -5,26 +5,28 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 Dialog {
-    function processError(errorcore) {
-        if (result !=0 ) {
+    function processError(errorcode) {
+        if (errorcode !=0 ) {
                 var errormsg
-                if (result == 1) {//File already exists and is not a directory
+                if (errorcode == 1) {//File already exists and is not a directory
                     errormsg = "A non-directory file already exists at one of the specified paths. Please set a different path."
-                } else if (result == 2) { //PermissionError
+                } else if (errorcode == 2) { //PermissionError
                     errormsg = "You do not have permission to write to one of the specified paths. Please set a different path"
                 }
-                else if (result == 3) { //OSError
+                else if (errorcode == 3) { //OSError
                     errormsg = "An error occured while setting the paths. Please try again or set a different path."
                 }
-                var dialog = `import QtQuick \n \
-                import QtQuick.Dialog \n \
-                MessageDialog {\n\
-                    title: \"Error saving paths\"\n\
-                    text: ${errormsg} \n\
-                    icon: StandardIcon.Warning\n\
-                    standardButtons: StandardButton.Ok`
-                
-                Qt.createQmlObject(dialog, this)
+                var dialog = `
+import QtQuick
+import QtQuick.Dialogs
+    MessageDialog {
+        title: "Error saving paths"
+        text: "${errormsg}"
+        buttons: MessageDialog.Ok
+    }`
+                console.log(dialog)
+                var dlog = Qt.createQmlObject(dialog, this)
+                dlog.open()
             }
     }
     function updateText() {
@@ -88,9 +90,9 @@ Dialog {
         currentOutputFolder = tbox.reFileUrl(outFolderField.text)
 
         //add to/create config file with this preference
-        tbox.saveFilePreference(tempFolderField.text, outFolderField.text)
+        tbox.saveFilePreference(tbox.reFileUrl(tempFolderField.text), tbox.reFileUrl(outFolderField.text))
         //create folders if neccessary
-        var result = tbox.initFilePreference(tempFolderField.text, outFolderField.text)
+        var result = tbox.initFilePreference(tbox.reFileUrl(tempFolderField.text), tbox.reFileUrl(outFolderField.text))
         processError(result)
     }
 

@@ -82,34 +82,32 @@ class Toolbox(QtCore.QObject):
     def initFilePreference(self, temp_url, out_url):
         temp_fp = self.trimFileUrl(temp_url)
         out_fp = self.trimFileUrl(out_url)
-
         for fp in (temp_fp, out_fp):
             if not os.path.exists(fp):
                 try:
                     os.makedirs(fp)
-                    return 0
-                except FileExistsError:
-                    if not os.is_dir(fp):
-                        return 1 #a non directory file exists with that name
-                    return 0 #directory already exists
                 except PermissionError:
                     return 2
                 except OSError:
                     return 3
+            else:
+                if not os.path.isdir(fp):
+                    return 1 #a non directory file exists with that name
+        return 0
                 
-                
-                
-
-
-    @QtCore.Slot(result=QtCore.QObject)
     def loadFilePreference(self):
         #load from the file, return (temp_url,out_url)
         cfg = open(os.path.join(dirname,"file_config"), "r")
+        print("file opened")
         pieces = cfg.read().split("\n")
+        print("file read")
         cfg.close()
+        print("file closed")
         self.temp_url = pieces[0]
+        print("temp saved")
+        print(pieces[0])
         self.out_url = pieces[1]
-        return (pieces[0], pieces[1])
+        print("out saved")
     
     @QtCore.Slot(str,str)
     def setFilePreference(self, temp_url, out_url):

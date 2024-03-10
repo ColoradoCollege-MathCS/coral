@@ -1610,7 +1610,11 @@ ApplicationWindow {
     ////Check if file preferences exist. If not, ask user
     Component.onCompleted: {
         if (tbox.fileExists("file_config")) {
+            console.log("file exists, loading file pref")
             tbox.loadFilePreference()
+            console.log("finished loading pref from file")
+            saveLocationsPopup.updateText()
+            saveLocationsPopup.open()
         } else {
             //init with default values
             tbox.setFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
