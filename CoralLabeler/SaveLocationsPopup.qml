@@ -24,7 +24,6 @@ import QtQuick.Dialogs
         text: "${errormsg}"
         buttons: MessageDialog.Ok
     }`
-                console.log(dialog)
                 var dlog = Qt.createQmlObject(dialog, this)
                 dlog.open()
             }
@@ -75,9 +74,6 @@ import QtQuick.Dialogs
             horizontalAlignment: Text.AlignLeft
             Layout.fillWidth: true
             Layout.maximumWidth: 400
-        }
-        Component.onCompleted: {
-            console.log(tbox)
         }
     }
     

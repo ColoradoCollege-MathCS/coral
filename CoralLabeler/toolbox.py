@@ -94,32 +94,23 @@ class Toolbox(QtCore.QObject):
                 if not os.path.isdir(fp):
                     return 1 #a non directory file exists with that name
         return 0
-                
+
+    @QtCore.Slot()
     def loadFilePreference(self):
         #load from the file, return (temp_url,out_url)
         cfg = open(os.path.join(dirname,"file_config"), "r")
-        print("file opened")
         pieces = cfg.read().split("\n")
-        print("file read")
         cfg.close()
-        print("file closed")
         self.temp_url = pieces[0]
-        print("temp saved")
-        print(pieces[0])
         self.out_url = pieces[1]
-        print("out saved")
     
     @QtCore.Slot(str,str)
     def setFilePreference(self, temp_url, out_url):
-        print("setting paths")
-        #pdb.set_trace()
         self.temp_url = temp_url
         self.out_url = out_url
 
     @QtCore.Slot(result=str)
     def getTempUrl(self):
-        print("getting path")
-        #pdb.set_trace()
         try:
             return self.temp_url
         except AttributeError:
@@ -127,7 +118,6 @@ class Toolbox(QtCore.QObject):
     
     @QtCore.Slot(result=str)
     def getOutUrl(self):
-        print("getting path")
         try:
             return self.out_url
         except AttributeError:

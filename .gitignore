@@ -9,3 +9,4 @@ CoralLabeler/images/mask.png
 *venv
 build/
 dist/
+file_config
