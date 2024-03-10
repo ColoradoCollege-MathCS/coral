@@ -15,6 +15,8 @@ from rdp import rdp
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import blob_ML
 
+import pdb #TODO REMOVE
+
 dirname = os.path.dirname(__file__)
 
 def image_dims(filename):
@@ -29,7 +31,6 @@ color_map = {
     }
 
 class Toolbox(QtCore.QObject):
-
     @QtCore.Slot(str)
     def initLabels(self, filename):
         self.labels = np.zeros((image_dims(filename)[:2]))
@@ -68,6 +69,72 @@ class Toolbox(QtCore.QObject):
             return "file://"+file_path # file path starts with slash to represent root
         else:
             return "file://"+file_path
+    @QtCore.Slot(str,str)
+    def saveFilePreference(self, temp_url, out_url):
+        #save to a file named file_config in format temp_url\nout_url
+        self.temp_url = temp_url
+        self.out_url = out_url
+        cfg = open(os.path.join(dirname,"file_config"), "w")
+        cfg.write(temp_url+"\n"+out_url)
+        cfg.close()
+    
+    @QtCore.Slot(str,str, result=int)
+    def initFilePreference(self, temp_url, out_url):
+        temp_fp = self.trimFileUrl(temp_url)
+        out_fp = self.trimFileUrl(out_url)
+
+        for fp in (temp_fp, out_fp):
+            if not os.path.exists(fp):
+                try:
+                    os.makedirs(fp)
+                    return 0
+                except FileExistsError:
+                    if not os.is_dir(fp):
+                        return 1 #a non directory file exists with that name
+                    return 0 #directory already exists
+                except PermissionError:
+                    return 2
+                except OSError:
+                    return 3
+                
+                
+                
+
+
+    @QtCore.Slot(result=QtCore.QObject)
+    def loadFilePreference(self):
+        #load from the file, return (temp_url,out_url)
+        cfg = open(os.path.join(dirname,"file_config"), "r")
+        pieces = cfg.read().split("\n")
+        cfg.close()
+        self.temp_url = pieces[0]
+        self.out_url = pieces[1]
+        return (pieces[0], pieces[1])
+    
+    @QtCore.Slot(str,str)
+    def setFilePreference(self, temp_url, out_url):
+        print("setting paths")
+        #pdb.set_trace()
+        self.temp_url = temp_url
+        self.out_url = out_url
+
+    @QtCore.Slot(result=str)
+    def getTempUrl(self):
+        print("getting path")
+        #pdb.set_trace()
+        try:
+            return self.temp_url
+        except AttributeError:
+            return "temp not initialized"
+    
+    @QtCore.Slot(result=str)
+    def getOutUrl(self):
+        print("getting path")
+        try:
+            return self.out_url
+        except AttributeError:
+            return "out not initialized"
+    
 
     @QtCore.Slot(str, int, int, int, int, float, float, result="QVariantList")
     def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor):

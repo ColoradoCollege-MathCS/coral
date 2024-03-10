@@ -250,6 +250,7 @@ ApplicationWindow {
             Action {
                 text: qsTr("File Locations")
                 onTriggered: {
+                    saveLocationsPopup.updateText()
                     saveLocationsPopup.open()
                 }
             }
@@ -1605,5 +1606,20 @@ ApplicationWindow {
     SaveLocationsPopup {
         id: saveLocationsPopup
         //the_tbox: tbox
+    }
+    ////Check if file preferences exist. If not, ask user
+    Component.onCompleted: {
+        if (tbox.fileExists("file_config")) {
+            tbox.loadFilePreference()
+        } else {
+            //init with default values
+            tbox.setFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
+            saveLocationsPopup.updateText()
+            console.log(tbox)
+            console.log(tbox)
+            //show popup
+            saveLocationsPopup.open()
+            //this will save the accepted value to file
+        }
     }
 }

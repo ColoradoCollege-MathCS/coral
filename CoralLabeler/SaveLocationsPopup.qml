@@ -2,8 +2,36 @@ import QtCore
 import QtQuick 
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 
 Dialog {
+    function processError(errorcore) {
+        if (result !=0 ) {
+                var errormsg
+                if (result == 1) {//File already exists and is not a directory
+                    errormsg = "A non-directory file already exists at one of the specified paths. Please set a different path."
+                } else if (result == 2) { //PermissionError
+                    errormsg = "You do not have permission to write to one of the specified paths. Please set a different path"
+                }
+                else if (result == 3) { //OSError
+                    errormsg = "An error occured while setting the paths. Please try again or set a different path."
+                }
+                var dialog = `import QtQuick \n \
+                import QtQuick.Dialog \n \
+                MessageDialog {\n\
+                    title: \"Error saving paths\"\n\
+                    text: ${errormsg} \n\
+                    icon: StandardIcon.Warning\n\
+                    standardButtons: StandardButton.Ok`
+                
+                Qt.createQmlObject(dialog, this)
+            }
+    }
+    function updateText() {
+        tempFolderField.text = tbox.trimFileUrl(tbox.getTempUrl())
+        outFolderField.text = tbox.trimFileUrl(tbox.getOutUrl())
+    }
+
     //Default value:
     //MacOS: ~/Library/Application Support/CoralLabeler
     //Win: C:/Users/<USER>/AppData/Local/CoralLabeler
@@ -28,7 +56,7 @@ Dialog {
         }
         TextField {
             id: tempFolderField
-            text: tbox.trimFileUrl(currentTempFolder)
+            text: ""
             horizontalAlignment: Text.AlignLeft
             Layout.fillWidth: true
             Layout.maximumWidth: 400
@@ -41,17 +69,38 @@ Dialog {
 
         TextField {
             id: outFolderField
-            text: tbox.trimFileUrl(currentOutputFolder)
+            text: ""
             horizontalAlignment: Text.AlignLeft
             Layout.fillWidth: true
             Layout.maximumWidth: 400
         }
+        Component.onCompleted: {
+            console.log(tbox)
+        }
     }
+    
+
     onAccepted: {
         //if new directories do not exist, create them
 
         //update current location
         currentTempFolder = tbox.reFileUrl(tempFolderField.text)
         currentOutputFolder = tbox.reFileUrl(outFolderField.text)
+
+        //add to/create config file with this preference
+        tbox.saveFilePreference(tempFolderField.text, outFolderField.text)
+        //create folders if neccessary
+        var result = tbox.initFilePreference(tempFolderField.text, outFolderField.text)
+        processError(result)
+    }
+
+    onRejected: {
+        if (!tbox.fileExists("file_config")) {
+            //if user cancelled but no value exists, choose defaults
+            tbox.saveFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
+            var result = tbox.initFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
+            processError(result)
+        }
+        //otherwise do nothing, keeping their last value
     }
 }
