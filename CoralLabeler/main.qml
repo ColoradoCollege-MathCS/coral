@@ -1600,6 +1600,7 @@ ApplicationWindow {
                 }
             }
          }
+    }
     AboutPopup {
         id: aboutPopUp
     }
