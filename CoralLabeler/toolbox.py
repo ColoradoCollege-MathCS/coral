@@ -109,6 +109,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(result=str)
     def getTempUrl(self):
+        """Returns the url to write temporary files into, like shape definitions"""
         try:
             return self.temp_url
         except AttributeError:
@@ -116,15 +117,16 @@ class Toolbox(QtCore.QObject):
     
     @QtCore.Slot(result=str)
     def getOutUrl(self):
+        """Returns the url to write output files into. file:///<something>"""
         try:
             return self.out_url
         except AttributeError:
             return "out not initialized"
         
     @QtCore.Slot(result=str)
-    def getMainDirUrl(self):
-        """Returns the url of the path to the directory containing main.py/main.qml/other application files"""
-        return self.reFileUrl(dirname)
+    def getFileLocation(self):
+        """Returns the path (not url) to the directory containing main.py/main.qml"""
+        return dirname
     
 
     @QtCore.Slot(str, int, int, int, int, float, float, result="QVariantList")
