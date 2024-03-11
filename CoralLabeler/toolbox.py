@@ -15,8 +15,6 @@ from rdp import rdp
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import blob_ML
 
-import pdb #TODO REMOVE
-
 dirname = os.path.dirname(__file__)
 
 def image_dims(filename):
@@ -122,6 +120,11 @@ class Toolbox(QtCore.QObject):
             return self.out_url
         except AttributeError:
             return "out not initialized"
+        
+    @QtCore.Slot(result=str)
+    def getMainDirUrl(self):
+        """Returns the url of the path to the directory containing main.py/main.qml/other application files"""
+        return self.reFileUrl(dirname)
     
 
     @QtCore.Slot(str, int, int, int, int, float, float, result="QVariantList")
