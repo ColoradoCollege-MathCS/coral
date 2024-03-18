@@ -490,11 +490,11 @@ ApplicationWindow {
 
                 //fix mouse coordinate
                 function getMouseX() {
-                    return (overlay.width - overlay.paintedWidth) * 0.5
+                    return (image.width - image.paintedWidth) * 0.5
                 }
 
                 function getMouseY() {
-                    return (overlay.height - overlay.paintedHeight) * 0.5
+                    return (image.height - image.paintedHeight) * 0.5
                 }
 
                 function fixMouse(image) {
