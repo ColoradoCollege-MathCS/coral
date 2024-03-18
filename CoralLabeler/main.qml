@@ -287,7 +287,7 @@ ApplicationWindow {
                         
                         lf.updateLabelsAndCoords()
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
-                        //tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
+                        tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                     }
                     
                 }
@@ -1001,7 +1001,8 @@ ApplicationWindow {
             var alreadyInList = false
 
             var curText = text
-            var idx = 0
+            var idxBox = 0
+            var idxSpec = 0
 
             //find if species already has text
             for (var i = 0; i < species.length; i++){
@@ -1014,12 +1015,23 @@ ApplicationWindow {
                         }
                     }
                     aSpecies = true
+                    idxSpec = i
                 }
             }
 
+            if(aSpecies == true && alreadyInList == false){
+                imageSpecies.push([species[idxSpec]])
+                labelNames.push(species[idxSpec][0])
+                comboyuh.thisModel.push(species[idxSpec][1])
+                comboyuh.model = comboyuh.thisModel
+
+
+                var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
+                labelAndColor[species[idxSpec][0]] = color;
+            }
 
             //if it is a new label
-            if(aSpecies != true && alreadyInList != true){
+            else if(aSpecies == false && alreadyInList == false){
                 //add to combobox and species list and all other variables
                 species.push(lf.addToSpeciesList(species[species.length-1][0], curText))
                 imageSpecies.push([species[species.length-1]])
@@ -1036,11 +1048,12 @@ ApplicationWindow {
             remove(0, text.length)
 
             //make current selection the entered text
-            idx = comboyuh.find(curText)
-            comboyuh.currentIndex = idx
+            idxBox = comboyuh.find(curText)
+            comboyuh.currentIndex = idxBox
 
         }
     }
+     
      
 
     //////////////////////////////////////////////////////////side tool bar////////////////////////////////////////////////////////
