@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 
-def blob_ML(img_path, seed):
+def blob_ML(img_path, seed, threshold):
     # import module and functions as defined in config file
     module = importlib.import_module(config.module_name)
     transform_img = getattr(module, config.pipeline[0])
@@ -34,7 +34,7 @@ def blob_ML(img_path, seed):
     if len(contours) > 0:
         largest_contour = max(contours, key=cv2.contourArea)
         polygon = largest_contour.reshape(-1, 2)
-        polygon = approximate_polygon(polygon, tolerance=1)
+        polygon = approximate_polygon(polygon, tolerance=threshold)
     
     # return list of polygon coordinates
     return polygon
