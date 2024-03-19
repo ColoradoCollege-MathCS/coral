@@ -11,6 +11,7 @@ import csv
 import os
 import math
 from rdp import rdp
+from scipy import ndimage
 
 from select_tools import labeled2rgb, rectangle_select, magic_wand_select, ellipse_select, circle_select
 from prediction import blob_ML
@@ -116,50 +117,51 @@ class Toolbox(QtCore.QObject):
         check = False
         paintSize = ''
         paintFirstCoords = []
-        print(paintshapes)
         with open(filename, 'w') as file:
             #get all labels
             for keys in data.keys():
-                file.write('Label'+',' + keys)
-                file.write('\n')
+                #make sure label has at least one shape
+                if len(data[keys]) != 0:
+                    file.write('Label'+',' + keys)
+                    file.write('\n')
 
-                #get all shapes
-                for shapes in data[keys].keys():
-                        file.write('Shape' + ',' + shapes)
+                    #get all shapes
+                    for shapes in data[keys].keys():
+                            file.write('Shape' + ',' + shapes)
 
-                        #check for paint shapes
-                        for paints in paintshapes:
-                            if shapes == str(paints[0]):
-                                print(paints)
-                                paintFirstCoords = paints[2]
-                                paintSize = paints[1]
-                                check = True
-                        if check == True:
-                            file.write(',' + str(int(paintSize)))
-                        else:
-                            file.write(',n')
-
-                        file.write('\n')
-
-                        #write all coords of a shape
-                        for coord in range(len(data[keys][shapes])):
-                            if check == False:
-                                if coord == 0:
-                                    file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))
-                                    file.write('\n')
-                                    file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
-                                else:
-                                    file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                            #check for paint shapes
+                            for paints in paintshapes:
+                                if shapes == str(paints[0]):
+                                    # print(paints)
+                                    paintFirstCoords = paints[2]
+                                    paintSize = paints[1]
+                                    check = True
+                            if check == True:
+                                file.write(',' + str(int(paintSize)))
                             else:
-                                if coord == 0:
-                                    file.write(str(int(paintFirstCoords[0])) + ',' + str(int(paintFirstCoords[1])))
-                                    file.write('\n')
-                                    file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
-                                else:
-                                    file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                                file.write(',n')
+
                             file.write('\n')
 
-                        check = False
+                            #write all coords of a shape
+                            for coord in range(len(data[keys][shapes])):
+                                if check == False:
+                                    if coord == 0:
+                                        file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))
+                                        file.write('\n')
+                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                                    else:
+                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                                else:
+                                    if coord == 0:
+                                        file.write(str(int(paintFirstCoords[0])) + ',' + str(int(paintFirstCoords[1])))
+                                        file.write('\n')
+                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                                    else:
+                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                                file.write('\n')
+
+                            check = False
         
         file.close()
 
@@ -196,7 +198,8 @@ class Toolbox(QtCore.QObject):
         #epsilon functions like a tolerance I think
         return rdp(points, epsilon=epsilon)
 
-      
+    
+    # conver shape window coords to shape img pixel coords 
     def toPixels(self, coords, x_coord, y_coord, x_factor, y_factor):
         numpy_shapes = {}
         for label_num, coords_dict in coords.items():
@@ -215,9 +218,8 @@ class Toolbox(QtCore.QObject):
         return numpy_shapes
     
 
-    @QtCore.Slot(dict, int, int, float, float, int, int, str)
-    def saveRasters(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename):
-
+    @QtCore.Slot(dict, int, int, float, float, int, int, str, list)
+    def saveRasters(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename, paintshapes):
         # get the shape and vertices coords as numpy coords
         numpy_shapes = self.toPixels(coords, x_coord, y_coord, x_factor, y_factor)
 
@@ -228,13 +230,34 @@ class Toolbox(QtCore.QObject):
                 ordered_shape[order_num] = {label_id: shape_coords}
         ordered_shape = dict(sorted(ordered_shape.items()))
 
+        # get brush size of painted shapes
+        paint_size = {}
+        for paintshape in paintshapes:
+            paint_size[int(paintshape[0])] = int(paintshape[1])
+
         # make polygons out of coordinates,
         # rasterize shapes into numpy in order
         final_array = np.zeros((img_height, img_width))
         for n_shape_order, n_coords_dict in ordered_shape.items():
             for n_label_id, n_shape_coords in n_coords_dict.items():
-                r = n_shape_coords[:, 0]
-                c = n_shape_coords[:, 1]
+                # if shape is paint, raterize based on brush size
+                if int(n_shape_order) in paint_size.keys():
+                    temp_array = np.zeros((img_height, img_width))
+
+                    r = n_shape_coords[:, 0]
+                    c = n_shape_coords[:, 1]
+                    rr, cc = polygon(c, r)
+                    temp_array[cc, rr] = 1
+                    
+                    dilated_coords = ndimage.binary_dilation(temp_array, iterations=paint_size[int(n_shape_order)]).nonzero()
+                    dilated_coords = np.array(dilated_coords).T
+                    r = dilated_coords[:, 0]
+                    c = dilated_coords[:, 1]
+
+                else:
+                    r = n_shape_coords[:, 0]
+                    c = n_shape_coords[:, 1]
+                
                 rr, cc = polygon(c, r)
                 final_array[rr, cc] = n_label_id
 

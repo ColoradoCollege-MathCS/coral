@@ -59,11 +59,14 @@ ApplicationWindow {
 
     //funcion to populate color and label name in the legend
     function populateLegend() {
-        comboyuh.model.forEach(label => {
+        // for(var i = 0; i < species.length; i++){
+
+        // }
+        imageSpecies.forEach(label => {
             labelLegendModel.append( {
-                    labelColor: labelAndColor[findLabel(label)],
-                    labelName: label
-                })
+                    labelColor: labelAndColor[label[0]],
+                    labelName: label[1]
+            })
         })   
     }
 
@@ -287,7 +290,7 @@ ApplicationWindow {
                         
                         lf.updateLabelsAndCoords()
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
-                        tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
+                        tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
                     }
                     
                 }
@@ -504,6 +507,7 @@ ApplicationWindow {
 
 
                 onPressed: { 
+                    print(comboyuh.currentText)
 
                     //make sure a label and image is selected
                     if (image.source.toString() === "") {
@@ -749,7 +753,8 @@ ApplicationWindow {
 
                         //means no tool was selected
                         else{
-                            console.log("Please choose a tool")
+                            errorMsg.text = "Please select a tool"
+                            errorPopUp.open()
                         }
                     }
                     
@@ -1010,7 +1015,7 @@ ApplicationWindow {
                     alreadyInList = false
                     //check if the species is already in our combobox
                     for(var g = 0; g < imageSpecies.length; g++){
-                        if(imageSpecies[g][0][1] == curText){
+                        if(imageSpecies[g][1] == curText){
                             alreadyInList = true
                         }
                     }
@@ -1020,7 +1025,7 @@ ApplicationWindow {
             }
 
             if(aSpecies == true && alreadyInList == false){
-                imageSpecies.push([species[idxSpec]])
+                imageSpecies.push(species[idxSpec])
                 labelNames.push(species[idxSpec][0])
                 comboyuh.thisModel.push(species[idxSpec][1])
                 comboyuh.model = comboyuh.thisModel
@@ -1034,7 +1039,7 @@ ApplicationWindow {
             else if(aSpecies == false && alreadyInList == false){
                 //add to combobox and species list and all other variables
                 species.push(lf.addToSpeciesList(species[species.length-1][0], curText))
-                imageSpecies.push([species[species.length-1]])
+                imageSpecies.push(species[species.length-1])
                 labelNames.push(species[species.length-1][0])
                 comboyuh.thisModel.push(species[species.length-1][1])
                 comboyuh.model = comboyuh.thisModel
