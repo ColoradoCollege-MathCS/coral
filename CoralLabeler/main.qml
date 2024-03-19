@@ -228,14 +228,19 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("&Help")
-            Action { text: qsTr("&About") }
+            Action { 
+                text: qsTr("&About")
+                onTriggered: {
+                    aboutPopUp.open()
+                }
+            }
         }
         Menu {
             title: qsTr("&Tools")
             Action {
                 text: qsTr("Random Rectangle")
                 onTriggered: {
-                    tbox.randomRectangle(), refreshMask()
+                    tbox.randomRectangle()//, refreshMask()
                     saveIconButton.enabled = true
                 }
             }
@@ -243,6 +248,13 @@ ApplicationWindow {
                 text: qsTr("Statistics")
                 onTriggered: {
                     statsPopUp.open()
+                }
+            }
+            Action {
+                text: qsTr("File Locations")
+                onTriggered: {
+                    saveLocationsPopup.updateText()
+                    saveLocationsPopup.open()
                 }
             }
         }
@@ -361,8 +373,10 @@ ApplicationWindow {
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
                 onAccepted: {
                     image.source = selectedFile
-                    tbox.initLabels(selectedFile)
-                    refreshMask()
+                    //tbox.initLabels(selectedFile)
+                    //refreshMask()
+                    refreshLegend()
+                    populateLegend()
 
                     if(saveIconButton.enabled == true){
                         savemask.title = selectedFile
@@ -952,7 +966,7 @@ ApplicationWindow {
         repeat: true
         triggeredOnStart: true
         running: imageMouse.isPressed
-        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value), refreshMask()
+        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value)//, refreshMask()
     }
 
 
@@ -1352,7 +1366,7 @@ ApplicationWindow {
                                 savemask.open()
                             }
                             
-                            tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
+                            //tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
                                 
                             changeImage(folderModel.folder + "/" + fileName)
 
@@ -1586,5 +1600,26 @@ ApplicationWindow {
                 }
             }
          }
+    }
+    AboutPopup {
+        id: aboutPopUp
+    }
+    SaveLocationsPopup {
+        id: saveLocationsPopup
+        //the_tbox: tbox
+    }
+    ////Check if file preferences exist. If not, ask user
+    Component.onCompleted: {
+        if (tbox.fileExists("file_config")) {
+            tbox.loadFilePreference()
+            saveLocationsPopup.updateText()
+        } else {
+            //init with default values
+            tbox.setFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
+            saveLocationsPopup.updateText()
+            //show popup
+            saveLocationsPopup.open()
+            //this will save the accepted value to file
+        }
     }
 }
