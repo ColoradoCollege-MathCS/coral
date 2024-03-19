@@ -345,7 +345,7 @@ ApplicationWindow {
                 onMoved: {
                     if (currentTool == "magicwand"){
                         from = 0
-                        to = 1
+                        to = 20
                         imageMouse.value = value
                     }
 
@@ -521,8 +521,6 @@ ApplicationWindow {
 
 
                 onPressed: { 
-                    print(comboyuh.currentText)
-
                     //make sure a label and image is selected
                     if (image.source.toString() === "") {
                         errorMsg.text = "Please select an image"
@@ -573,7 +571,7 @@ ApplicationWindow {
                             fixMouse(image)
                             
                             //get AI polygon as shape object
-                            polygon = tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY)
+                            polygon = tbox.getPrediction(image.source, fixedMouseY, fixedMouseX, getMouseX(), getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, imageMouse.value)
                             shapes.push(magicWandComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "coords": polygon, "color": labelAndColor[findLabel(comboyuh.currentText)], "colorline": labelAndColor[findLabel(comboyuh.currentText)]}))
 
                             refreshLegend()
