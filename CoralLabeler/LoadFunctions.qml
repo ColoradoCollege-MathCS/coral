@@ -132,6 +132,7 @@ Rectangle{
         win.labelAndSize = labelAndS
     }
 
+    //place the location of a shape in an array and return the array in correct order
     function getOrderLocation(number, shape){
         var start = []
         var end = []

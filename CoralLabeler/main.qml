@@ -174,6 +174,7 @@ ApplicationWindow {
         return
     }
 
+    //Remove all vertices from previous shape after new button is clicked and add a create Action for the shape
     function noMoreVertices(){
         var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
 
@@ -184,6 +185,17 @@ ApplicationWindow {
 
         imageMouse.previousShape = imageMouse.shapeCurrent
         tf.removeVertices(imageMouse.previousShape)
+    }
+
+    function allToolsOn(){
+        deleteIcon.enabled = true
+        lassoSelectIcon.enabled = true
+        moveSelectIcon.enabled = true
+        squareSelectIcon.enabled = true
+        magicWandIcon.enabled = true
+        paintbrushIcon.enabled = true
+        circleSelectIcon.enabled = true
+        vertexSelectIcon.enabled = true
     }
 
 
@@ -486,6 +498,8 @@ ApplicationWindow {
                 property var shapeCurrent: undefined
                 property var previousShape: undefined
 
+                property var shapeLocation: 0
+
                 property var selected: false
 
                 //fix mouse coordinate
@@ -527,8 +541,6 @@ ApplicationWindow {
                                 shapes.push(g)
                             }
 
-
-                            tf.removeVertices(shapeCurrent)
                         }
 
                         //move tool
@@ -545,7 +557,6 @@ ApplicationWindow {
                             dy = mouseY
                             ogy = mouseY
 
-                            tf.removeVertices(shapeCurrent)
                             
                         }
 
@@ -561,7 +572,6 @@ ApplicationWindow {
                             refreshLegend()
                             populateLegend()
 
-                            tf.removeVertices(shapeCurrent)
                         }
 
                         //paintbrush if held down
@@ -604,8 +614,6 @@ ApplicationWindow {
 
                             shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
                             "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
-
-                            tf.removeVertices(shapeCurrent)
 
                         }
 
@@ -678,11 +686,20 @@ ApplicationWindow {
                             //check if shape has already been selected
                             var no = false
                         
+                            //check if shape has been selected and mouse is in one of its vertices
                             for(var i = 0; i < shapes.length; i++){
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
-                                    if(shapeCurrent == shapes[i]){
-                                        no = true
+                                    for(var h = 0; h < shapeCurrent.controls.length; h++){
 
+                                        sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
+                                        sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
+                                                    
+                                        if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
+                                        && shapeCurrent.controls[h].y < mouseY && sizey > mouseY && shapeCurrent == shapes[i]){
+                                        
+                                            no = true
+
+                                        }
                                     }
                                 }
                             }
@@ -747,21 +764,73 @@ ApplicationWindow {
 
                         }
 
+                        //delete the selected shape
+                        else if (currentTool == "deletetool"){
+                            var start = []
+                            var end = []
+                            var all = []
+                            var yuh = false
+                            var wasSelected = false
+                    
+                            for(var i = 0; i < shapes.length; i++){
+
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    shapeLocation = i
+                                    
+                                    wasSelected = true
+
+                                    shapeCurrent = shapes[shapeLocation]
+
+                                    var currAction = Qt.createQmlObject("import Actions; DeleteAction{}", this)
+                            
+                                    currAction.shapeParent = overlay
+                                    currAction.target = shapeCurrent
+                                    currAction.idxInParent = shapeLocation
+                                    currAction.everything = window
+
+                                    shapeCurrent = undefined
+
+                                    act.actionDone(currAction, true)
+
+                                    break
+                                }
+                            }
+
+                            if(wasSelected){
+                                for(var i = 0; i < shapes.length; i++){
+                                    if(i > shapeLocation){
+                                        all.push(shapes[i])
+                                    }
+                                    else if (i < shapeLocation){
+                                        all.push(shapes[i])
+                                    }
+                                }
+
+                                //shapeCurrent = shapes[shapeLocation]
+
+                                shapes = all
+                            }
+                        }
+
                         //means no tool was selected
                         else{
                             console.log("Please choose a tool")
                         }
                     }
+
                     
                 }
 
                 
                 onPositionChanged: {
+                    //add new vertices in path of mouse
                     if (currentTool == "lassotool"){
                         if(comboyuh.currentText != undefined){
                             tf.drawShape(g, mouseX, mouseY)
                         }
                     }
+
+                    //move shape in path of mouse
                     else if (currentTool == "movetool"){
                         if(shapeCurrent != undefined){
                             for(var i = 0; i < shapeCurrent.child.pathElements.length; i++){
@@ -776,6 +845,7 @@ ApplicationWindow {
                         }
                     }
 
+                    //draw shape in path of mouse
                     else if (currentTool == "paintbrush"){
                         if(comboyuh.currentText != undefined) {
                             tf.drawShape(g, mouseX, mouseY)
@@ -784,6 +854,7 @@ ApplicationWindow {
 
                     }
 
+                    //move vertices in square in direction of mouse
                     else if(currentTool == "squareselect"){
                         //move pathlines based on circle movement
                         if(controlNum != undefined){
@@ -927,6 +998,10 @@ ApplicationWindow {
                     }
 
                     else if (currentTool == "vertextool"){
+                        saveIconButton.enabled = true
+                    }
+
+                    else if (currentTool == "deletetool"){
                         saveIconButton.enabled = true
                     }
 
@@ -1090,13 +1165,8 @@ ApplicationWindow {
                         sliderTitle.text = "Threshold"
                         sliderTitle.visible = true
 
+                        allToolsOn()
                         magicWandIcon.enabled = false
-                        paintbrushIcon.enabled = true
-                        circleSelectIcon.enabled = true
-                        squareSelectIcon.enabled = true
-                        lassoSelectIcon.enabled = true
-                        moveSelectIcon.enabled = true
-                        vertexSelectIcon.enabled = true
 
                         currentTool = "magicwand"
                     }
@@ -1123,13 +1193,8 @@ ApplicationWindow {
                         sliderTitle.text = "Size"
                         sliderTitle.visible = true
 
+                        allToolsOn()
                         paintbrushIcon.enabled = false
-                        magicWandIcon.enabled = true
-                        circleSelectIcon.enabled = true
-                        squareSelectIcon.enabled = true
-                        lassoSelectIcon.enabled = true
-                        moveSelectIcon.enabled = true
-                        vertexSelectIcon.enabled = true
 
                         currentTool = "paintbrush"
                     }
@@ -1153,13 +1218,8 @@ ApplicationWindow {
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
+                        allToolsOn()
                         circleSelectIcon.enabled = false
-                        magicWandIcon.enabled = true
-                        paintbrushIcon.enabled = true
-                        squareSelectIcon.enabled = true
-                        lassoSelectIcon.enabled = true
-                        moveSelectIcon.enabled = true
-                        vertexSelectIcon.enabled = true
 
                         currentTool = "circleselect"
                     }
@@ -1181,13 +1241,8 @@ ApplicationWindow {
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
+                        allToolsOn()
                         squareSelectIcon.enabled = false
-                        magicWandIcon.enabled = true
-                        paintbrushIcon.enabled = true
-                        circleSelectIcon.enabled = true
-                        lassoSelectIcon.enabled = true
-                        moveSelectIcon.enabled = true
-                        vertexSelectIcon.enabled = true
 
                         currentTool = "squareselect"
                     }
@@ -1211,13 +1266,8 @@ ApplicationWindow {
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
+                        allToolsOn()
                         moveSelectIcon.enabled = false
-                        lassoSelectIcon.enabled = true
-                        squareSelectIcon.enabled = true
-                        magicWandIcon.enabled = true
-                        paintbrushIcon.enabled = true
-                        circleSelectIcon.enabled = true
-                        vertexSelectIcon.enabled = true
 
                         currentTool = "movetool"
                     }
@@ -1245,14 +1295,8 @@ ApplicationWindow {
                         sliderTitle.visible = true
                         sliderTitle.text = "Quality"
                         
-
+                        allToolsOn()
                         lassoSelectIcon.enabled = false
-                        moveSelectIcon.enabled = true
-                        squareSelectIcon.enabled = true
-                        magicWandIcon.enabled = true
-                        paintbrushIcon.enabled = true
-                        circleSelectIcon.enabled = true
-                        vertexSelectIcon.enabled = true
 
                         currentTool = "lassotool"
                     }
@@ -1279,15 +1323,36 @@ ApplicationWindow {
                         valueSlider.visible = false
                         sliderTitle.visible = false
 
+                        allToolsOn()
                         vertexSelectIcon.enabled = false
-                        lassoSelectIcon.enabled = true
-                        moveSelectIcon.enabled = true
-                        squareSelectIcon.enabled = true
-                        magicWandIcon.enabled = true
-                        paintbrushIcon.enabled = true
-                        circleSelectIcon.enabled = true
 
                         currentTool = "vertextool"
+                    }
+
+                }
+
+            }
+
+            Button {
+                id: deleteIcon
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                icon.source: "icons/lasso.png"
+                enabled: true
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        if(imageMouse.shapeCurrent != undefined){
+                            noMoreVertices()
+                        }
+                        valueSlider.visible = false
+                        sliderTitle.visible = false
+
+                        allToolsOn()
+                        deleteIcon.enabled = false
+
+                        currentTool = "deletetool"
                     }
 
                 }
