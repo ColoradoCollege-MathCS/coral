@@ -271,10 +271,10 @@ Rectangle{
                         }
                     }
 
-                    console.log(paintshapes)
-                    console.log(i)
-                    console.log(check)
-                    console.log(win.shapes[i].shapeType)
+                    // console.log(paintshapes)
+                    // console.log(i)
+                    // console.log(check)
+                    // console.log(win.shapes[i].shapeType)
 
                     if(win.shapes[i].shapeType == "paint" && check != false){
                         paintshapes.push([i, win.shapes[i].child.strokeWidth, [win.shapes[i].child.startX, win.shapes[i].child.startY]])
