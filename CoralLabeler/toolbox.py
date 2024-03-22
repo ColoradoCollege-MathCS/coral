@@ -92,6 +92,13 @@ class Toolbox(QtCore.QObject):
             else:
                 if not os.path.isdir(fp):
                     return 1 #a non directory file exists with that name
+        try:
+            os.makedirs(os.path.join(out_fp,'raster_labels'))
+            os.makedirs(os.path.join(out_fp,'statistics'))
+        except PermissionError:
+            return 2
+        except OSError:
+            return 3
         return 0
 
     @QtCore.Slot()
@@ -181,7 +188,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(str, result="QVariantList")
     def readCSV(self, fileName):
-        labelsFile = open(os.path.join(dirname,fileName))
+        labelsFile = open(fileName)
         csvreader = csv.reader(labelsFile)
 
         labels = []
@@ -195,7 +202,8 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(dict, str, list, result="QVariantList")
     def saveLabels(self, data, fileName, paintshapes):
         name = ""
-        filename = os.path.join(dirname, 'labels', fileName+'.csv')
+        external_dir = self.trimFileUrl(self.getTempUrl())
+        filename = os.path.join(external_dir, fileName+'.csv')
         check = False
         paintSize = ''
         paintFirstCoords = []
@@ -250,7 +258,7 @@ class Toolbox(QtCore.QObject):
     
     @QtCore.Slot(str, result = bool)
     def fileExists(self, fileName):
-        return os.path.exists(os.path.join(dirname,fileName))
+        return os.path.exists(fileName)
     
     @QtCore.Slot(str, result="QString")
     def splited(self, fileName):
@@ -263,7 +271,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(str, str, str, result="QVariantList")
     def addToCSV(self, data, name, fileName):
-        fileName = os.path.join(dirname,fileName)
+        fileName = os.path.join(dirname,fileName) #hardcoded to internal file. fine bc only used to operate on SpeciesList.csv which is internal
         with open(fileName, 'a') as file:
  
             # write row
@@ -345,7 +353,9 @@ class Toolbox(QtCore.QObject):
                 final_array[rr, cc] = n_label_id
 
         # save to csv file
-        np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
+        external_dir = self.trimFileUrl(self.getOutUrl())
+        save_to = os.path.join(external_dir,'raster_labels',filename+".csv")
+        np.savetxt(save_to, final_array, fmt='%d', delimiter=',')
 
 
     @QtCore.Slot(dict, list, int, int, float, float, int, int, str, str, str)
@@ -378,8 +388,9 @@ class Toolbox(QtCore.QObject):
                              'area (cm2)': img_area}
                     
                     stats_list.append(shape_stats)
-
-        with open('./statistics/' + filename + '.csv', 'w') as csvfile:
+        external_dir = self.trimFileUrl(self.getOutUrl())
+        save_to = os.path.join(external_dir,'statistics',filename+".csv")
+        with open(save_to, 'w') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=headers)
             writer.writeheader()
             writer.writerows(stats_list)
