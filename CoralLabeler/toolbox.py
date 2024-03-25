@@ -332,7 +332,7 @@ class Toolbox(QtCore.QObject):
                     rr, cc = polygon(c, r)
                     temp_array[cc, rr] = 1
                     
-                    dilated_coords = ndimage.binary_dilation(temp_array, iterations=paint_size[int(n_shape_order)]).nonzero()
+                    dilated_coords = ndimage.binary_dilation(temp_array, iterations=math.floor(paint_size[int(n_shape_order)]/2)).nonzero()
                     dilated_coords = np.array(dilated_coords).T
                     r = dilated_coords[:, 0]
                     c = dilated_coords[:, 1]
