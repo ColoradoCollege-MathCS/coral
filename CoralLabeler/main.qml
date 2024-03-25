@@ -28,7 +28,7 @@ ApplicationWindow {
 
     property var shapes: []
 
-    property var species: tbox.readCSV("SpeciesList.csv")
+    property var species: tbox.readCSV(tbox.getFileLocation() +"/SpeciesList.csv")
     property var imageSpecies: []
 
     //////////////////////////////////////////////////////////toolbox/////////////////////////////////////////////////////////
@@ -1608,7 +1608,7 @@ ApplicationWindow {
     }
     ////Check if file preferences exist. If not, ask user
     Component.onCompleted: {
-        if (tbox.fileExists("file_config")) {
+        if (tbox.fileExists(tbox.getFileLocation()+"/file_config")) {
             tbox.loadFilePreference()
             saveLocationsPopup.updateText()
         } else {

@@ -28,7 +28,7 @@ Rectangle{
     //function to parse a big array and load all labels if an image has a set of labels
     function loadLabels(imgLoad){
         //load in csv from python function
-        var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
+        var everything = tbox.readCSV(tbox.trimFileUrl(tbox.getTempUrl()) + imgLoad + ".csv");
         //holding dictionaries, arrays, and variables
 
         //holds everything
@@ -165,7 +165,7 @@ Rectangle{
     //function to check if current image has a label file
     function hasLabels(imgsource){
         //console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
-        return tbox.fileExists("labels/" + imgsource + ".csv")
+        return tbox.fileExists(tbox.trimFileUrl(tbox.getTempUrl()) + imgsource + ".csv")
     }
 
     //a function to loop through the current label's shapes and create shapes from coordinates
