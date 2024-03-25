@@ -27,109 +27,115 @@ Rectangle{
     }
     //function to parse a big array and load all labels if an image has a set of labels
     function loadLabels(imgLoad){
-        //load in csv from python function
-        var everything = tbox.readCSV("labels/" + imgLoad + ".csv");
-        //holding dictionaries, arrays, and variables
-
-        //holds everything
-        var labelsAndCoordinates = {};
-        //label names
-        var labelNames1 = new Array(0);
-
-        //all shapes of a label and coordinates, resets after seeing a new label
-        var shapeAndCoordinates = {};
-        //self explanatory
-        var labelAndCol = {};
-        var labelAndS = {};
-        var coordinates = new Array(0);
-
-        //holds label
-        var hold = ""
-        //holds size of each label
-        var shape = 0
-
-        //shape order number
-        var preShapeName = new Array(0);
-
-        //check if we have a paintshape
-        var check = false
-
-
-        //loop through the whole array per line
-        for (var i = 0; i < everything.length; i++){
-            //if we have a label line, make a new label
-            if (everything[i][0] == "Label"){
-                if (coordinates.length == 0){
-                    labelNames1.push(everything[i][1]);
-                    hold = everything[i][1];
-                }
-                else{
-                    shapeAndCoordinates[preShapeName] = coordinates;
-
-                    getOrderLocation(preShapeName, [hold, coordinates])
-
-                    labelsAndCoordinates[hold] = shapeAndCoordinates;
-
-                    labelAndS[hold] = shape
-
-                    shape = 0
-                    shapeAndCoordinates = {};
-                    coordinates = new Array(0);
-
-                    labelNames1.push(everything[i][1]);
-                    hold = everything[i][1];
-                }
-                labelAndCol[everything[i][1]] = ""
-                
-            }
-            //if we have a shape line, make a new shape for the label
-            else if (everything[i][0] == "Shape"){
-                if (coordinates.length == 0){
-                    shape += 1;
-
-                    preShapeName = everything[i][1]
-                }
-                else{
-                    shapeAndCoordinates[preShapeName] = coordinates;
-                    getOrderLocation(preShapeName, [hold, coordinates])
-
-                    preShapeName = everything[i][1]
-
-                    coordinates = new Array(0);
-                    shape += 1;
-                }
-
-                //if paintbrush shape
-                if (everything[i][2] != 'n'){
-                    paintshapes.push([preShapeName, everything[i][2]])
-                    check = true
-                }
-            }
-            //if we have a coordinate line, make a new coordinate for the line
-            else{
-                if(check == true){
-                    paintshapes[paintshapes.length-1].push([everything[i][0], everything[i][1]])
-                    console.log(paintshapes[paintshapes.length-1])
-                    check = false
-                }
-                coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
-            }
-            
+        if(tbox.getTempUrl() == "temp not initialized"){
+            console.log("temp not initialized")
         }
 
+        else{
+            //load in csv from python function
+            var everything = tbox.readCSV(tbox.fixTempUrl(tbox.getTempUrl()) + "/" + imgLoad + ".csv");
+            //holding dictionaries, arrays, and variables
 
-        //reached end, place all items in correct locations
-        shapeAndCoordinates[preShapeName] = coordinates;
+            //holds everything
+            var labelsAndCoordinates = {};
+            //label names
+            var labelNames1 = new Array(0);
 
-        getOrderLocation(preShapeName, [hold, coordinates])
-        labelsAndCoordinates[hold] = shapeAndCoordinates;
-        labelAndS[hold] = shape
+            //all shapes of a label and coordinates, resets after seeing a new label
+            var shapeAndCoordinates = {};
+            //self explanatory
+            var labelAndCol = {};
+            var labelAndS = {};
+            var coordinates = new Array(0);
 
-        //make them global variables
-        win.labelsAndCoords = labelsAndCoordinates
-        win.labelNames = labelNames1
-        win.labelAndColor = labelAndCol
-        win.labelAndSize = labelAndS
+            //holds label
+            var hold = ""
+            //holds size of each label
+            var shape = 0
+
+            //shape order number
+            var preShapeName = new Array(0);
+
+            //check if we have a paintshape
+            var check = false
+
+
+            //loop through the whole array per line
+            for (var i = 0; i < everything.length; i++){
+                //if we have a label line, make a new label
+                if (everything[i][0] == "Label"){
+                    if (coordinates.length == 0){
+                        labelNames1.push(everything[i][1]);
+                        hold = everything[i][1];
+                    }
+                    else{
+                        shapeAndCoordinates[preShapeName] = coordinates;
+
+                        getOrderLocation(preShapeName, [hold, coordinates])
+
+                        labelsAndCoordinates[hold] = shapeAndCoordinates;
+
+                        labelAndS[hold] = shape
+
+                        shape = 0
+                        shapeAndCoordinates = {};
+                        coordinates = new Array(0);
+
+                        labelNames1.push(everything[i][1]);
+                        hold = everything[i][1];
+                    }
+                    labelAndCol[everything[i][1]] = ""
+                    
+                }
+                //if we have a shape line, make a new shape for the label
+                else if (everything[i][0] == "Shape"){
+                    if (coordinates.length == 0){
+                        shape += 1;
+
+                        preShapeName = everything[i][1]
+                    }
+                    else{
+                        shapeAndCoordinates[preShapeName] = coordinates;
+                        getOrderLocation(preShapeName, [hold, coordinates])
+
+                        preShapeName = everything[i][1]
+
+                        coordinates = new Array(0);
+                        shape += 1;
+                    }
+
+                    //if paintbrush shape, get its first coordinates
+                    if (everything[i][2] != 'n'){
+                        paintshapes.push([preShapeName, everything[i][2]])
+                        check = true
+                    }
+                }
+                //if we have a coordinate line, make a new coordinate for the line
+                else{
+                    if(check == true){
+                        paintshapes[paintshapes.length-1].push([everything[i][0], everything[i][1]])
+                        console.log(paintshapes[paintshapes.length-1])
+                        check = false
+                    }
+                    coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
+                }
+                
+            }
+
+
+            //reached end, place all items in correct locations
+            shapeAndCoordinates[preShapeName] = coordinates;
+
+            getOrderLocation(preShapeName, [hold, coordinates])
+            labelsAndCoordinates[hold] = shapeAndCoordinates;
+            labelAndS[hold] = shape
+
+            //make them global variables
+            win.labelsAndCoords = labelsAndCoordinates
+            win.labelNames = labelNames1
+            win.labelAndColor = labelAndCol
+            win.labelAndSize = labelAndS
+        }
     }
 
     //place the location of a shape in an array and return the array in correct order
@@ -165,8 +171,8 @@ Rectangle{
 
     //function to check if current image has a label file
     function hasLabels(imgsource){
-        //console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
-        return tbox.fileExists("labels/" + imgsource + ".csv")
+        console.log(tbox.fileExists("C:/Users/kevin/AppData/Roaming/CoralLabeler"))
+        return tbox.fileExists(tbox.fixTempUrl(tbox.getTempUrl()) + "/" + imgsource + ".csv")
     }
 
     //a function to loop through the current label's shapes and create shapes from coordinates
@@ -249,8 +255,9 @@ Rectangle{
         var check = true
 
 
-        //dictionary stuff
+        //loop through all labels
         for(var f = 0; f < win.labelNames.length; f++){
+            //loop through all the shapes
             for(var i = 0; i < win.shapes.length; i++){
                 //get label
                 if(win.shapes[i].label == win.labelNames[f]){
@@ -267,14 +274,12 @@ Rectangle{
                     //check whether the paintshape is already in the list
                     for(var r = 0; r < paintshapes.length; r++){
                         if(paintshapes[r][0] == i){
+                            //update the original startX and startY
+                            paintshapes[r][2] = [win.shapes[i].child.startX, win.shapes[i].child.startY]
+                            //paint shape is already in the list
                             check = false
                         }
                     }
-
-                    // console.log(paintshapes)
-                    // console.log(i)
-                    // console.log(check)
-                    // console.log(win.shapes[i].shapeType)
 
                     if(win.shapes[i].shapeType == "paint" && check != false){
                         paintshapes.push([i, win.shapes[i].child.strokeWidth, [win.shapes[i].child.startX, win.shapes[i].child.startY]])

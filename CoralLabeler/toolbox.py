@@ -129,6 +129,12 @@ class Toolbox(QtCore.QObject):
         """Returns the path (not url) to the directory containing main.py/main.qml"""
         return dirname
     
+    @QtCore.Slot(str, result = str)
+    def fixTempUrl(self, url):
+        """fixes the url for Windows"""
+        url = url[8:]
+        return url
+    
 
     @QtCore.Slot(str, int, int, int, int, float, float, float, result="QVariantList")
     def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor, threshold):
@@ -181,7 +187,7 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(str, result="QVariantList")
     def readCSV(self, fileName):
-        labelsFile = open(os.path.join(dirname,fileName))
+        labelsFile = open(fileName)
         csvreader = csv.reader(labelsFile)
 
         labels = []
@@ -195,7 +201,8 @@ class Toolbox(QtCore.QObject):
     @QtCore.Slot(dict, str, list, result="QVariantList")
     def saveLabels(self, data, fileName, paintshapes):
         name = ""
-        filename = os.path.join(dirname, 'labels', fileName+'.csv')
+
+        filename = os.path.join(self.temp_url[8:], fileName+'.csv')
         check = False
         paintSize = ''
         paintFirstCoords = []
@@ -214,9 +221,13 @@ class Toolbox(QtCore.QObject):
                             #check for paint shapes
                             for paints in paintshapes:
                                 if shapes == str(paints[0]):
-                                    # print(paints)
+                                    #find the startx and starty coordinates of the shape
                                     paintFirstCoords = paints[2]
+
+                                    #find the size
                                     paintSize = paints[1]
+
+                                    #this is a paint shape
                                     check = True
                             if check == True:
                                 file.write(',' + str(int(paintSize)))

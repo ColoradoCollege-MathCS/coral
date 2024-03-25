@@ -177,20 +177,14 @@ ApplicationWindow {
         return
     }
 
-    //Remove all vertices from previous shape after new button is clicked and add a create Action for the shape
+    //Remove all vertices from previous shape after new button is clicked
     function noMoreVertices(){
-        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
-
-        currAction.shapeParent = overlay
-        currAction.target = imageMouse.shapeCurrent
-
-        act.actionDone(currAction, false)
-
         imageMouse.previousShape = imageMouse.shapeCurrent
         tf.removeVertices(imageMouse.previousShape)
     }
 
     function allToolsOn(){
+        imageMouse.selected = false
         deleteIcon.enabled = true
         lassoSelectIcon.enabled = true
         moveSelectIcon.enabled = true
@@ -533,6 +527,28 @@ ApplicationWindow {
                     fixedMouseY = Math.floor((mouseY - getMouseY()) / overlay.mouseFactorY)             
                 }
 
+                //function to check whether a vertex or mouse click is in the boundary of the image
+                function checkBoundary(vert, mx, my, dx, dy){
+                    if (vert != undefined){
+                        return (vert.papa.x + (mx - dx) <= image.paintedWidth + getMouseX() && 
+                                vert.papa.x + (mx - dx) >= getMouseX() && 
+                                vert.papa.y + (my - dy) >= getMouseY() &&
+                                vert.papa.y + (my - dy) <= image.paintedHeight + getMouseY())
+                    }
+                    else if(vert == undefined && (dx != -100 && dy != -100)){
+                        return ((mx - dx) <= image.paintedWidth + getMouseX() && 
+                                (mx - dx) >= getMouseX() && 
+                                (my - dy) >= getMouseY() &&
+                                (my - dy) <= image.paintedHeight + getMouseY())
+                    }
+                    else{
+                        return ((mx - dx) <= image.paintedWidth + getMouseX() && 
+                                (mx) >= getMouseX() && 
+                                (my) >= getMouseY() &&
+                                (my - dy) <= image.paintedHeight + getMouseY())
+                    }
+                }
+
 
                 onPressed: { 
                     //make sure a label and image is selected
@@ -593,17 +609,28 @@ ApplicationWindow {
                         //paintbrush if held down
                         else if (currentTool == "paintbrush"){
                             
-                            if(comboyuh.currentText != undefined){
-                                g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
-                                    
-                                g.child.strokeWidth = value
+                            if(checkBoundary(undefined, mouseX, mouseY, 0, 0)){
+                                if(comboyuh.currentText != undefined){
+                                    g = paintComp.createObject(overlay, {"label": findLabel(comboyuh.currentText)})
+                                        
+                                    g.child.strokeWidth = value
 
-                                g.child.startX = mouseX
-                                g.child.startY = mouseY
+                                    g.child.startX = mouseX
+                                    g.child.startY = mouseY
 
-                                shapes.push(g)
+                                    shapes.push(g)
 
+                                    print("Coordinate X: " + mouseX)
+                                    print("Coordinate Y: " + mouseY)
+                                    print("StrokeWidth: " + value)
+
+
+                                }
                             }
+                            else{
+                                g = undefined
+                            }
+                            
 
                         }
 
@@ -673,14 +700,63 @@ ApplicationWindow {
                                     previousShape = shapeCurrent
                                     noMoreVertices(previousShape)
                                 }
-                                var newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
-                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
-                                shapes.push(newShape)
 
-                                shapeCurrent = newShape
+                                var newShape = undefined
+                                var theFactorX = undefined
+                                var theFactorY = undefined
 
+                                var defau = true
 
-                                selected = true
+                                if (!checkBoundary(undefined, mouseX, mouseY, -100, -100)){
+                                    if((mouseX + 100) > image.paintedWidth + getMouseX() && (mouseY + 100) > image.paintedHeight + getMouseY()){
+                                        
+                                        theFactorX = image.paintedWidth + getMouseX() - mouseX
+                                        theFactorY = image.paintedHeight + getMouseY() - mouseY
+
+                                        console.log(theFactorX + ", " + theFactorY)
+
+                                    }
+                                    else if ((mouseX + 100) > image.paintedWidth + getMouseX()){
+                                        theFactorX = image.paintedWidth + getMouseX() - mouseX
+                                        console.log(theFactorX + ", " + theFactorY)
+                                    }
+                                    else{
+                                        theFactorY = image.paintedHeight + getMouseY() - mouseY
+                                        console.log(theFactorX + ", " + theFactorY)
+                                    }
+
+                                    defau = false
+                                    
+                                }
+
+                                if(checkBoundary(undefined, mouseX, mouseY, 0, 0)){
+                                    if(theFactorX == undefined){
+                                        theFactorX = 100
+                                    }
+                                    if(theFactorY == undefined){
+                                        theFactorY = 100
+                                    }
+    
+                                    if(defau == false){
+                                        newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY, "factorX": theFactorX, "factorY": theFactorY})
+                                    }
+                                    else{
+                                        newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
+                                    }
+                                    shapes.push(newShape)
+                                    shapeCurrent = newShape
+
+                                    var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+
+                                    currAction.shapeParent = overlay
+                                    currAction.target = imageMouse.shapeCurrent
+
+                                    act.actionDone(currAction, false)
+
+                                    selected = true
+                                }
                             }
 
 
@@ -704,7 +780,7 @@ ApplicationWindow {
                         
                             //check if shape has been selected and mouse is in one of its vertices
                             for(var i = 0; i < shapes.length; i++){
-                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText) && shapeCurrent != undefined){
                                     for(var h = 0; h < shapeCurrent.controls.length; h++){
 
                                         sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
@@ -849,14 +925,34 @@ ApplicationWindow {
 
                     //move shape in path of mouse
                     else if (currentTool == "movetool"){
+                        //variable to say one of the points hit the boundary box
+                        var nuhuh = false
+
+                        //make sure a shape has been selected
                         if(shapeCurrent != undefined){
+
+                            //loop through to see if any point hits the boundary
                             for(var i = 0; i < shapeCurrent.child.pathElements.length; i++){
-                                shapeCurrent.child.pathElements[i].x += (mouseX - dx)
-                                shapeCurrent.child.pathElements[i].y += (mouseY - dy)
+                                if(!checkBoundary(undefined, mouseX + shapeCurrent.child.pathElements[i].x, 
+                                    mouseY + shapeCurrent.child.pathElements[i].y, dx, dy)){
+                                    
+                                    nuhuh = true
+                                }
                     
                             }
-                            shapeCurrent.child.startX += (mouseX - dx)
-                            shapeCurrent.child.startY += (mouseY - dy)
+
+                            //if no point hits a boundary, move it based on the change of mouse movement
+                            if(nuhuh == false){
+                                for(var i = 0; i < shapeCurrent.child.pathElements.length; i++){
+                                    shapeCurrent.child.pathElements[i].x += (mouseX - dx)
+                                    shapeCurrent.child.pathElements[i].y += (mouseY - dy)
+                        
+                                }
+                                shapeCurrent.child.startX += (mouseX - dx)
+                                shapeCurrent.child.startY += (mouseY - dy)
+                            }
+
+                            //will be used to find difference of mouse movement
                             dx = mouseX
                             dy = mouseY
                         }
@@ -864,11 +960,13 @@ ApplicationWindow {
 
                     //draw shape in path of mouse
                     else if (currentTool == "paintbrush"){
-                        if(comboyuh.currentText != undefined) {
-                            tf.drawShape(g, mouseX, mouseY)
+                        if(g != undefined){
+                            if(comboyuh.currentText != undefined) {
+                                if(checkBoundary(undefined, mouseX, mouseY, 0, 0)){
+                                    tf.drawShape(g, mouseX, mouseY)
+                                }
+                            }
                         }
-                        
-
                     }
 
                     //move vertices in square in direction of mouse
@@ -876,17 +974,22 @@ ApplicationWindow {
                         //move pathlines based on circle movement
                         if(controlNum != undefined){
                             if(controlNum == shapeCurrent.controls[0]){
-                                
-                                //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
-                                controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
-                                controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
 
-                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
-                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+                                if(checkBoundary(controlNum, mouseX, mouseY, dx, dy)){
+                                    console.log(getMouseX())
+                                    //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                    controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
+                                    controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+
+                                    shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                    shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+                                }
                             }
                             else{
-                                controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
-                                controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+                                if(checkBoundary(controlNum, mouseX, mouseY, dx, dy)){
+                                    controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
+                                    controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+                                }
                             }
                         }
 
@@ -899,24 +1002,36 @@ ApplicationWindow {
                     else if(currentTool == "vertextool"){
                         //move pathlines based on circle movement
                         if(currentVertex != undefined){
-                            if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1]){
-                                
-                                //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
-                                currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
-                                currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
+                            if(checkBoundary(currentVertex, mouseX, mouseY, dx, dy)){
+                                //for the last vertice, move the startx and starty, but not for paintbrush
+                                if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1] && currentVertex.papa.x == shapeCurrent.child.startX && currentVertex.papa.y == shapeCurrent.child.startY){
+                                    
+                                    //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                    currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
+                                    currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
 
-                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
-                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+                                    shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                    shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
 
-                                currentVertex.x = currentVertex.x + (mouseX - dx)
-                                currentVertex.y = currentVertex.y + (mouseY - dy)
-                            }
-                            else{
-                                currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
-                                currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
+                                    currentVertex.x = currentVertex.x + (mouseX - dx)
+                                    currentVertex.y = currentVertex.y + (mouseY - dy)
+                                }
+                                //for paintbrush, move first startX and starty for first vertex
+                                else if (currentVertex == shapeCurrent.controls[0] && shapeCurrent.controls[shapeCurrent.controls.length-1].x != shapeCurrent.child.startX && shapeCurrent.controls[shapeCurrent.controls.length-1].y != shapeCurrent.child.startY){
+                                    //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                    shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                    shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
 
-                                currentVertex.x = currentVertex.x + (mouseX - dx)
-                                currentVertex.y = currentVertex.y + (mouseY - dy)
+                                    currentVertex.x = currentVertex.x + (mouseX - dx)
+                                    currentVertex.y = currentVertex.y + (mouseY - dy)
+                                }
+                                else{
+                                    currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
+                                    currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
+
+                                    currentVertex.x = currentVertex.x + (mouseX - dx)
+                                    currentVertex.y = currentVertex.y + (mouseY - dy)
+                                }
                             }
                         }
 
@@ -985,19 +1100,20 @@ ApplicationWindow {
 
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
-                        tf.endPaint(g, labelAndColor[g.label])
+                        if(g != undefined){
+                            tf.endPaint(g, labelAndColor[g.label])
 
-                        saveIconButton.enabled = true
-                        refreshLegend()
-                        populateLegend()
+                            saveIconButton.enabled = true
+                            refreshLegend()
+                            populateLegend()
 
-                        var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
-                        
-                        currAction.shapeParent = overlay
-                        currAction.target = g
+                            var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
+                            
+                            currAction.shapeParent = overlay
+                            currAction.target = g
 
-                        act.actionDone(currAction, false)
-
+                            act.actionDone(currAction, false)
+                        }
                     }
 
                     //get last coordinate to make circle, save needs to happen now
