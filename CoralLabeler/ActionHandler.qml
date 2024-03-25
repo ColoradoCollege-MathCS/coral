@@ -133,14 +133,21 @@ QtObject {
                 //temporarily remove all elements in front of it
                 var removedElement;
                 var toPutBack = [];
+                var putBackShapes = [];
                 for (var i = 0; i<curAction.idxInParent; i++) {
+                    console.log(curAction.everything.shapes)
                     toPutBack.push(curAction.shapeParent.data.pop());
+                    putBackShapes.push(curAction.everything.shapes.pop());
                 }
+
                 //insert target
                 curAction.shapeParent.data.push(curAction.target);
+                curAction.everything.shapes.push(curAction.target);
+
                 //put things back
                 for (var i = 0; i<curAction.idxInParent; i++) {
                     curAction.shapeParent.data.push(toPutBack.pop())
+                    curAction.everything.shapes.push(putBackShapes.pop())
                 }
                 break;
             case "MoveAction":

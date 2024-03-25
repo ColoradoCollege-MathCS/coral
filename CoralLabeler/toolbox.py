@@ -136,6 +136,12 @@ class Toolbox(QtCore.QObject):
         """Returns the path (not url) to the directory containing main.py/main.qml"""
         return dirname
     
+    @QtCore.Slot(str, result = str)
+    def fixTempUrl(self, url):
+        """fixes the url for Windows"""
+        url = url[8:]
+        return url
+    
 
     @QtCore.Slot(str, int, int, int, int, float, float, float, result="QVariantList")
     def getPrediction(self, img_path, seedX, seedY, x_coord, y_coord, x_factor, y_factor, threshold):
@@ -222,9 +228,13 @@ class Toolbox(QtCore.QObject):
                             #check for paint shapes
                             for paints in paintshapes:
                                 if shapes == str(paints[0]):
-                                    # print(paints)
+                                    #find the startx and starty coordinates of the shape
                                     paintFirstCoords = paints[2]
+
+                                    #find the size
                                     paintSize = paints[1]
+
+                                    #this is a paint shape
                                     check = True
                             if check == True:
                                 file.write(',' + str(int(paintSize)))
@@ -298,8 +308,8 @@ class Toolbox(QtCore.QObject):
             for shape_num, shape_coords in coords_dict.items():
                 numpy_shapes[label_num][shape_num] = []
                 for coord in shape_coords:
-                    x = math.floor((coord[0] - x_coord) / x_factor)
-                    y  = math.floor((coord[1] - y_coord) / y_factor) 
+                    x = math.floor((coord[0] - x_coord) / x_factor) - 1
+                    y  = math.floor((coord[1] - y_coord) / y_factor) - 1
 
                     numpy_coord = [x, y]
                     numpy_shapes[label_num][shape_num].append(numpy_coord)
