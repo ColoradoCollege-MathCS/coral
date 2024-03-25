@@ -32,6 +32,9 @@ Shape{
     property var mX: 0
     property var mY: 0
 
+    property var factorX: 100
+    property var factorY: 100
+
     property var halfy: (bottomRect.y - topRect.y)/2 + topRect.y
     property var halfx: (rightRect.x - leftRect.x)/2 + leftRect.x
 
@@ -48,9 +51,9 @@ Shape{
         startX: mX
         startY: mY
 
-        PathLine{ id: topRect; x: mX + 100; y: mY}
-        PathLine{ id: rightRect; x: mX + 100; y: mY + 100}
-        PathLine{ id: bottomRect; x: mX; y: mY + 100}
+        PathLine{ id: topRect; x: mX + factorX; y: mY}
+        PathLine{ id: rightRect; x: mX + factorX; y: mY + factorY}
+        PathLine{ id: bottomRect; x: mX; y: mY + factorY}
         PathLine{ id: leftRect; x: mX; y: mY}
 
     }
