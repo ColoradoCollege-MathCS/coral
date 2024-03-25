@@ -31,9 +31,10 @@ Rectangle{
             console.log("temp not initialized")
         }
 
+        
         else{
             //load in csv from python function
-            var everything = tbox.readCSV(tbox.fixTempUrl(tbox.getTempUrl()) + "/" + imgLoad + ".csv");
+            var everything = tbox.readCSV(tbox.trimFileUrl(tbox.getTempUrl())+ "/" + imgLoad + ".csv");
             //holding dictionaries, arrays, and variables
 
             //holds everything
@@ -171,8 +172,8 @@ Rectangle{
 
     //function to check if current image has a label file
     function hasLabels(imgsource){
-        console.log(tbox.fileExists("C:/Users/kevin/AppData/Roaming/CoralLabeler"))
-        return tbox.fileExists(tbox.fixTempUrl(tbox.getTempUrl()) + "/" + imgsource + ".csv")
+        //console.log((tbox.trimFileUrl(tbox.getTempUrl()) + imgsource + ".csv"))
+        return tbox.fileExists(tbox.trimFileUrl(tbox.getTempUrl()) + "/" + imgsource + ".csv")
     }
 
     //a function to loop through the current label's shapes and create shapes from coordinates

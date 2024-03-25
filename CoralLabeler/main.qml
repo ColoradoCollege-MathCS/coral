@@ -1789,7 +1789,7 @@ ApplicationWindow {
     }
     ////Check if file preferences exist. If not, ask user
     Component.onCompleted: {
-        if (tbox.fileExists("file_config")) {
+        if (tbox.fileExists(tbox.getFileLocation()+"/file_config")) {
             tbox.loadFilePreference()
             saveLocationsPopup.updateText()
         } else {
