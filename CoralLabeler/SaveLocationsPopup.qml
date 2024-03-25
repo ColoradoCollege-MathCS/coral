@@ -93,7 +93,7 @@ import QtQuick.Dialogs
     }
 
     onRejected: {
-        if (!tbox.fileExists("file_config")) {
+        if (!tbox.fileExists(tbox.getFileLocation()+"/file_config")) {
             //if user cancelled but no value exists, choose defaults
             tbox.saveFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
             var result = tbox.initFilePreference(StandardPaths.writableLocation(StandardPaths.AppDataLocation), StandardPaths.writableLocation(StandardPaths.DocumentsLocation) + "/CoralLabeler")
