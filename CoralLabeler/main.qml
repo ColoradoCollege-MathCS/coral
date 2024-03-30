@@ -132,17 +132,19 @@ ApplicationWindow {
 
 
     function ellipseComponent(){
-
         //create a QML component from shapes.qml
         const component = Qt.createComponent("ellipseSelect.qml");
+        print(component)
+        print(component.status)
+        print(Component.Ready)
 
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-
+           
             return component
         }
-        else if (component.status === Component.Error){
+        else if (component.status === Component.Error){       
             console.log(component.errorString())
         }
         return
@@ -599,10 +601,75 @@ ApplicationWindow {
 
                         //if circle is held down, record those coordinates
                         else if (currentTool == "circleselect"){
-                            fixMouse(image)
+
+                                
+                                fixMouse(image)
+
+                            //variable to solve shape + radius
+                            var sizex = 0
+                            var sizey = 0
+                            
+
+                            for(var i = 0; i < shapes.length; i++){
+                                if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
+                                    if(shapeCurrent == shapes[i]){
+                                        selected = true
+                                    }
+                                    
+                                }
+                            }
+
+
+                            //get what circle was selected
+                            if(selected == true){
+                                for(var h = 0; h < shapeCurrent.controls.length; h++){
+
+                                    sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
+                                    sizey = shapeCurrent.controls[h].y + shapeCurrent.controls[h].radius
+                                    
+                                    if(shapeCurrent.controls[h].x < mouseX && sizex > mouseX
+                                    && shapeCurrent.controls[h].y < mouseY && sizey > mouseY){
+                                        controlNum = shapeCurrent.controls[h]
+
+                                    }
+                                }
+                            }
+
+                            //make new shape if no shape was selected
+                            else{
+                                if (shapeCurrent != undefined){
+                                    previousShape = shapeCurrent
+                                    noMoreVertices(previousShape)
+                                }
+                                var newShape = ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
+                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
+                                shapes.push(newShape)
+
+                                shapeCurrent = newShape
+
+
+                                selected = true
+                            }
+
+
+                            dx = mouseX
+                            ogx = mouseX
+                            dy = mouseY
+                            ogy = mouseY
+
+                            refreshLegend()
+                            populateLegend()
+
+                            selected = false
+
+
+
+                            /*fixMouse(image)
 
                             holdedx = fixedMouseX
                             holdedy = fixedMouseY
+
+
 
                             for(var i = 0; i < 2; i++){
                                 console.log(labelAndColor[i])
@@ -613,8 +680,7 @@ ApplicationWindow {
                             refreshLegend()
                             populateLegend()
 
-                            for(var i = 0; i < 2; i++){
-    log(labelAndColor[i])
+                            for(var i = 0; i < 2; i++){log(labelAndColor[i])
                             }
                             
 
@@ -622,7 +688,7 @@ ApplicationWindow {
                             "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
 
                             tf.removeVertices(shapeCurrent)
-
+                        */
                         }
 
                         //if square is held down, record those coordinates
@@ -823,6 +889,32 @@ ApplicationWindow {
                         dy = mouseY
                         
                     }
+
+
+                     else if(currentTool == "circleselect"){
+                        //move pathlines based on circle movement
+                        if(controlNum != undefined){
+                            if(controlNum == shapeCurrent.controls[0]){
+                                
+                                //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
+                                controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+
+                                shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
+                                shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
+                            }
+                            else{
+                                controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
+                                controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
+                            }
+                        }
+
+                        dx = mouseX
+                        dy = mouseY
+                        
+                    }
+
+
 
                     //move the selected vertice if there is one
                     else if(currentTool == "vertextool"){
