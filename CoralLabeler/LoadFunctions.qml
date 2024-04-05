@@ -5,7 +5,6 @@ import QtQuick.Dialogs
 import QtQuick.Layouts 
 import QtQuick.Shapes
 import Qt.labs.folderlistmodel
-
 Rectangle{
     width: 0
     height: 0
@@ -14,9 +13,6 @@ Rectangle{
 
     property var win: null
     property var shapesInOrder: []
-
-    //which shapes are paintshapes
-    property var paintshapes: []
 
     function resetLabels(){
         win.labelsAndCoords = {}
@@ -28,31 +24,18 @@ Rectangle{
     //function to parse a big array and load all labels if an image has a set of labels
     function loadLabels(imgLoad){
         //load in csv from python function
-        var everything = tbox.readCSV(tbox.trimFileUrl(tbox.getTempUrl()) + imgLoad + ".csv");
+        var everything = tbox.readCSV(tbox.trimFileUrl(tbox.getTempUrl()) + '/' + imgLoad + ".csv");
         //holding dictionaries, arrays, and variables
-
-        //holds everything
         var labelsAndCoordinates = {};
-        //label names
         var labelNames1 = new Array(0);
-
-        //all shapes of a label and coordinates, resets after seeing a new label
         var shapeAndCoordinates = {};
-        //self explanatory
         var labelAndCol = {};
         var labelAndS = {};
         var coordinates = new Array(0);
-
-        //holds label
         var hold = ""
-        //holds size of each label
         var shape = 0
 
-        //shape order number
-        var preShapeName = new Array(0);
-
-        //check if we have a paintshape
-        var check = false
+        var preShapeName = ""
 
 
         //loop through the whole array per line
@@ -98,20 +81,9 @@ Rectangle{
                     coordinates = new Array(0);
                     shape += 1;
                 }
-
-                //if paintbrush shape
-                if (everything[i][2] != 'n'){
-                    paintshapes.push([preShapeName, everything[i][2]])
-                    check = true
-                }
             }
             //if we have a coordinate line, make a new coordinate for the line
             else{
-                if(check == true){
-                    paintshapes[paintshapes.length-1].push([everything[i][0], everything[i][1]])
-                    console.log(paintshapes[paintshapes.length-1])
-                    check = false
-                }
                 coordinates.push([parseInt(everything[i][0]), parseInt(everything[i][1])]);
             }
             
@@ -120,7 +92,6 @@ Rectangle{
 
         //reached end, place all items in correct locations
         shapeAndCoordinates[preShapeName] = coordinates;
-
         getOrderLocation(preShapeName, [hold, coordinates])
         labelsAndCoordinates[hold] = shapeAndCoordinates;
         labelAndS[hold] = shape
@@ -165,62 +136,32 @@ Rectangle{
     //function to check if current image has a label file
     function hasLabels(imgsource){
         //console.log(tbox.fileExists("labels/" + imgsource + ".csv"))
-        return tbox.fileExists(tbox.trimFileUrl(tbox.getTempUrl()) + imgsource + ".csv")
+        return tbox.fileExists(tbox.trimFileUrl(tbox.getTempUrl()) + "/" + imgsource + ".csv")
     }
 
     //a function to loop through the current label's shapes and create shapes from coordinates
-    function loopy(comp, label, shapeNum, brushSize){
-        var thisShape = comp.createObject(overlay, {"coords": win.labelsAndCoords[label][shapeNum], "label": label});
-
+    function loopy(comp, label, shapeNum){
         if(win.labelAndColor[label] != ""){
-            thisShape.color = win.labelAndColor[label]
-            thisShape.colorline = win.labelAndColor[label]
+            win.shapes.push(comp.createObject(overlay, {"coords": win.labelsAndCoords[label][shapeNum], "label": label, 
+            "color": win.labelAndColor[label], "colorline": win.labelAndColor[label]}));
         }
         else{
             var color = Qt.rgba(Math.random(),Math.random(),Math.random(),1);
             win.labelAndColor[label] = color
-            thisShape.color = color
-            thisShape.colorline = color
+            win.shapes.push(comp.createObject(overlay, {"coords": win.labelsAndCoords[label][shapeNum], "label": label, 
+            "color": color, "colorline": color}));
         }
-
-        if (brushSize != -1){
-            thisShape.child.strokeWidth = brushSize
-            thisShape.child.fillColor = "transparent"
-            thisShape.shapeType = "paint"
-        }
-
-        win.shapes.push(thisShape)
-
     }
 
     //a function to display shapes
     function loadShapes(){
-        var check = false
-        var index = -1
         //create a QML component from shapes.qml
         const component = Qt.createComponent("shapes.qml");
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
             for(var i = 0; i < shapesInOrder.length; i++){
-                //check if it is a painted shape
-                for(var f = 0; f < paintshapes.length; f++){
-                    if(i == paintshapes[f][0]){
-                        index = f
-                        check = true
-                    }
-                }
-
-                //draw painted shape
-                if(check == true){
-                    loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], paintshapes[index][1])
-                }
-                else{
-                    loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0], -1)
-                }
-
-                //reset check
-                check = false
+                loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0])
             }
         }
         else if (component.status === Component.Error){
@@ -234,7 +175,6 @@ Rectangle{
         }
         win.shapes = []
         shapesInOrder = []
-        paintshapes = []
     }
 
 
@@ -244,9 +184,7 @@ Rectangle{
         var holdDict = {};
         var hold = [];
 
-        var count = 0
-        var check = true
-
+        var count = 0;
 
         //dictionary stuff
         for(var f = 0; f < win.labelNames.length; f++){
@@ -262,24 +200,6 @@ Rectangle{
                     holdDict[i] = hold;
 
                     hold = []
-
-                    //check whether the paintshape is already in the list
-                    for(var r = 0; r < paintshapes.length; r++){
-                        if(paintshapes[r][0] == i){
-                            check = false
-                        }
-                    }
-
-                    // console.log(paintshapes)
-                    // console.log(i)
-                    // console.log(check)
-                    // console.log(win.shapes[i].shapeType)
-
-                    if(win.shapes[i].shapeType == "paint" && check != false){
-                        paintshapes.push([i, win.shapes[i].child.strokeWidth, [win.shapes[i].child.startX, win.shapes[i].child.startY]])
-                    }
-
-                    check = true
 
                 }
             }

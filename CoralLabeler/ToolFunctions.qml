@@ -29,8 +29,95 @@ Rectangle{
         yuh.child.strokeColor = color;
     }
 
-    function endPaint(yuh, color){
-        yuh.child.strokeColor = color;
+    function endPaint(yuh, color, toolbox){
+        var strWidth = 0
+        var newShapePath = []
+        var up = []
+        var down = []
+
+        yuh.data[0].strokeColor = color;
+        strWidth = yuh.data[0].strokeWidth
+
+        yuh.data[0].strokeWidth = 1
+
+
+        var angle = 0
+        for(var i = 0; i < yuh.data[0].pathElements.length - 1; i++){
+            var tanx = yuh.data[0].pathElements[i + 1].x - yuh.data[0].pathElements[i].x
+            var tany = yuh.data[0].pathElements[i + 1].y - yuh.data[0].pathElements[i].y
+
+            angle = Math.atan(tanx/tany)
+
+
+            var pointup = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', yuh.data[0])
+
+            if(tanx >= 0 && tany <= 0){
+                pointup.x = yuh.data[0].pathElements[i + 1].x - (strWidth/2) * Math.cos(Math.abs(angle))
+                pointup.y = yuh.data[0].pathElements[i + 1].y - (strWidth/2) * Math.sin(Math.abs(angle))
+            }
+            else if(tanx > 0 && tany > 0){
+                pointup.x = yuh.data[0].pathElements[i + 1].x + (strWidth/2) * Math.cos(angle)
+                pointup.y = yuh.data[0].pathElements[i + 1].y - (strWidth/2) * Math.sin(angle)
+            }
+            else if(tanx < 0 && tany < 0){
+                pointup.x = yuh.data[0].pathElements[i + 1].x - (strWidth/2) * Math.cos(angle)
+                pointup.y = yuh.data[0].pathElements[i + 1].y + (strWidth/2) * Math.sin(angle)
+            }
+            else{
+                pointup.x = yuh.data[0].pathElements[i + 1].x + (strWidth/2) * Math.cos(Math.abs(angle))
+                pointup.y = yuh.data[0].pathElements[i + 1].y + (strWidth/2) * Math.sin(Math.abs(angle))
+            }
+
+            var pointdown = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', yuh.data[0])
+
+            if(tanx >= 0 && tany <= 0){
+                pointdown.x = yuh.data[0].pathElements[i + 1].x + ((strWidth/2) * Math.cos(Math.abs(angle)))
+                pointdown.y = yuh.data[0].pathElements[i + 1].y + ((strWidth/2) * Math.sin(Math.abs(angle)))
+            }
+            else if(tanx > 0 && tany > 0){
+                pointdown.x = yuh.data[0].pathElements[i + 1].x - ((strWidth/2) * Math.cos(angle))
+                pointdown.y = yuh.data[0].pathElements[i + 1].y + ((strWidth/2) * Math.sin(angle))
+            }
+            else if(tanx < 0 && tany < 0){
+                pointdown.x = yuh.data[0].pathElements[i + 1].x + ((strWidth/2) * Math.cos(angle))
+                pointdown.y = yuh.data[0].pathElements[i + 1].y - ((strWidth/2) * Math.sin(angle))
+            }
+            else{
+                pointdown.x = yuh.data[0].pathElements[i + 1].x - ((strWidth/2) * Math.cos(Math.abs(angle)))
+                pointdown.y = yuh.data[0].pathElements[i + 1].y - ((strWidth/2) * Math.sin(Math.abs(angle)))
+            }
+            
+
+            up.push(pointup)
+            down.push(pointdown)
+        }
+
+        up.push(yuh.data[0].pathElements[yuh.data[0].pathElements.length - 1])
+
+        var reversedDown = []
+        for(var g = down.length-1; g >= 0; g--){
+            reversedDown.push(down[g])
+        }
+        var finalPoint = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', yuh.data[0])
+        finalPoint.x = yuh.data[0].startX
+        finalPoint.y = yuh.data[0].startY
+        reversedDown.push(finalPoint)
+
+        for(var e = 0; e < reversedDown.length; e++){
+            up.push(reversedDown[e])
+        }
+
+        var num = yuh.data[0].pathElements.length
+
+        for(var f = 0; f <= num; f++){
+            yuh.data[0].pathElements.pop()
+        }
+
+        for(var t = 0; t < up.length; t++){
+            yuh.data[0].pathElements.push(up[t])
+        }
+
+        yuh.data[0].fillColor = color
 
     }
 
@@ -54,11 +141,6 @@ Rectangle{
         var vertices = []
 
         const component = Qt.createComponent("vertex.qml");
-
-        //check if theres a paint element to put vertice at the start
-        if(shape.shapeType == "paint"){
-            vertices.push(component.createObject(shape, {"x": shape.child.startX - 10, "y": shape.child.startY - 10, "papa": shape.child.pathElements[0]}))
-        }
 
         for(var i = 0; i < shape.child.pathElements.length; i++){
             var pathy = shape.child.pathElements[i]
@@ -102,16 +184,9 @@ Rectangle{
             pl.y = points[i][1]
             sp.pathElements.push(pl)
         }
-        if (curShape.shapeType != "paint") {
-            //console.log("yuh")
-            var pl = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', sp)
-            pl.x = points[points.length-1][0]
-            pl.y = points[points.length-1][1]
-            sp.pathElements.push(pl)
-        }
-        else{
-            sp.pathElements.pop()
-        }
+
+        sp.pathElements.pop()
+        
 
     }
 }

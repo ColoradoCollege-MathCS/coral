@@ -25,6 +25,14 @@ class Actions(QObject):
     def shapeParent(self, shapeParent):
         self._shapeParent = shapeParent
 
+    @Property(QObject, doc="The entire window in order to get shape list")
+    def everything(self):
+        return self._everything
+    
+    @everything.setter
+    def everything(self, _everything):
+        self._everything = _everything
+
     @Property(str, doc="The string representation of the class name")
     def typeString(self):
         return self._typeString
@@ -65,10 +73,11 @@ class CreateAction(Actions) :
 @QmlElement
 class DeleteAction(Actions) :
     """This action deletes a specified shape"""
-    def __init__(self,parent=None, shapeParent=None, target=None):
+    def __init__(self,parent=None, shapeParent=None, target=None, shapeIndex = None):
         super().__init__(parent)
         self._target = target
         self._shapeParent = shapeParent
+        self._idxInParent = shapeIndex
         self._typeString = "DeleteAction"
 
 
