@@ -282,8 +282,9 @@ class Toolbox(QtCore.QObject):
         return numpy_shapes
     
 
-    @QtCore.Slot(dict, int, int, float, float, int, int, str, list)
-    def saveRasters(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename, paintshapes):
+    @QtCore.Slot(dict, int, int, float, float, int, int, str)
+    def saveRasters(self, coords, x_coord, y_coord, x_factor, y_factor, img_width, img_height, filename):
+
         # get the shape and vertices coords as numpy coords
         numpy_shapes = self.toPixels(coords, x_coord, y_coord, x_factor, y_factor)
 
@@ -294,42 +295,19 @@ class Toolbox(QtCore.QObject):
                 ordered_shape[order_num] = {label_id: shape_coords}
         ordered_shape = dict(sorted(ordered_shape.items()))
 
-        # get brush size of painted shapes
-        paint_size = {}
-        for paintshape in paintshapes:
-            paint_size[int(paintshape[0])] = int(paintshape[1])
-
         # make polygons out of coordinates,
         # rasterize shapes into numpy in order
         final_array = np.zeros((img_height, img_width))
         for n_shape_order, n_coords_dict in ordered_shape.items():
             for n_label_id, n_shape_coords in n_coords_dict.items():
-                # if shape is paint, raterize based on brush size
-                if int(n_shape_order) in paint_size.keys():
-                    temp_array = np.zeros((img_height, img_width))
-
-                    r = n_shape_coords[:, 0]
-                    c = n_shape_coords[:, 1]
-                    rr, cc = polygon(c, r)
-                    temp_array[cc, rr] = 1
-                    
-                    dilated_coords = ndimage.binary_dilation(temp_array, iterations=math.floor(paint_size[int(n_shape_order)]/2)).nonzero()
-                    dilated_coords = np.array(dilated_coords).T
-                    r = dilated_coords[:, 0]
-                    c = dilated_coords[:, 1]
-
-                else:
-                    r = n_shape_coords[:, 0]
-                    c = n_shape_coords[:, 1]
-                
+                r = n_shape_coords[:, 0]
+                c = n_shape_coords[:, 1]
                 rr, cc = polygon(c, r)
                 final_array[rr, cc] = n_label_id
 
         # save to csv file
-        external_dir = self.trimFileUrl(self.getOutUrl())
-        save_to = os.path.join(external_dir,'raster_labels',filename+".csv")
-        np.savetxt(save_to, final_array, fmt='%d', delimiter=',')
-
+        np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
+        
 
     @QtCore.Slot(dict, list, int, int, float, float, int, int, str, str, str)
     def saveStats(self, coords, specs_list, x_coord, y_coord, x_factor, y_factor, img_p_width, img_p_height, filename, imgWS, imgHS):

@@ -329,7 +329,7 @@ ApplicationWindow {
                     saveRasterIconButton.enabled = false
                     // lf.updateLabelsAndCoords()
                     // tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
-                    tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
+                    tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                 }
                     
             }
@@ -1188,7 +1188,7 @@ ApplicationWindow {
                             dy = mouseY - ogy
                             
                             saveIconButton.enabled = true
-                            aveRasterIconButton.enabled = true
+                            saveRasterIconButton.enabled = true
 
                             var currAction = Qt.createQmlObject("import Actions; MoveAction{}", this)
                             currAction.dX = dx
@@ -1208,7 +1208,7 @@ ApplicationWindow {
                     //just not that the save needs to happen now
                     else if (currentTool == "magicwand"){
                         saveIconButton.enabled = true
-                        aveRasterIconButton.enabled = true
+                        saveRasterIconButton.enabled = true
                     }
 
                     //tell timer to stop and save needs to happen now
@@ -1220,7 +1220,7 @@ ApplicationWindow {
                             dy = 0
 
                             saveIconButton.enabled = true
-                            aveRasterIconButton.enabled = true
+                            saveRasterIconButton.enabled = true
                             refreshLegend()
                             populateLegend()
 
@@ -1263,7 +1263,6 @@ ApplicationWindow {
                     if (currentTool != "vertextool" && currentTool != ""){
                         redoAction.enabled = act.actToRedo()
                         undoAction.enabled = true
-                        saveRasterIconButton.enabled = true
                     }
                 }
             }
