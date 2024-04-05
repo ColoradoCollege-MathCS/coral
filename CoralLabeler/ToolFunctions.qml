@@ -48,8 +48,6 @@ Rectangle{
 
             angle = Math.atan(tanx/tany)
 
-            //print(angle)
-
 
             var pointup = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', yuh.data[0])
 
@@ -120,8 +118,6 @@ Rectangle{
         }
 
         yuh.data[0].fillColor = color
-
-        //simplify(yuh, 3, toolbox)
 
     }
 

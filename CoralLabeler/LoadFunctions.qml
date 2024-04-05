@@ -160,7 +160,6 @@ Rectangle{
         //make sure component works properly
         if (component.status === Component.Ready) {
             //make shapes
-            print(shapesInOrder)
             for(var i = 0; i < shapesInOrder.length; i++){
                 loopy(component, shapesInOrder[i][1][0], shapesInOrder[i][0])
             }
