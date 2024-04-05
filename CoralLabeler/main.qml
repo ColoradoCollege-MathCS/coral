@@ -28,7 +28,7 @@ ApplicationWindow {
 
     property var shapes: []
 
-    property var species: tbox.readCSV("SpeciesList.csv")
+    property var species: tbox.readCSV(tbox.getFileLocation() + "/" + "SpeciesList.csv")
     property var imageSpecies: []
 
     //////////////////////////////////////////////////////////toolbox/////////////////////////////////////////////////////////
@@ -307,7 +307,7 @@ ApplicationWindow {
                         saveIconButton.enabled = false
                         
                         lf.updateLabelsAndCoords()
-                        tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
+                        tbox.saveLabels(labelsAndCoords, lf.split(image.source))
                         tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
                     }
                     
@@ -619,10 +619,6 @@ ApplicationWindow {
                                     g.child.startY = mouseY
 
                                     shapes.push(g)
-
-                                    print("Coordinate X: " + mouseX)
-                                    print("Coordinate Y: " + mouseY)
-                                    print("StrokeWidth: " + value)
 
 
                                 }
@@ -962,8 +958,11 @@ ApplicationWindow {
                     else if (currentTool == "paintbrush"){
                         if(g != undefined){
                             if(comboyuh.currentText != undefined) {
-                                if(checkBoundary(undefined, mouseX, mouseY, 0, 0)){
+                                if(checkBoundary(undefined, mouseX, mouseY, 0, 0) && 
+                                ((mouseX - dx > 10 || mouseX - dx < -10) || (mouseY - dy > 10 || mouseY - dy < -10))){
                                     tf.drawShape(g, mouseX, mouseY)
+                                    dx = mouseX
+                                    dy = mouseY
                                 }
                             }
                         }
@@ -1101,7 +1100,10 @@ ApplicationWindow {
                     //tell timer to stop and save needs to happen now
                     else if (currentTool == "paintbrush"){
                         if(g != undefined){
-                            tf.endPaint(g, labelAndColor[g.label])
+                            tf.endPaint(g, labelAndColor[g.label], tbox)
+
+                            dx = 0
+                            dy = 0
 
                             saveIconButton.enabled = true
                             refreshLegend()

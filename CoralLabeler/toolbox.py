@@ -205,63 +205,26 @@ class Toolbox(QtCore.QObject):
         return labels
     
 
-    @QtCore.Slot(dict, str, list, result="QVariantList")
-    def saveLabels(self, data, fileName, paintshapes):
+    @QtCore.Slot(dict, str, result="QVariantList")
+    def saveLabels(self, data, fileName):
         name = ""
         external_dir = self.trimFileUrl(self.getTempUrl())
         filename = os.path.join(external_dir, fileName+'.csv')
-        check = False
-        paintSize = ''
-        paintFirstCoords = []
         with open(filename, 'w') as file:
-            #get all labels
             for keys in data.keys():
-                #make sure label has at least one shape
-                if len(data[keys]) != 0:
-                    file.write('Label'+',' + keys)
-                    file.write('\n')
-
-                    #get all shapes
-                    for shapes in data[keys].keys():
-                            file.write('Shape' + ',' + shapes)
-
-                            #check for paint shapes
-                            for paints in paintshapes:
-                                if shapes == str(paints[0]):
-                                    #find the startx and starty coordinates of the shape
-                                    paintFirstCoords = paints[2]
-
-                                    #find the size
-                                    paintSize = paints[1]
-
-                                    #this is a paint shape
-                                    check = True
-                            if check == True:
-                                file.write(',' + str(int(paintSize)))
-                            else:
-                                file.write(',n')
-
-                            file.write('\n')
-
-                            #write all coords of a shape
-                            for coord in range(len(data[keys][shapes])):
-                                if check == False:
-                                    if coord == 0:
-                                        file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))
-                                        file.write('\n')
-                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
-                                    else:
-                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
-                                else:
-                                    if coord == 0:
-                                        file.write(str(int(paintFirstCoords[0])) + ',' + str(int(paintFirstCoords[1])))
-                                        file.write('\n')
-                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
-                                    else:
-                                        file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                file.write('Label'+',' + keys)
+                file.write('\n')
+                for shapes in data[keys].keys():
+                        file.write('Shape' + ',' + shapes)
+                        file.write('\n')
+                        for coord in range(len(data[keys][shapes])):
+                            if coord == 0:
+                                file.write(str(int(data[keys][shapes][len(data[keys][shapes])-1][0])) + ',' + str(int(data[keys][shapes][len(data[keys][shapes])-1][1])))
                                 file.write('\n')
-
-                            check = False
+                                file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                            else:
+                                file.write(str(int(data[keys][shapes][coord][0])) + ',' + str(int(data[keys][shapes][coord][1])))
+                            file.write('\n')
         
         file.close()
 
