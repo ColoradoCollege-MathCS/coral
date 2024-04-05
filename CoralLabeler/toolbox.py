@@ -151,7 +151,7 @@ class Toolbox(QtCore.QObject):
         elif sys.platform == 'win32':
             img_path = img_path[8:]
         
-        polygon = blob_ML(img_path, (seedX, seedY), threshold)
+        polygon = blob_ML(img_path, (seedX-1, seedY-1), threshold)
 
         scaled_polygon = []
         for vert in polygon:
@@ -313,7 +313,7 @@ class Toolbox(QtCore.QObject):
                     rr, cc = polygon(c, r)
                     temp_array[cc, rr] = 1
                     
-                    dilated_coords = ndimage.binary_dilation(temp_array, iterations=paint_size[int(n_shape_order)]).nonzero()
+                    dilated_coords = ndimage.binary_dilation(temp_array, iterations=math.floor(paint_size[int(n_shape_order)]/2)).nonzero()
                     dilated_coords = np.array(dilated_coords).T
                     r = dilated_coords[:, 0]
                     c = dilated_coords[:, 1]

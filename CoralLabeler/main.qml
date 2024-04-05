@@ -294,7 +294,7 @@ ApplicationWindow {
             }
                    
 
-            //save button
+            //save labels button
             Button {
                 id:saveIconButton
                 Layout.preferredWidth: 50
@@ -309,11 +309,29 @@ ApplicationWindow {
                         saveIconButton.enabled = false
                         
                         lf.updateLabelsAndCoords()
-                        tbox.saveLabels(labelsAndCoords, lf.split(image.source))
-                        tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
+
+                        tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
+                        // tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
                     }
                     
                 }
+            }
+
+            //save raster button
+            Button {
+                id:saveRasterIconButton
+                Layout.preferredWidth: 50
+                Layout.preferredHeight: 50
+                enabled: false
+                icon.source: "icons/save.png"     
+                        
+                onClicked: {
+                    saveRasterIconButton.enabled = false
+                    // lf.updateLabelsAndCoords()
+                    // tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
+                    tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
+                }
+                    
             }
 
             //slider value for opacity of mask
@@ -622,7 +640,6 @@ ApplicationWindow {
 
                                     shapes.push(g)
 
-
                                 }
                             }
                             else{
@@ -841,7 +858,7 @@ ApplicationWindow {
                         else if(currentTool == "vertextool"){
                             //check if shape has already been selected
                             var no = false
-                        
+                            print(currentTool, shapeCurrent)
                             //check if shape has been selected and mouse is in one of its vertices
                             for(var i = 0; i < shapes.length; i++){
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText) && shapeCurrent != undefined){
@@ -1153,6 +1170,7 @@ ApplicationWindow {
                         populateLegend()
 
                         saveIconButton.enabled = true
+                        saveRasterIconButton.enabled = true
 
                         var currAction = Qt.createQmlObject("import Actions; CreateAction{}", this)
                         
@@ -1170,6 +1188,7 @@ ApplicationWindow {
                             dy = mouseY - ogy
                             
                             saveIconButton.enabled = true
+                            aveRasterIconButton.enabled = true
 
                             var currAction = Qt.createQmlObject("import Actions; MoveAction{}", this)
                             currAction.dX = dx
@@ -1189,6 +1208,7 @@ ApplicationWindow {
                     //just not that the save needs to happen now
                     else if (currentTool == "magicwand"){
                         saveIconButton.enabled = true
+                        aveRasterIconButton.enabled = true
                     }
 
                     //tell timer to stop and save needs to happen now
@@ -1200,6 +1220,7 @@ ApplicationWindow {
                             dy = 0
 
                             saveIconButton.enabled = true
+                            aveRasterIconButton.enabled = true
                             refreshLegend()
                             populateLegend()
 
@@ -1217,6 +1238,7 @@ ApplicationWindow {
                         fixMouse(image)
 
                         saveIconButton.enabled = true
+                        saveRasterIconButton.enabled = true
                     }
 
                     //get last coordinate to make square, save needs to happen now
@@ -1224,20 +1246,24 @@ ApplicationWindow {
                         fixMouse(image)
 
                         saveIconButton.enabled = true
+                        saveRasterIconButton.enabled = true
                     }
 
                     else if (currentTool == "vertextool"){
                         saveIconButton.enabled = true
+                        saveRasterIconButton.enabled = true
                     }
 
                     else if (currentTool == "deletetool"){
                         saveIconButton.enabled = true
+                        saveRasterIconButton.enabled = true
                     }
 
 
                     if (currentTool != "vertextool" && currentTool != ""){
                         redoAction.enabled = act.actToRedo()
                         undoAction.enabled = true
+                        saveRasterIconButton.enabled = true
                     }
                 }
             }
