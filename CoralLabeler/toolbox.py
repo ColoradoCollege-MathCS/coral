@@ -151,7 +151,7 @@ class Toolbox(QtCore.QObject):
         elif sys.platform == 'win32':
             img_path = img_path[8:]
         
-        polygon = blob_ML(img_path, (seedX, seedY), threshold)
+        polygon = blob_ML(img_path, (seedX-1, seedY-1), threshold)
 
         scaled_polygon = []
         for vert in polygon:

@@ -10,25 +10,15 @@ import numpy as np
 
 
 def blob_ML(img_path, seed, threshold):
-    # import module and functions as defined in config file
+    # import module and pipeline as defined in config file
     module = importlib.import_module(config.module_name)
-    transform_img = getattr(module, config.pipeline[0])
-    get_fm = getattr(module, config.pipeline[1])
-    process_output = getattr(module, config.pipeline[2])
+    get_pred = getattr(module, config.pipeline)
 
-    # transform image, return PyTorch Tensor
-    img = transform_img(img_path)
-
-    # extract Pytorch model intermediate layer output, 
-    # return numpy ndarray same WxH as image
-    ext_fm = get_fm(img)
-
-    # given a seed pixel (x,y),
-    # perform segmentation using Pytorch model intermediate layer output,
-    # return numpy 1D boolean array 
-    blob = process_output(ext_fm, seed)
+    # given a seed pixel and an image path
+    # get AI area of interest prediction 
+    blob = get_pred(img_path, seed)
     
-    # get polygon from numpy 1D boolean array
+    # get polygon from numpy 2D boolean array
     shape = find_boundaries(blob, mode='inner')
     contours, hierarchy = cv2.findContours((shape * 255).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours) > 0:

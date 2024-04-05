@@ -58,8 +58,25 @@ def get_fm(img):
 
 
 def process_output(fm, seed):
+    # upsample array back to original image size
     max_pool_chnls = np.max(fm, 0)
 
+    # use glood algorithm to perform segmentation 
     blob = flood(max_pool_chnls, seed, tolerance=0.05)
     
+    return blob
+
+
+def default_pred(img_path, seed):
+    # transform image, return PyTorch Tensor
+    img = transform_img(img_path)
+
+    # extract Pytorch model intermediate layer output, 
+    ext_fm = get_fm(img)
+
+    # given a seed pixel (x,y),
+    # perform segmentation using Pytorch model intermediate layer output,
+    # return numpy 2D boolean array w/ original image WxH 
+    blob = process_output(ext_fm, seed)
+
     return blob
