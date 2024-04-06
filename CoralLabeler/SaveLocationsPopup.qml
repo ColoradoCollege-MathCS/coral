@@ -54,6 +54,7 @@ import QtQuick.Dialogs
         Text {
             text: "Location to save shape definitions, which let you resume working on the same images after closing the application."
             horizontalAlignment: Text.AlignLeft
+            color: "black"
         }
         TextField {
             id: tempFolderField
@@ -61,11 +62,18 @@ import QtQuick.Dialogs
             horizontalAlignment: Text.AlignLeft
             Layout.fillWidth: true
             Layout.maximumWidth: 400
+            color: "black"
+            background: Rectangle{
+                color: "lightgrey"
+                border.color: "black"
+            }
+            //color: "black"
         }
 
         Text {
             text: "Location to save the outputs of the program, including the per pixel labels and statistics for each image."
             horizontalAlignment: Text.AlignLeft
+            color: "black"
         }
 
         TextField {
@@ -74,6 +82,12 @@ import QtQuick.Dialogs
             horizontalAlignment: Text.AlignLeft
             Layout.fillWidth: true
             Layout.maximumWidth: 400
+            color: "black"
+            background: Rectangle{
+                color: "lightgrey"
+                border.color: "black"
+            }
+            //color: "black"
         }
     }
     
