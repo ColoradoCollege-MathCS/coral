@@ -51,10 +51,10 @@ echo
 echo "Zipping up"
 cd dist/
 if [[ $(uname -m) == 'arm64' ]]; then
-	zip -r CoralLabeler-macos-applesilicon.zip CoralLabeler.app
+	zip -ry CoralLabeler-macos-applesilicon.zip CoralLabeler.app
 	echo "Build completed, written to dist/CoralLabeler-macos-applesilicon.zip"
 elif [[ $(uname -m) == 'x86_64' ]]; then
-	zip -r CoralLabeler-macos-intel.zip CoralLabeler.app
+	zip -ry CoralLabeler-macos-intel.zip CoralLabeler.app
 	echo "Build completed, written to dist/CoralLabeler-macos-intel.zip"
 else
 	echo "Something went wrong with my arch parsing, or you have a PPC computer"
