@@ -46,6 +46,21 @@ if [ $? != 0 ]; then
     exit 2
 fi
 
+#create-dmg wasn't working, zipping instead
+echo
+echo "Zipping up"
+cd dist/
+if [[ $(uname -m) == 'arm64' ]]; then
+	zip -r CoralLabeler-macos-applesilicon.zip CoralLabeler.app
+	echo "Build completed, written to dist/CoralLabeler-macos-applesilicon.zip"
+elif [[ $(uname -m) == 'x86_64' ]]; then
+	zip -r CoralLabeler-macos-intel.zip CoralLabeler.app
+	echo "Build completed, written to dist/CoralLabeler-macos-intel.zip"
+else
+	echo "Something went wrong with my arch parsing, or you have a PPC computer"
+fi
+
+: '
 if ! command -v "create-dmg"; then
     echo
     echo "create-dmg command not available. The .app package has been created in dist/"
@@ -53,12 +68,16 @@ if ! command -v "create-dmg"; then
     exit 3
 fi
 echo
+
+
 echo "Building dmg"
 
 test -f "dist/CoralLabeler.dmg" && rm "dist/CoralLabeler.dmg"
 test -d "build/dmg" && rm -rf "build/dmg"
 cp -r "dist/CoralLabeler.app" "build/dmg"
 
+
+#Commented out because it wasnt working
 #When I get the icon, add the icon options"
 create-dmg \
     --volname "CoralLabler" \
@@ -72,3 +91,4 @@ create-dmg \
     "build/dmg/"
 
 mv CoralLabeler.dmg dist/
+'
