@@ -1114,31 +1114,18 @@ ApplicationWindow {
                         if(currentVertex != undefined){
                             if(checkBoundary(currentVertex, mouseX, mouseY, dx, dy)){
                                 //for the last vertice, move the startx and starty, but not for paintbrush
-                                if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1] && currentVertex.papa.x == shapeCurrent.child.startX && currentVertex.papa.y == shapeCurrent.child.startY){
-                                    
-                                    //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
+                                if(currentVertex == shapeCurrent.controls[shapeCurrent.controls.length-1]){
                                     currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
                                     currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
-
                                     shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
                                     shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
-
-                                    currentVertex.x = currentVertex.x + (mouseX - dx)
-                                    currentVertex.y = currentVertex.y + (mouseY - dy)
-                                }
-                                //for paintbrush, move first startX and starty for first vertex
-                                else if (currentVertex == shapeCurrent.controls[0] && shapeCurrent.controls[shapeCurrent.controls.length-1].x != shapeCurrent.child.startX && shapeCurrent.controls[shapeCurrent.controls.length-1].y != shapeCurrent.child.startY){
-                                    //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
-                                    shapeCurrent.child.startY = shapeCurrent.child.startY + (mouseY - dy)
-                                    shapeCurrent.child.startX = shapeCurrent.child.startX + (mouseX - dx)
-
                                     currentVertex.x = currentVertex.x + (mouseX - dx)
                                     currentVertex.y = currentVertex.y + (mouseY - dy)
                                 }
                                 else{
                                     currentVertex.papa.y = currentVertex.papa.y + (mouseY - dy)
                                     currentVertex.papa.x = currentVertex.papa.x + (mouseX - dx)
-
                                     currentVertex.x = currentVertex.x + (mouseX - dx)
                                     currentVertex.y = currentVertex.y + (mouseY - dy)
                                 }
