@@ -38,6 +38,7 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name='CoralLabeler',
+    icon='icons/CoralLabeler.ico',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -60,6 +61,6 @@ coll = COLLECT(
 )
 app = BUNDLE(coll,
 	name="CoralLabeler.app",
-	icon=None,
+	icon='icons/CoralLabeler.icns',
 	bundle_identifier=None
 )

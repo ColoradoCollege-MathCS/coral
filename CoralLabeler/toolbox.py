@@ -92,6 +92,7 @@ class Toolbox(QtCore.QObject):
             else:
                 if not os.path.isdir(fp):
                     return 1 #a non directory file exists with that name
+                return 0 #file exists and is a directory. all is well.
         try:
             os.makedirs(os.path.join(out_fp,'raster_labels'))
             os.makedirs(os.path.join(out_fp,'statistics'))

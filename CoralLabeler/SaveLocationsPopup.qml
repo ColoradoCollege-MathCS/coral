@@ -98,12 +98,13 @@ import QtQuick.Dialogs
         //update current location
         currentTempFolder = tbox.reFileUrl(tempFolderField.text)
         currentOutputFolder = tbox.reFileUrl(outFolderField.text)
-
-        //add to/create config file with this preference
-        tbox.saveFilePreference(tbox.reFileUrl(tempFolderField.text), tbox.reFileUrl(outFolderField.text))
         //create folders if neccessary
         var result = tbox.initFilePreference(tbox.reFileUrl(tempFolderField.text), tbox.reFileUrl(outFolderField.text))
         processError(result)
+        //add to/create config file with this preference
+        if (result == 0) {
+            tbox.saveFilePreference(tbox.reFileUrl(tempFolderField.text), tbox.reFileUrl(outFolderField.text))
+        }
     }
 
     onRejected: {
