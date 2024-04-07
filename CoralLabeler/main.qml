@@ -1586,7 +1586,7 @@ ApplicationWindow {
                 id: deleteIcon
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
-                icon.source: "icons/lasso.png"
+                icon.source: "icons/delete.png"
                 enabled: true
 
                 MouseArea {

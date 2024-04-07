@@ -36,6 +36,7 @@ Dialog {
 <li>Move Button by SeyfDesigner </li>\
 <li>Circle Select by Corner Pixel </li>\
 <li>Paintbrush by Good Ware</li>\
+<li>Recycle Bin by Lakonicon</li>\
 </ul>"
             horizontalAlignment: Text.AlignLeft
             textFormat: Text.StyledText
