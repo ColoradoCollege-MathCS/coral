@@ -323,7 +323,7 @@ ApplicationWindow {
                 Layout.preferredWidth: 50
                 Layout.preferredHeight: 50
                 enabled: false
-                icon.source: "icons/save.png"     
+                icon.source: "icons/grid.png"     
                         
                 onClicked: {
                     saveRasterIconButton.enabled = false
