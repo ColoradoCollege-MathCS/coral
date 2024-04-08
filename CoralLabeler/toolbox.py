@@ -309,7 +309,7 @@ class Toolbox(QtCore.QObject):
         # save to csv file
         external_dir = self.trimFileUrl(self.getOutUrl())
         save_to = os.path.join(external_dir,'raster_labels',filename+".csv")
-        np.savetxt(save_to, final_array, fmt='%d', delimiter=',')clear
+        np.savetxt(save_to, final_array, fmt='%d', delimiter=',')
         
         
 
