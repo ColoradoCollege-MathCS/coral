@@ -307,7 +307,10 @@ class Toolbox(QtCore.QObject):
                 final_array[rr, cc] = n_label_id
 
         # save to csv file
-        np.savetxt('./raster_labels/' + filename + '.csv', final_array, fmt='%d', delimiter=',')
+        external_dir = self.trimFileUrl(self.getOutUrl())
+        save_to = os.path.join(external_dir,'raster_labels',filename+".csv")
+        np.savetxt(save_to, final_array, fmt='%d', delimiter=',')clear
+        
         
 
     @QtCore.Slot(dict, list, int, int, float, float, int, int, str, str, str)
