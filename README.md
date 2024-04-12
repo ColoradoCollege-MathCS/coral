@@ -1,6 +1,8 @@
 # Coral Labeler
 This repo tracks the Coral Labeler application, which is in development by Dylan Chapell, Khawla Douah, Mai Nguyen, and Calvin Than. The goal of this application is to streamline the labeling of datasets containing images of corals. It provides manual labeling tools as well as a machine learning model to help predict labels.
 
+![A screenshot of the CoralLabeler application UI. The app has an image of coral loaded and 3 labels drawn wit the lasso tool.](UI-Example.png)
+
 # Building the application
 On MacOS, this process is automated by the ./build-macos.sh script
 
