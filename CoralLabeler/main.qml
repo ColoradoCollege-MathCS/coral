@@ -200,15 +200,6 @@ ApplicationWindow {
     ///////////////////////////////////////////////////////////Top menu/////////////////////////////////////////////////////////
     menuBar: MenuBar {
         Menu {
-            title: qsTr("&File")
-            Action { text: qsTr("&New...") }
-            Action { text: qsTr("&Open...") }
-            Action { text: qsTr("&Save") }
-            Action { text: qsTr("Save &As...") }
-            MenuSeparator { }
-            Action { text: qsTr("&Quit") }
-        }
-        Menu {
             title: qsTr("&Edit")
             Action { text: qsTr("&Undo")
                 id: undoAction
@@ -242,13 +233,6 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("&Tools")
-            Action {
-                text: qsTr("Random Rectangle")
-                onTriggered: {
-                    tbox.randomRectangle()
-                    saveIconButton.enabled = true
-                }
-            }
             Action {
                 text: qsTr("Statistics")
                 onTriggered: {
@@ -1816,6 +1800,7 @@ ApplicationWindow {
          }
     }
 
+/////////////////////////////////////////////////////////user error pop up////////////////////////////////////////////////////////
 
     Popup {
         id: errorPopUp

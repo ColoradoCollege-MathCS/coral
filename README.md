@@ -1,7 +1,11 @@
 # Coral Labeler
 This repo tracks the Coral Labeler application, which is in development by Dylan Chapell, Khawla Douah, Mai Nguyen, and Calvin Than. The goal of this application is to streamline the labeling of datasets containing images of corals. It provides manual labeling tools as well as a machine learning model to help predict labels.
 
+![A screenshot of the CoralLabeler application UI. The app has an image of coral loaded and 3 labels drawn wit the lasso tool.](UI-Example.png)
+
 # Building the application
+On MacOS, this process is automated by the ./build-macos.sh script
+
 ## Installing Dependencies
 Our application has the following dependencies: 
 
@@ -36,3 +40,27 @@ If you would like to run the application without building it, you can do so now 
 2. Run `pyinstaller CoralLabeler.spec`
 
 The compiled application will now be in the `./dist/CoralLabeler` directory. 
+
+## Packaging
+### MacOS
+Compress CoralLabeler.app into a zip file
+```
+cd dist
+zip -ry CoralLabeler-macos.zip CoralLabeler.app
+```
+Upload this zip file to a draft Github Release
+
+### Windows
+1. Install and open the InstallForge program
+2. Open build-windows-installforge.ifp
+3. Adjust the files tab to point to the produced CoralLabeler.exe and _internal folder
+4. Build the installer
+5. Upload the produced installer to a draft Github Release
+
+### Linux
+Compress dist/CoralLabeler/CoralLabeler and dist/CoralLabeler/_internal into a zip file
+```
+cd dist/
+zip -ry CoralLabeler-linux.zip CoralLabeler/
+```
+Upload this zip file to a draft Github Release
