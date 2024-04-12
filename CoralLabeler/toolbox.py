@@ -143,24 +143,6 @@ class Toolbox(QtCore.QObject):
         return scaled_polygon
 
 
-<<<<<<< HEAD
-=======
-    @QtCore.Slot(str, int, int, float)
-    def magicWand(self, image, mouse1, mouse2, threshold):
-        label = random.randint(1, 4)
-        coor = (mouse1, mouse2)
-        magic_wand_select(image, self.labels, label, coor, threshold)
-        self.updateMask()
-
-
-    @QtCore.Slot(int, int, int)
-    def paintBrush(self, point1x, point1y, size):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        circle_select(self.labels, label, point1, size)
-        self.updateMask()
-
->>>>>>> 816e6d42362af635864a090ac869a7301f4e60e0
     @QtCore.Slot(str, result="QVariantList")
     def readCSV(self, fileName):
         labelsFile = open(fileName)
