@@ -30,26 +30,6 @@ color_map = {
     }
 
 class Toolbox(QtCore.QObject):
-    @QtCore.Slot(str)
-    def initLabels(self, filename):
-        self.labels = np.zeros((image_dims(filename)[:2]))
-        self.filename = filename
-        self.updateMask()
-
-    def updateMask(self):
-        rgb = labeled2rgb(self.labels,color_map)
-        mask_file = os.path.join(dirname, "images", "mask.png")
-        imsave("images/mask.png",rgb, check_contrast=False)
-
-    @QtCore.Slot()
-    def randomRectangle(self):
-        max_x = self.labels.shape[1]-1
-        max_y = self.labels.shape[0]-1
-        point1 = (random.randint(0, max_x),random.randint(0,max_y))
-        point2 = (random.randint(0, max_x),random.randint(0,max_y))
-        label = random.randint(1, 4)
-        rectangle_select(self.labels, label, point1, point2)
-        self.updateMask()
 
     @QtCore.Slot(str, result=str)
     def trimFileUrl(self, file_url):
@@ -162,36 +142,6 @@ class Toolbox(QtCore.QObject):
 
         return scaled_polygon
 
-
-    @QtCore.Slot(str, int, int, float)
-    def magicWand(self, image, mouse1, mouse2, threshold):
-        label = random.randint(1, 4)
-        coor = (mouse1, mouse2)
-        magic_wand_select(image, self.labels, label, coor, threshold)
-        self.updateMask()
-
-    #@QtCore.Slot(int, int, int, int)
-    #def selectCircle(self, point1x, point1y, point2x, point2y):
-    #    label = random.randint(1, 4)
-    #    point1 = (point1x, point1y)
-    #    point2 = (point2x, point2y)
-    #    ellipse_select(self.labels, label, point1, point2)
-    #    self.updateMask()
-
-    #@QtCore.Slot(int, int, int, int)
-    #def selectRect(self, point1x, point1y, point2x, point2y):
-    #    label = random.randint(1, 4)
-    #    point1 = (point1x, point1y)
-    #    point2 = (point2x, point2y)
-    #    rectangle_select(self.labels, label, point1, point2)
-    #    self.updateMask()
-
-    @QtCore.Slot(int, int, int)
-    def paintBrush(self, point1x, point1y, size):
-        label = random.randint(1, 4)
-        point1 = (point1x, point1y)
-        circle_select(self.labels, label, point1, size)
-        self.updateMask()
 
     @QtCore.Slot(str, result="QVariantList")
     def readCSV(self, fileName):

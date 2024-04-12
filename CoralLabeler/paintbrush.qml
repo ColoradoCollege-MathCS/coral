@@ -20,6 +20,7 @@ Shape {
     property var color: ""
     property var colorline: "black"
 
+    //vertices
     property var controls: []
 
 	property list<ShapePath> all_paths: []

@@ -61,10 +61,7 @@ class CreateAction(Actions) :
     """This action creates a polygon shape with a specified set of points"""
     def __init__(self,parent = None, shapeParent=None, target=None):
         super().__init__(parent)
-        #if coordinate_array is not None:
-        #    print("Creating from arrays in python not supported yet", file=sys.stderr)
-        #if coordinate_array is None and target is None:
-        #    print("No coordinate array or pre-created object provided", file=sys.stderr)
+
         self._target = target
         self._shapeParent = shapeParent
         self._typeString = "CreateAction"

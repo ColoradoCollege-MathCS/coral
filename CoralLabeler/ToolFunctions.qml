@@ -29,7 +29,9 @@ Rectangle{
         yuh.child.strokeColor = color;
     }
 
+    //the reshaping of paintbrush to make it a polygon
     function endPaint(yuh, color, toolbox){
+        //yuh is our shape object
         var strWidth = 0
         var newShapePath = []
         var up = []
@@ -42,7 +44,10 @@ Rectangle{
 
 
         var angle = 0
+
+        //go through all elements to reshape shape
         for(var i = 0; i < yuh.data[0].pathElements.length - 1; i++){
+            //get tan for the angle of one point to another
             var tanx = yuh.data[0].pathElements[i + 1].x - yuh.data[0].pathElements[i].x
             var tany = yuh.data[0].pathElements[i + 1].y - yuh.data[0].pathElements[i].y
 
@@ -51,6 +56,7 @@ Rectangle{
 
             var pointup = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', yuh.data[0])
 
+            //create up point based on angle and strokewidth
             if(tanx >= 0 && tany <= 0){
                 pointup.x = yuh.data[0].pathElements[i + 1].x - (strWidth/2) * Math.cos(Math.abs(angle))
                 pointup.y = yuh.data[0].pathElements[i + 1].y - (strWidth/2) * Math.sin(Math.abs(angle))
@@ -70,6 +76,7 @@ Rectangle{
 
             var pointdown = Qt.createQmlObject('import QtQuick; import QtQuick.Shapes; PathLine{}', yuh.data[0])
 
+            //create down point based on angle and strokewidth
             if(tanx >= 0 && tany <= 0){
                 pointdown.x = yuh.data[0].pathElements[i + 1].x + ((strWidth/2) * Math.cos(Math.abs(angle)))
                 pointdown.y = yuh.data[0].pathElements[i + 1].y + ((strWidth/2) * Math.sin(Math.abs(angle)))
@@ -92,6 +99,7 @@ Rectangle{
             down.push(pointdown)
         }
 
+        //put all new points in the correct order
         up.push(yuh.data[0].pathElements[yuh.data[0].pathElements.length - 1])
 
         var reversedDown = []
@@ -117,6 +125,7 @@ Rectangle{
             yuh.data[0].pathElements.push(up[t])
         }
 
+        //fill shape
         yuh.data[0].fillColor = color
 
     }
@@ -172,10 +181,8 @@ Rectangle{
             var pathEle = sp.pathElements.pop()
             points.push([pathEle.x,pathEle.y])
         }
-        //console.log("Before: "+points.length+" points")
         points = toolbox.simplifyLasso(points, epsilon)
-        //console.log("After: "+points.length+" points with eps: "+epsilon)
-        console.log
+
         sp.startX = points[points.length-1][0]
         sp.startY = points[points.length-1][1]
         for (var i = points.length-2; i >= 0; i--) {

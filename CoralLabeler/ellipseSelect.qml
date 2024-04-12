@@ -42,40 +42,9 @@ Shape {
         startX: mX
         startY: mY
 
-/*
-        PathLine {id: ; x: mX + 50; y: mY }
-        PathLine { x: mX + 40; y: mY + 20 }
-        PathLine { x: mX + 20; y: mY + 40 }
-        PathLine { x: mX; y: mY + 50 }
-        PathLine { x: mX - 20; y: mY + 40 }
-        PathLine { x: mX - 40; y: mY + 20 }
-        PathLine { x: mX - 50; y: mY }
-        PathLine { x: mX - 40; y: mY - 20 }
-        PathLine { x: mX - 20; y: mY - 40 }
-        PathLine {id: bottomEllipse; x: mX; y: mY - 50 }
-        PathLine { x: mX + 20; y: mY - 40 }
-        PathLine { x: mX + 40; y: mY - 20 }
-        PathLine { x: mX + 50; y: mY }
-*/
 
-
-/*
-        PathLine {id:p1 ; x: mX + 50; y: mY }
-        PathLine {id:p2; x: mX + 30; y: mY + 30 }
-        
-        PathLine {id:p3 ; x: mX; y: mY + 50 }
-        PathLine {id:p4 ; x: mX - 30; y: mY + 30 }
-
-        PathLine {id:p5 ; x: mX - 50; y: mY }
-        PathLine {id:p6 ; x: mX - 30; y: mY - 30 }
-       
-        PathLine {id:p7; x: mX; y: mY - 50 }
-        PathLine {id:p8; x: mX + 30; y: mY - 30 }
-
-
-        PathLine {id:p9; x: mX + 50; y: mY }
-
-*/
+        //pathline creating the sideof our ellipse. Each pathline has the coordinates of where it will appear on the screen 
+        //when the user clicks on it
 
         PathLine {id:p1 ; x: mX ; y: mY }
         PathLine {id:p2; x: mX + 25; y: mY + 30 }
@@ -90,13 +59,13 @@ Shape {
         PathLine {id:p8; x: mX + 25; y: mY - 30 }
 
 
-        //PathLine {id:p9; x: mX + 50; y: mY }
+    
 
 
     }
 
 
-      
+    //the circle verticies and their location with regards to the ellipse shape, we have 8 verticies at each edge  
 
     Rectangle {
         id: circleleft

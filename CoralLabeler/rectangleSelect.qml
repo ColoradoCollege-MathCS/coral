@@ -50,7 +50,7 @@ Shape{
 
         startX: mX
         startY: mY
-
+    //pathline coordinates to draw the rectangle
         PathLine{ id: topRect; x: mX + factorX; y: mY}
         PathLine{ id: rightRect; x: mX + factorX; y: mY + factorY}
         PathLine{ id: bottomRect; x: mX; y: mY + factorY}
@@ -58,6 +58,7 @@ Shape{
 
     }
 
+    //creating the circles for the verticies and assigning it a location 
     Rectangle {
 
         id: circleleft

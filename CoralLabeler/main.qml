@@ -48,11 +48,6 @@ ApplicationWindow {
 
     /////////////////////////////////////////////////////////functions///////////////////////////////////////////////////////
 
-    function refreshMask() {
-        overlay.source = "images/mask2.png"
-        overlay.source = "images/mask.png"
-    }
-
     function changeImage(fileName){
         image.source = fileName
     }
@@ -113,6 +108,7 @@ ApplicationWindow {
         }
     }
 
+    //A function to create a component to make rectangles
     function rectangleComponent(){
 
         //create a QML component from shapes.qml
@@ -130,13 +126,10 @@ ApplicationWindow {
         return
     }
 
-
+    //A function to create a component to make ellipes
     function ellipseComponent(){
         //create a QML component from shapes.qml
         const component = Qt.createComponent("ellipseSelect.qml");
-        print(component)
-        print(component.status)
-        print(Component.Ready)
 
         //make sure component works properly
         if (component.status === Component.Ready) {
@@ -149,13 +142,15 @@ ApplicationWindow {
         }
         return
     }
+    
+
+    //A function to create a component to make paint shapes
     function paintComponent(){
 
         const component = Qt.createComponent("paintbrush.qml");
 
         if (component.status === Component.Ready) {
             //make shapes
-            // console.log("yuh3")
             return component
         }
         else if (component.status === Component.Error){
@@ -165,6 +160,7 @@ ApplicationWindow {
 
     }
 
+    //A function to create a component to make 
     function aiComponent(){
         //create a QML component from shapes.qml
         const component = Qt.createComponent("shapes.qml");
@@ -185,6 +181,7 @@ ApplicationWindow {
         tf.removeVertices(imageMouse.previousShape)
     }
 
+    //turn on all buttons
     function allToolsOn(){
         imageMouse.selected = false
         deleteIcon.enabled = true
@@ -248,7 +245,7 @@ ApplicationWindow {
             Action {
                 text: qsTr("Random Rectangle")
                 onTriggered: {
-                    tbox.randomRectangle()//, refreshMask()
+                    tbox.randomRectangle()
                     saveIconButton.enabled = true
                 }
             }
@@ -311,7 +308,6 @@ ApplicationWindow {
                         lf.updateLabelsAndCoords()
 
                         tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
-                        // tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source), lf.paintshapes)
                     }
                     
                 }
@@ -327,8 +323,6 @@ ApplicationWindow {
                         
                 onClicked: {
                     saveRasterIconButton.enabled = false
-                    // lf.updateLabelsAndCoords()
-                    // tbox.saveLabels(labelsAndCoords, lf.split(image.source), lf.paintshapes)
                     tbox.saveRasters(labelsAndCoords, imageMouse.getMouseX(), imageMouse.getMouseY(), overlay.mouseFactorX, overlay.mouseFactorY, image.sourceSize.width, image.sourceSize.height, lf.split(image.source))
                 }
                     
@@ -399,8 +393,6 @@ ApplicationWindow {
                 currentFolder: StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
                 onAccepted: {
                     image.source = selectedFile
-                    //tbox.initLabels(selectedFile)
-                    //refreshMask()
                     refreshLegend()
                     populateLegend()
 
@@ -502,35 +494,38 @@ ApplicationWindow {
                 //threshold of magicwand or size of brush
                 property var value: 1
 
+                //make components
                 property var comp: tf.createLassoComponent()
-
                 property var paintComp: paintComponent()
-
-
                 property var magicWandComponent: aiComponent()
-                property var polygon: []
-
-
-
                 property var rectComponent: rectangleComponent()
                 property var ellipComponent: ellipseComponent()
 
+                //to make polygons for our AI
+                property var polygon: []
+
+                //An variable for an shape in creation
                 property var g: undefined
 
+                //variables for finding the difference of x and y for changes in position
                 property var ogx: 0
                 property var ogy: 0
 
                 property var dx: 0
                 property var dy: 0
 
+                //variable for the vertices of a shape
                 property var controlNum: undefined
                 property var currentVertex: undefined
 
+                //variable for a current selected shape and the one selected before it
                 property var shapeCurrent: undefined
                 property var previousShape: undefined
 
+                //variable for shape index
                 property var shapeLocation: 0
 
+                //variable for if a shape has or has not been selected
                 property var selected: false
 
                 //fix mouse coordinate
@@ -570,6 +565,7 @@ ApplicationWindow {
                 }
 
 
+                //All cases of when an image is clicked with a certain tool
                 onPressed: { 
                     //make sure a label and image is selected
                     if (image.source.toString() === "") {
@@ -651,7 +647,6 @@ ApplicationWindow {
 
                         //if circle is held down, record those coordinates
                         else if (currentTool == "circleselect"){
-
                                 
                                 fixMouse(image)
 
@@ -712,33 +707,6 @@ ApplicationWindow {
 
                             selected = false
 
-
-
-                            /*fixMouse(image)
-
-                            holdedx = fixedMouseX
-                            holdedy = fixedMouseY
-
-
-
-                            for(var i = 0; i < 2; i++){
-                                console.log(labelAndColor[i])
-                            }
-
-                            shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], "coorline": labelAndColor[findLabel(comboyuh.currentText)]}))
-
-                            refreshLegend()
-                            populateLegend()
-
-                            for(var i = 0; i < 2; i++){log(labelAndColor[i])
-                            }
-                            
-
-                            shapes.push(ellipComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
-                            "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY}))
-
-                            tf.removeVertices(shapeCurrent)
-                        */
                         }
 
                         //if square is held down, record those coordinates
@@ -777,6 +745,7 @@ ApplicationWindow {
 
                             //make new shape if no shape was selected
                             else{
+                                //if there is a current shape, but the user clicked on different shape
                                 if (shapeCurrent != undefined){
                                     previousShape = shapeCurrent
                                     noMoreVertices(previousShape)
@@ -788,28 +757,27 @@ ApplicationWindow {
 
                                 var defau = true
 
+                                //check if user clicked in boundary
                                 if (!checkBoundary(undefined, mouseX, mouseY, -100, -100)){
+                                    //check where the user clicked
                                     if((mouseX + 100) > image.paintedWidth + getMouseX() && (mouseY + 100) > image.paintedHeight + getMouseY()){
                                         
                                         theFactorX = image.paintedWidth + getMouseX() - mouseX
                                         theFactorY = image.paintedHeight + getMouseY() - mouseY
 
-                                        console.log(theFactorX + ", " + theFactorY)
-
                                     }
                                     else if ((mouseX + 100) > image.paintedWidth + getMouseX()){
                                         theFactorX = image.paintedWidth + getMouseX() - mouseX
-                                        console.log(theFactorX + ", " + theFactorY)
                                     }
                                     else{
                                         theFactorY = image.paintedHeight + getMouseY() - mouseY
-                                        console.log(theFactorX + ", " + theFactorY)
                                     }
 
                                     defau = false
                                     
                                 }
 
+                                //check if user clicked in boundary
                                 if(checkBoundary(undefined, mouseX, mouseY, 0, 0)){
                                     if(theFactorX == undefined){
                                         theFactorX = 100
@@ -818,6 +786,7 @@ ApplicationWindow {
                                         theFactorY = 100
                                     }
     
+                                    //make object based on where the user clicked
                                     if(defau == false){
                                         newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
                                             "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY, "factorX": theFactorX, "factorY": theFactorY})
@@ -826,6 +795,8 @@ ApplicationWindow {
                                         newShape = rectComponent.createObject(overlay, {"label": findLabel(comboyuh.currentText), "color": labelAndColor[findLabel(comboyuh.currentText)], 
                                             "colorline": labelAndColor[findLabel(comboyuh.currentText)], "mX": mouseX, "mY": mouseY})
                                     }
+
+                                    //add to shape list and action list
                                     shapes.push(newShape)
                                     shapeCurrent = newShape
 
@@ -858,7 +829,6 @@ ApplicationWindow {
                         else if(currentTool == "vertextool"){
                             //check if shape has already been selected
                             var no = false
-                            print(currentTool, shapeCurrent)
                             //check if shape has been selected and mouse is in one of its vertices
                             for(var i = 0; i < shapes.length; i++){
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText) && shapeCurrent != undefined){
@@ -891,7 +861,6 @@ ApplicationWindow {
                             //if shape has already been selected, choose vertex
 
                             if(selected == true) {
-                                console.log("slay")
                                 for(var h = 0; h < shapeCurrent.controls.length; h++){
 
                                     sizex = shapeCurrent.controls[h].x + shapeCurrent.controls[h].radius
@@ -944,7 +913,8 @@ ApplicationWindow {
                             var all = []
                             var yuh = false
                             var wasSelected = false
-                    
+
+                            //look for where use clicked and the label                    
                             for(var i = 0; i < shapes.length; i++){
 
                                 if(shapes[i].contains(Qt.point(mouseX, mouseY)) && shapes[i].label == findLabel(comboyuh.currentText)){
@@ -978,8 +948,6 @@ ApplicationWindow {
                                         all.push(shapes[i])
                                     }
                                 }
-
-                                //shapeCurrent = shapes[shapeLocation]
 
                                 shapes = all
                             }
@@ -1060,7 +1028,6 @@ ApplicationWindow {
                             if(controlNum == shapeCurrent.controls[0]){
 
                                 if(checkBoundary(controlNum, mouseX, mouseY, dx, dy)){
-                                    console.log(getMouseX())
                                     //mouseX-dx because we want the the difference between the current mouse and the last mouse to move the shape
                                     controlNum.papa.y = controlNum.papa.y + (mouseY - dy)
                                     controlNum.papa.x = controlNum.papa.x + (mouseX - dx)
@@ -1083,7 +1050,8 @@ ApplicationWindow {
                     }
 
 
-                     else if(currentTool == "circleselect"){
+                    //ellipse select
+                    else if(currentTool == "circleselect"){
                         //move pathlines based on circle movement
                         if(controlNum != undefined){
                             if(controlNum == shapeCurrent.controls[0]){
@@ -1142,6 +1110,7 @@ ApplicationWindow {
 
                 //mouse released actions
                 onReleased: {
+
                     //lasso tool
                     if (currentTool == "lassotool"){
                         if(comboyuh.currentText != undefined){
@@ -1263,7 +1232,7 @@ ApplicationWindow {
         repeat: true
         triggeredOnStart: true
         running: imageMouse.isPressed
-        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value)//, refreshMask()
+        onTriggered: tbox.paintBrush(imageMouse.mouseX * overlay.mouseFactorX, imageMouse.mouseY * overlay.mouseFactorY, imageMouse.value)
     }
 
 
@@ -1288,13 +1257,10 @@ ApplicationWindow {
                 //if the shape is in the text box, highlight it yellow, if not, get rid of highlight
                 for (var i = 0; i < shapes.length; i++){
                     if (shapes[i].label == findLabel(currentText)){
-                        //console.log(shapes[i].colorline)
                         shapes[i].colorline = "yellow"
                     }
 
                     else {
-                        //console.log(shapes[i].label)
-                        //console.log(labelAndColor[shapes[i].label])
                         shapes[i].colorline = labelAndColor[shapes[i].label]
                     }
                 }
@@ -1373,7 +1339,7 @@ ApplicationWindow {
      
 
     //////////////////////////////////////////////////////////side tool bar////////////////////////////////////////////////////////
-    //diable when selected and enable everything else 
+    //disable when selected and enable everything else 
     ToolBar {
         ColumnLayout {
             id: toolbaryuh
@@ -1652,8 +1618,6 @@ ApplicationWindow {
                                 savemask.title = fileName
                                 savemask.open()
                             }
-                            
-                            //tbox.initLabels(folderModel.folder + "/" + fileName), refreshMask()
                                 
                             changeImage(folderModel.folder + "/" + fileName)
 
