@@ -170,21 +170,6 @@ class Toolbox(QtCore.QObject):
         magic_wand_select(image, self.labels, label, coor, threshold)
         self.updateMask()
 
-    #@QtCore.Slot(int, int, int, int)
-    #def selectCircle(self, point1x, point1y, point2x, point2y):
-    #    label = random.randint(1, 4)
-    #    point1 = (point1x, point1y)
-    #    point2 = (point2x, point2y)
-    #    ellipse_select(self.labels, label, point1, point2)
-    #    self.updateMask()
-
-    #@QtCore.Slot(int, int, int, int)
-    #def selectRect(self, point1x, point1y, point2x, point2y):
-    #    label = random.randint(1, 4)
-    #    point1 = (point1x, point1y)
-    #    point2 = (point2x, point2y)
-    #    rectangle_select(self.labels, label, point1, point2)
-    #    self.updateMask()
 
     @QtCore.Slot(int, int, int)
     def paintBrush(self, point1x, point1y, size):
@@ -264,7 +249,7 @@ class Toolbox(QtCore.QObject):
         return rdp(points, epsilon=epsilon)
 
     
-    # conver shape window coords to shape img pixel coords 
+    # convert shape window coords to shape img pixel coords 
     def toPixels(self, coords, x_coord, y_coord, x_factor, y_factor):
         numpy_shapes = {}
         for label_num, coords_dict in coords.items():
@@ -315,21 +300,28 @@ class Toolbox(QtCore.QObject):
 
     @QtCore.Slot(dict, list, int, int, float, float, int, int, str, str, str)
     def saveStats(self, coords, specs_list, x_coord, y_coord, x_factor, y_factor, img_p_width, img_p_height, filename, imgWS, imgHS):
+        # get the shape and vertices coords as numpy coords
         numpy_shapes = self.toPixels(coords, x_coord, y_coord, x_factor, y_factor)
+
+        # img pixel area
         img_pix_area = img_p_width * img_p_height
         area_per_pix = (int(imgWS) * int(imgHS)) / img_pix_area
 
+        # stats file header
         headers = ['species id', 'species', 'pixel %', 'area (cm2)']
 
         stats_list = []
         for n_label_num, n_coords_dict in numpy_shapes.items():
                 for n_shape_num, n_shape_coords in n_coords_dict.items():
+                    # make polygon
                     shape = np.zeros((img_p_height, img_p_width))
                     r = n_shape_coords[:, 0]
                     c = n_shape_coords[:, 1]
                     rr, cc = polygon(c, r)
                     shape[rr, cc] = n_label_num
                     binary_label = label(shape)
+
+                    # get area of polygon
                     measurements = regionprops(binary_label)
                     pixel_area =  int(measurements[0]['area'])
                     pixel_prop = pixel_area / img_pix_area
@@ -342,7 +334,10 @@ class Toolbox(QtCore.QObject):
                              'pixel %': pixel_prop * 100, 
                              'area (cm2)': img_area}
                     
+                    # save row info
                     stats_list.append(shape_stats)
+                    
+        # write to file
         external_dir = self.trimFileUrl(self.getOutUrl())
         save_to = os.path.join(external_dir,'statistics',filename+".csv")
         with open(save_to, 'w') as csvfile:
